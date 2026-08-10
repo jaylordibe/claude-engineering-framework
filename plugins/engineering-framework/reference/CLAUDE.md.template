@@ -1,0 +1,132 @@
+<!--
+  Engineering framework — consuming repository template.
+
+  The framework owns methodology. This file owns truth.
+
+  The plugin already supplies the engineering bar, the gate sequence, the risk
+  tiers, the evidence language and the human-owned operations list. Do NOT
+  restate any of that here; a second copy drifts and nothing can detect that it
+  has.
+
+  What belongs here is everything the framework cannot know: what this system
+  is, what it is built from, how to verify it, what its non-obvious invariants
+  are, and who breaks when its contracts change.
+
+  Delete every instruction comment and every unfilled placeholder before
+  committing. An unfilled section is worse than an absent one, because it reads
+  to a later agent exactly like a completed one.
+-->
+
+# CLAUDE.md
+
+Guidance for Claude Code working in this repository. This file is the always-on
+core: it is loaded on every request, so it holds only what applies to *almost
+every* change. Situational playbooks live in `.claude/skills/` and in the
+documentation this file points to.
+
+Engineering methodology — the gate sequence, risk tiers, evidence language and
+human-owned operations — comes from the `engineering-framework` plugin and is
+not restated here. **Where a generic framework standard conflicts with a rule
+in this file, this file wins**: the framework describes how to work, this file
+describes what is true.
+
+## Project
+
+<!--
+  One dense paragraph. Language and version, runtime, framework, data stores,
+  authentication model, deployment target. If a fact is not true, delete it —
+  the framework's agents are required to treat this section as evidence.
+-->
+
+_(What this system is. Language, runtime, frameworks, data stores, how it is
+deployed.)_
+
+**Package manager:** _(name, and whether the lockfile is committed)_
+
+## Canonical commands
+
+<!--
+  The validation gate runs these. Every one must actually work from a clean
+  checkout. If a command needs a running service first, say so on its row.
+  Mirror these into .claude/engineering-framework.json under `commands` so the
+  guard hook and the gates read the same list.
+-->
+
+| Purpose | Command | Notes |
+|---|---|---|
+| Install | | |
+| Build | | |
+| Lint | | |
+| Type check | | |
+| Unit tests | | |
+| Integration / e2e tests | | |
+| Run locally | | |
+
+## Architecture
+
+<!--
+  A directory map with one line of purpose per entry, or a component diagram.
+  Enough that an agent knows where to look, not so much that it duplicates the
+  tree. Name the entry points explicitly — the framework's context mapper
+  starts there.
+-->
+
+_(Entry points, module or component layout, and what each part owns.)_
+
+## Cross-cutting conventions
+
+<!--
+  The rules that apply to almost every change in THIS repository, each with the
+  reason it exists. A convention without its reason gets "cleaned up" by the
+  next contributor. Where a rule is enforced by a linter, type or test, say so
+  — a self-enforcing convention is worth more than a documented one.
+-->
+
+- _(Error handling contract)_
+- _(Validation contract)_
+- _(Authorization contract)_
+- _(Persistence and data access contract)_
+- _(Logging, redaction and observability contract)_
+
+## Non-obvious invariants
+
+<!--
+  The things that look wrong, look deletable, or look like they could be
+  simplified — and must not be. Each one with the failure it prevents. This is
+  the highest-value section in the file and the one most often empty.
+-->
+
+_(Each entry: what looks removable, and what breaks if it is removed.)_
+
+## Consumers
+
+<!--
+  Every client that programs against this system's contracts. This is
+  load-bearing: the design, implement and review gates all ask "which consumers
+  does this change force a matching change in?", and with an empty table the
+  honest answer is always "none".
+
+  If there genuinely are none, replace the row with "(none — internal only)"
+  and say why. An unfilled table and a deliberately empty one are
+  indistinguishable to every later reader.
+-->
+
+| Consumer | Repository / location | Audience | Owner |
+|---|---|---|---|
+| _(none declared yet)_ | | | |
+
+A contract change is not done when this system compiles. It is done when every
+consumer above has either been updated or been explicitly recorded as
+unaffected, with the deployment order stated.
+
+## Deep references
+
+<!--
+  On-demand playbooks, so this file stays lean. Point at repository-owned
+  documents and skills, not at framework standards — the framework loads its
+  own.
+-->
+
+| Task | Where |
+|---|---|
+| | |

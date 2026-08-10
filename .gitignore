@@ -1,0 +1,61 @@
+# ---------------------------------------------------------------------------
+# claude-engineering-framework
+#
+# This repository ships Markdown, JSON and POSIX shell. It has no build output
+# and no dependency tree, so this file exists mainly to keep local tooling,
+# editor state and eval artefacts out of the plugin that gets published.
+# ---------------------------------------------------------------------------
+
+# Eval runs. `claude plugin eval` writes timestamped result directories and
+# self-contained HTML reports; they are large, machine-generated and per-run.
+evals/results/
+*.eval-report.html
+
+# Local scratch space for validator output and hook fixture debugging.
+tmp/
+.tmp/
+*.local.json
+
+# Claude Code local state. `.claude/settings.json` IS committed (it pins the
+# marketplace and the permissions floor for contributors); the local override
+# and any transcript state are not.
+.claude/settings.local.json
+.claude/plans/
+.claude/history/
+
+# Node is only used to run the validator with `node tests/validate-plugin.mjs`.
+# There are no runtime dependencies, but a contributor may install dev tooling.
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Editors and IDEs
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+
+# Operating systems
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+Desktop.ini
+
+# Never commit real credentials. The plugin denies reading these through the
+# shell as well, but a repository that cannot contain them is a stronger
+# guarantee than one that merely refuses to read them.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*

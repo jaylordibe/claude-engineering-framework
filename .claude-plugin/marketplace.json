@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "jaylordibe",
+  "description": "Engineering plugins for Claude Code. The framework owns methodology; the repository owns truth.",
+  "owner": {
+    "name": "Jay Lord Ibe",
+    "url": "https://github.com/jaylordibe"
+  },
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "engineering-framework",
+      "source": "./engineering-framework",
+      "description": "A stack-agnostic engineering workflow for Claude Code: understand, design, human approval, implement, review, validate, present. Repository evidence outranks assumptions.",
+      "category": "workflow",
+      "keywords": [
+        "engineering",
+        "workflow",
+        "code-review",
+        "security",
+        "governance",
+        "quality-gates"
+      ],
+      "license": "MIT",
+      "homepage": "https://github.com/jaylordibe/claude-engineering-framework",
+      "repository": "https://github.com/jaylordibe/claude-engineering-framework"
+    }
+  ]
+}

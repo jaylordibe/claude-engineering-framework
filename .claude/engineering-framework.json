@@ -1,0 +1,33 @@
+{
+  "$schema": "../plugins/engineering-framework/reference/repo-config.schema.json",
+  "frameworkVersion": "0.1.0",
+
+  "commands": {
+    "lint": "shellcheck plugins/engineering-framework/scripts/*.sh plugins/engineering-framework/bin/*",
+    "test": "node tests/validate-plugin.mjs --strict && node tests/run-hook-fixtures.mjs"
+  },
+
+  "policy": {
+    "humanOwnedMigrations": false,
+    "humanOwnedDeployments": false
+  },
+
+  "protectedPaths": [
+    {
+      "pattern": "*/plugins/engineering-framework/scripts/guard-*.sh",
+      "reason": "this changes what the command guard blocks in every repository that installs the framework. Confirm tests/guard-hook-fixtures.tsv gains a row for the new decision AND a row proving a neighbouring legitimate command is still allowed, and that a new denial gets a version bump."
+    },
+    {
+      "pattern": "*/plugins/engineering-framework/reference/permissions-floor.json",
+      "reason": "this is the layer that cannot fail open. Confirm every Bash rule is mirrored as a PowerShell rule and that no rule uses an inert Write()/Glob()/MultiEdit()/NotebookEdit() path form."
+    },
+    {
+      "pattern": "*/plugins/engineering-framework/scripts/session-charter.sh",
+      "reason": "this is the framework's entire always-on context budget, paid on every request in every repository. Confirm the addition genuinely applies to almost every request and does not belong in a skill instead."
+    }
+  ],
+
+  "risk": {
+    "notes": "This repository ships governance that runs in other people's repositories. A wrong hook rule blocks somebody's legitimate work; a wrong standard makes an agent describe an architecture that does not exist. Both are silent from here."
+  }
+}

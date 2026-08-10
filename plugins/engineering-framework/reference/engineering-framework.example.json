@@ -1,0 +1,34 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jaylordibe/claude-engineering-framework/main/plugins/engineering-framework/reference/repo-config.schema.json",
+  "frameworkVersion": "0.1.0",
+
+  "policy": {
+    "humanOwnedGitWrites": true,
+    "humanOwnedPullRequests": true,
+    "humanOwnedMigrations": true,
+    "humanOwnedDeployments": true,
+    "humanOwnedDependencyInstall": false
+  },
+
+  "useDefaultProtectedPaths": true,
+  "protectedPaths": [
+    {
+      "pattern": "*/src/billing/*",
+      "reason": "this changes money handling. Confirm the amount is recomputed server side, that the change is covered by a test asserting the total, and that no consumer reads the old field."
+    }
+  ],
+
+  "commands": {
+    "install": "npm ci",
+    "build": "npm run build",
+    "lint": "npm run lint",
+    "typecheck": "npm run typecheck",
+    "test": "npm test",
+    "testE2E": "npm run test:e2e"
+  },
+
+  "risk": {
+    "highRiskPaths": ["*/src/auth/*", "*/src/billing/*"],
+    "notes": "Single shared database across tenants; isolation is enforced in query builders rather than at the connection level."
+  }
+}

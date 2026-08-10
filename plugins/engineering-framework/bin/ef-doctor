@@ -1,0 +1,297 @@
+#!/usr/bin/env bash
+#
+# ef-doctor — audit the contract between the installed engineering framework
+# and the repository it is running in.
+#
+# The framework validates itself in its own CI. This validates the other half:
+# whether THIS repository supplies what the framework needs, and whether the
+# guarantees the framework's documentation makes are actually in force here.
+#
+# It is deliberately read-only and never edits anything. Run it directly, or
+# through /engineering-framework:framework-doctor for an interpreted report.
+#
+# Exit codes: 0 all checks pass (warnings allowed), 1 at least one FAIL,
+# 2 usage error.
+
+set -uo pipefail
+
+project_directory=${CLAUDE_PROJECT_DIR:-$PWD}
+plugin_root=${CLAUDE_PLUGIN_ROOT:-}
+strict=false
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --path)
+      shift
+      [ "$#" -gt 0 ] || {
+        printf 'ef-doctor: --path needs a directory\n' >&2
+        exit 2
+      }
+      project_directory=$1
+      ;;
+    --strict) strict=true ;;
+    -h | --help)
+      cat <<'USAGE'
+Usage: ef-doctor [--path <repository>] [--strict]
+
+Audits a repository against the engineering framework's repository contract.
+
+  --path <dir>  Repository to audit (default: $CLAUDE_PROJECT_DIR, else $PWD)
+  --strict      Treat warnings as failures
+USAGE
+      exit 0
+      ;;
+    *)
+      printf 'ef-doctor: unknown argument %s\n' "$1" >&2
+      exit 2
+      ;;
+  esac
+  shift
+done
+
+failures=0
+warnings=0
+
+pass() { printf 'PASS  %s\n' "$1"; }
+warn() {
+  printf 'WARN  %s\n' "$1"
+  warnings=$((warnings + 1))
+}
+fail() {
+  printf 'FAIL  %s\n' "$1"
+  failures=$((failures + 1))
+}
+note() { printf '      %s\n' "$1"; }
+
+printf 'Engineering framework — repository contract audit\n'
+printf 'Repository: %s\n\n' "$project_directory"
+
+if [ ! -d "$project_directory" ]; then
+  fail "no such directory: $project_directory"
+  exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# 1. CLAUDE.md — the one mandatory artefact
+# ---------------------------------------------------------------------------
+
+claude_md="${project_directory}/CLAUDE.md"
+
+if [ ! -r "$claude_md" ]; then
+  fail 'CLAUDE.md is missing.'
+  note 'The framework owns methodology and this repository owns truth. Without'
+  note 'CLAUDE.md there is no statement of truth, so every agent is left'
+  note 'inferring the stack. Start from reference/CLAUDE.md.template.'
+else
+  pass 'CLAUDE.md exists.'
+
+  if grep -qiE '^#{1,3}[[:space:]]*(project|stack|overview)\b' "$claude_md"; then
+    pass 'CLAUDE.md declares what this system is.'
+  else
+    warn 'CLAUDE.md has no Project/Stack section.'
+    note 'Agents fall back to inference for language, runtime and data stores.'
+  fi
+
+  if grep -qiE '^#{1,3}[[:space:]]*(canonical commands|commands|verification)\b' "$claude_md"; then
+    pass 'CLAUDE.md declares canonical commands.'
+  else
+    warn 'CLAUDE.md declares no canonical commands.'
+    note 'The validation gate cannot produce evidence it did not discover a'
+    note 'command for, and will report BLOCKED rather than guess.'
+  fi
+
+  if grep -qiE '^#{1,3}[[:space:]]*consumers\b' "$claude_md"; then
+    if grep -qF '_(none declared yet)_' "$claude_md"; then
+      fail 'The Consumers table still holds the template placeholder.'
+      note 'An unfilled table and a deliberately empty one are'
+      note 'indistinguishable, so every contract change reports "no consumers"'
+      note 'and cross-repository breakage ships silently. List the consumers,'
+      note 'or write "(none - internal only)" and say why.'
+    else
+      pass 'Consumers table is filled in.'
+    fi
+  else
+    warn 'CLAUDE.md has no Consumers section.'
+    note 'Contract changes will not identify who breaks.'
+  fi
+
+  # Match the placeholder FORM, not a copy of three of the template's strings.
+  # The string list missed the Cross-cutting conventions placeholders, which are
+  # exactly what gate-implement sends every change to read — so an authorization
+  # contract that is still a parenthesis passed clean.
+  # `_(none - internal only)_` is the template's own way of saying a section is
+  # DELIBERATELY empty, so it is a filled-in answer rather than a placeholder.
+  # That distinction is the whole reason the marker exists.
+  placeholders=$(grep -nE '_\([^)]+\)_' "$claude_md" | grep -viE '_\(none' || true)
+  if [ -n "$placeholders" ]; then
+    placeholder_count=$(printf '%s\n' "$placeholders" | wc -l | tr -d ' ')
+    fail "CLAUDE.md still contains $placeholder_count unfilled template placeholder(s)."
+    note 'A placeholder reads to a later agent exactly like a completed'
+    note 'section, and agents treat this file as evidence. Fill it in, or'
+    note 'delete the heading, or write "_(none - ...)_" to say the emptiness'
+    note 'is deliberate.'
+    printf '%s\n' "$placeholders" | head -5 | while IFS= read -r placeholder_line; do
+      note "  $placeholder_line"
+    done
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# 2. Permissions floor — the only layer that cannot fail open
+# ---------------------------------------------------------------------------
+
+project_settings="${project_directory}/.claude/settings.json"
+
+if [ ! -r "$project_settings" ]; then
+  warn 'No .claude/settings.json, so the declarative permissions floor is absent.'
+  note 'A plugin cannot ship permission rules, so the command guard hook is'
+  note 'the only layer here. A hook is defence in depth and can fail open; a'
+  note 'deny rule cannot. Run /engineering-framework:framework-install.'
+else
+  pass '.claude/settings.json exists.'
+
+  if command -v jq >/dev/null 2>&1; then
+    if ! jq -e '.' "$project_settings" >/dev/null 2>&1; then
+      fail '.claude/settings.json is not valid JSON, so none of it is in force.'
+    else
+      deny_count=$(jq -r '[.permissions.deny // []] | flatten | length' "$project_settings")
+      if [ "$deny_count" -eq 0 ]; then
+        warn 'permissions.deny is empty.'
+        note 'The human-owned operations list is documented but not enforced.'
+      else
+        pass "permissions.deny holds $deny_count rules."
+
+        for required in 'git commit' 'git push' 'gh pr create'; do
+          if ! jq -e --arg needle "$required" \
+            '[.permissions.deny // []] | flatten | map(select(contains($needle))) | length > 0' \
+            "$project_settings" >/dev/null 2>&1; then
+            warn "permissions.deny does not cover '$required'."
+          fi
+        done
+
+        # Compare the rule ARGUMENTS as sets, per tier. Counting Bash-prefixed
+        # against PowerShell-prefixed rules passed a file with forty Bash deny
+        # rules and one PowerShell ask rule — and this is the copy users
+        # actually run, so the weaker check was the one in the field.
+        unmirrored=$(SETTINGS="$(cat "$project_settings")" jq -rn '
+          ["deny", "ask"] | map(
+            . as $tier
+            | (($ENV.SETTINGS | fromjson).permissions[$tier] // []) as $rules
+            | ($rules | map(select(startswith("Bash("))   | ltrimstr("Bash("))) as $bash
+            | ($rules | map(select(startswith("PowerShell(")) | ltrimstr("PowerShell("))) as $pwsh
+            | ($bash - $pwsh)
+          ) | flatten | join(", ")
+        ' 2>/dev/null || true)
+
+        if [ -n "$unmirrored" ]; then
+          warn 'Bash rules are not mirrored as PowerShell rules.'
+          note 'The PowerShell tool is enabled by default on Windows without'
+          note 'Git Bash, and Bash(...) rules do not govern it, so these rules'
+          note 'silently disappear on those machines:'
+          note "  $(printf '%s' "$unmirrored" | cut -c1-120)"
+        fi
+
+        inert=$(jq -r '[.permissions.deny // [], .permissions.ask // [], .permissions.allow // []] | flatten | map(select(test("^(Write|Glob|MultiEdit|NotebookEdit)\\("))) | join(", ")' "$project_settings")
+        if [ -n "$inert" ]; then
+          fail "Inert file rules present: $inert"
+          note 'File permissions are only consulted for Read and Edit. These'
+          note 'rules are accepted and never enforced, so the paths read as'
+          note 'protected while being fully writable. Use Read(...)/Edit(...).'
+        fi
+      fi
+    fi
+  else
+    warn 'jq is unavailable, so settings.json could not be inspected.'
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# 3. Repository policy file
+# ---------------------------------------------------------------------------
+
+repo_config="${project_directory}/.claude/engineering-framework.json"
+
+if [ ! -r "$repo_config" ]; then
+  warn 'No .claude/engineering-framework.json; framework defaults apply.'
+  note 'That is a valid choice. Add one to declare canonical commands,'
+  note 'repository-specific protected paths, or to relax a default policy.'
+elif command -v jq >/dev/null 2>&1; then
+  if ! jq -e '.' "$repo_config" >/dev/null 2>&1; then
+    fail '.claude/engineering-framework.json is not valid JSON.'
+    note 'The guard hooks fall back to defaults, so a policy you believe is'
+    note 'configured is not in force.'
+  elif ! jq -e 'type == "object"' "$repo_config" >/dev/null 2>&1; then
+    # Valid JSON of the wrong shape used to make every later query error to
+    # stderr while the audit still reported PASS.
+    fail '.claude/engineering-framework.json is valid JSON but is not an object.'
+    note 'The guard hooks ignore it entirely and fall back to defaults.'
+  else
+    pass '.claude/engineering-framework.json is valid JSON.'
+
+    unknown=$(jq -r '
+      keys - ["$schema","frameworkVersion","policy","useDefaultProtectedPaths","useDefaultCommandRules","protectedPaths","protectedCommands","commands","risk"]
+      | join(", ")' "$repo_config")
+    if [ -n "$unknown" ]; then
+      warn "Unrecognised keys ignored by the framework: $unknown"
+    fi
+
+    relaxed=$(jq -r '(.policy // {}) | to_entries | map(select(.value == false and (.key | startswith("humanOwned")))) | map(.key) | join(", ")' "$repo_config")
+    if [ -n "$relaxed" ]; then
+      warn "Relaxed policy: $relaxed"
+      note 'This repository has deliberately delegated these operations. Make'
+      note 'sure that decision is recorded somewhere a reviewer will see it.'
+    fi
+
+    if [ -n "$plugin_root" ] && [ -r "${plugin_root}/.claude-plugin/plugin.json" ]; then
+      installed_version=$(jq -r '.version // "unknown"' "${plugin_root}/.claude-plugin/plugin.json")
+      contract_version=$(jq -r '.frameworkVersion // ""' "$repo_config")
+      if [ -n "$contract_version" ] && [ "$contract_version" != "$installed_version" ]; then
+        installed_major=${installed_version%%.*}
+        contract_major=${contract_version%%.*}
+        if [ "$installed_major" != "$contract_major" ]; then
+          fail "Framework major version changed: contract $contract_version, installed $installed_version."
+          note 'A major bump means the workflow contract changed. Read the'
+          note 'upgrade note in the framework CHANGELOG before continuing.'
+        else
+          note "Framework $installed_version installed; contract written against $contract_version."
+        fi
+      fi
+    fi
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# 4. Leftovers from a pre-plugin installation
+# ---------------------------------------------------------------------------
+
+# `.claude/skills/` is deliberately absent from this list: repository-owned
+# playbooks belong there and are expected.
+for legacy in agents standards templates hooks; do
+  legacy_path="${project_directory}/.claude/${legacy}"
+  [ -d "$legacy_path" ] || continue
+
+  warn ".claude/${legacy}/ still exists alongside the plugin."
+  note 'Project definitions override same-named plugin ones, so the plugin'
+  note 'version never takes effect while these remain. If they were copied'
+  note 'from an earlier framework, delete them; if they are genuinely'
+  note 'repository-specific, rename them so the override is deliberate rather'
+  note 'than accidental.'
+done
+
+# ---------------------------------------------------------------------------
+# Verdict
+# ---------------------------------------------------------------------------
+
+printf '\n'
+if [ "$failures" -gt 0 ]; then
+  printf 'FAIL — %d failure(s), %d warning(s).\n' "$failures" "$warnings"
+  exit 1
+fi
+
+if [ "$warnings" -gt 0 ] && [ "$strict" = true ]; then
+  printf 'FAIL — %d warning(s), strict mode.\n' "$warnings"
+  exit 1
+fi
+
+printf 'PASS — %d warning(s).\n' "$warnings"
+exit 0

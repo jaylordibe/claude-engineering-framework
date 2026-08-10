@@ -1,0 +1,13 @@
+datasource db {
+  provider = "postgresql"
+}
+
+model Order {
+  id         String    @id @default(uuid())
+  businessId String    @map("business_id")
+  totalCents Int       @map("total_cents")
+  isPaid     Boolean   @default(false) @map("is_paid")
+  deletedAt  DateTime? @map("deleted_at")
+
+  @@map("orders")
+}

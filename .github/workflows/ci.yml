@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# The plugin ships Markdown, JSON and POSIX shell. There is nothing to compile
+# and nothing to install, so CI is fast enough to run on every push and is
+# expected to stay that way.
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate plugin
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install jq
+        # The command guard fails closed to "ask" without jq, which would make
+        # every hook fixture pass as "ask" and prove nothing. The fixture runner
+        # checks for jq explicitly; this makes sure it is there.
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes jq
+
+      - name: Shell syntax
+        run: |
+          set -euo pipefail
+          status=0
+          while IFS= read -r script; do
+            if bash -n "$script"; then
+              echo "OK    $script"
+            else
+              echo "FAIL  $script"
+              status=1
+            fi
+          done < <(find plugins -type f \( -name '*.sh' -o -path '*/bin/*' \))
+          exit "$status"
+
+      - name: ShellCheck
+        run: |
+          sudo apt-get install --yes shellcheck
+          find plugins -type f \( -name '*.sh' -o -path '*/bin/*' \) -print0 |
+            xargs -0 shellcheck --severity=warning --external-sources
+
+      - name: Static plugin validation
+        run: node tests/validate-plugin.mjs --strict
+
+      - name: Command guard decision table
+        run: node tests/run-hook-fixtures.mjs
+
+      - name: Repository contract audit against fixtures
+        # ef-doctor must behave correctly on repositories that satisfy the
+        # contract to different degrees, including one that satisfies almost
+        # none of it. A doctor that only works on a healthy repository is not a
+        # doctor.
+        run: |
+          set -uo pipefail
+          chmod +x plugins/engineering-framework/bin/ef-doctor
+          for fixture in fixtures/*/; do
+            echo "── $fixture"
+            plugins/engineering-framework/bin/ef-doctor --path "$fixture" || true
+          done
+
+  official-validator:
+    name: claude plugin validate
+    runs-on: ubuntu-latest
+    # Runs against whatever Claude Code version is current, so a schema change
+    # upstream surfaces here rather than in a user's session. Non-blocking on
+    # purpose: an upstream change should tell us, not stop the repository.
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Claude Code
+        run: npm install --global @anthropic-ai/claude-code
+
+      - name: Validate plugin manifest
+        run: claude plugin validate ./plugins/engineering-framework --strict
+
+      - name: Validate marketplace manifest
+        run: claude plugin validate . --strict

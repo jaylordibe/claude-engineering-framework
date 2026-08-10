@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jaylordibe/claude-engineering-framework/schemas/repo-config.schema.json",
+  "title": "Engineering framework repository policy",
+  "description": "Per-repository policy for the engineering-framework plugin. Lives at .claude/engineering-framework.json. Every key is optional; the defaults are the framework's intended floor, so a repository with no file at all is still governed.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "frameworkVersion": {
+      "type": "string",
+      "description": "The engineering-framework version this repository's contract was written against, as MAJOR.MINOR.PATCH. framework-doctor compares it against the installed version and reports a major-version gap.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "policy": {
+      "type": "object",
+      "description": "Which classes of operation this repository reserves for the human. Each maps to a rule in the command guard hook.",
+      "additionalProperties": false,
+      "properties": {
+        "humanOwnedGitWrites": {
+          "type": "boolean",
+          "default": true,
+          "description": "Deny commit, push, merge, rebase, tag, reset, clean, stash, checkout, switch, restore, cherry-pick, revert, am, apply and remote. History rewriting and force pushes are denied regardless of this setting."
+        },
+        "humanOwnedPullRequests": {
+          "type": "boolean",
+          "default": true,
+          "description": "Deny creating, merging, closing, editing or approving pull and merge requests. Releases and workflow dispatch are denied regardless of this setting."
+        },
+        "humanOwnedMigrations": {
+          "type": "boolean",
+          "default": true,
+          "description": "Deny migration application, database reset and seeding across ecosystems, including package scripts whose names say they do so. Read-only variants such as ':status', ':check' and ':diff' stay available."
+        },
+        "humanOwnedDeployments": {
+          "type": "boolean",
+          "default": true,
+          "description": "Deny infrastructure apply and destroy, cluster mutation, chart install and upgrade, and platform deploy commands."
+        },
+        "humanOwnedDependencyInstall": {
+          "type": "boolean",
+          "default": false,
+          "description": "Ask before installing, adding, removing or upgrading dependencies. Off by default because dependency work is ordinary engineering; turn it on for repositories with a supply-chain review requirement."
+        }
+      }
+    },
+    "useDefaultProtectedPaths": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the built-in protected paths apply: migration files, infrastructure definitions, CI configuration, dependency lockfiles and real environment files."
+    },
+    "useDefaultCommandRules": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the framework's built-in command rules apply at all. Setting this to false leaves only the entries in protectedCommands, so the repository owns the whole policy. Rarely the right choice: prefer relaxing a specific policy switch."
+    },
+    "protectedCommands": {
+      "type": "array",
+      "description": "Commands this repository considers human-owned or worth a prompt. The framework's built-in tables cover verbs that are dangerous in any ecosystem; they cannot know that `make db-reset` wipes your shared database or that `bin/ship` deploys. Checked BEFORE the built-in rules, so a repository-authored reason wins.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["match"],
+        "properties": {
+          "match": {
+            "type": "string",
+            "description": "A shell glob matched against each command segment, for example '*make db-reset*'. Segments are split on ;, |, &, (, ) and backticks, so a guarded verb cannot be smuggled in as the tail of another line.",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "description": "One or two plain sentences naming what makes this command dangerous here and what the human should check. Shown instead of an anonymous prompt."
+          },
+          "decision": {
+            "type": "string",
+            "enum": ["deny", "ask"],
+            "default": "ask",
+            "description": "'deny' blocks outright; 'ask' prompts. Use deny only for operations that are always the human's."
+          }
+        }
+      }
+    },
+    "protectedPaths": {
+      "type": "array",
+      "description": "Additional paths that require a human prompt before an Edit or Write. Added to the defaults unless useDefaultProtectedPaths is false. Checked before the defaults, so a repository can attach a more specific reason to a path the defaults would also match.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["pattern"],
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "A shell glob matched against the absolute file path, for example '*/src/billing/*'. Remember the leading '*/' for a repository-relative directory.",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "description": "One or two plain sentences naming the precondition the change must satisfy. This is shown to the human instead of an anonymous prompt, so state what to check, not that the path is protected."
+          }
+        }
+      }
+    },
+    "commands": {
+      "type": "object",
+      "description": "This repository's canonical verification commands. The validation gate prefers these over anything it infers. Omit a key rather than inventing a command that does not exist.",
+      "additionalProperties": false,
+      "properties": {
+        "install": { "type": "string" },
+        "build": { "type": "string" },
+        "lint": { "type": "string" },
+        "typecheck": { "type": "string" },
+        "test": { "type": "string" },
+        "testIntegration": { "type": "string" },
+        "testE2E": { "type": "string" },
+        "securityScan": { "type": "string" },
+        "start": { "type": "string" }
+      }
+    },
+    "risk": {
+      "type": "object",
+      "description": "Repository-specific adjustments to risk classification.",
+      "additionalProperties": false,
+      "properties": {
+        "highRiskPaths": {
+          "type": "array",
+          "description": "Globs that force at least High risk when a change touches them, whatever the change looks like otherwise.",
+          "items": { "type": "string" }
+        },
+        "notes": {
+          "type": "string",
+          "description": "One paragraph on what makes this system risky that a reader could not infer from the code."
+        }
+      }
+    }
+  }
+}

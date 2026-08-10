@@ -1,0 +1,14 @@
+# Hook scripts are executed by Claude Code on macOS, Linux and Windows (Git
+# Bash / WSL). A CRLF line ending makes the shebang unusable, so force LF on
+# every shell script regardless of the contributor's platform.
+*.sh text eol=lf
+bin/* text eol=lf
+
+*.md   text
+*.json text
+*.yaml text
+*.yml  text
+*.tsv  text eol=lf
+
+# Keep generated eval reports out of diffs.
+*.eval-report.html linguist-generated=true
