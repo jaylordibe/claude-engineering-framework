@@ -1,0 +1,30 @@
+{
+    "name": "fixture/app-versions-api",
+    "type": "project",
+    "require": {
+        "php": "^8.5",
+        "ext-json": "*",
+        "ext-pdo": "*",
+        "laravel/framework": "^13.0",
+        "laravel/horizon": "^5.30",
+        "laravel/passport": "^13.4",
+        "spatie/laravel-data": "^4.7",
+        "spatie/laravel-permission": "^6.9",
+        "symfony/mailgun-mailer": "^8.0"
+    },
+    "require-dev": {
+        "brianium/paratest": "^7.10",
+        "fakerphp/faker": "^1.23",
+        "phpunit/phpunit": "^12.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    }
+}

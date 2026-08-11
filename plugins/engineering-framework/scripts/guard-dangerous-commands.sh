@@ -70,6 +70,20 @@
 
 set -euo pipefail
 
+# Every `case` and `[[` below matches case-INSENSITIVELY.
+#
+# macOS and Windows both default to case-insensitive filesystems, so `.ENV`,
+# `Id_Rsa` and `database/Migrations/` address exactly the same bytes on disk as
+# their lowercase spellings. A case-sensitive guard therefore had a one-keypress
+# bypass on the two most common developer platforms, which is not a bypass worth
+# preserving on the third.
+#
+# The cost is a slightly wider match on Linux — `GIT COMMIT` is now denied where
+# it would previously have failed with "command not found". No legitimate
+# command is spelled in a case this changes the classification of, and the
+# false-positive rows in tests/guard-hook-fixtures.tsv pin that.
+shopt -s nocasematch
+
 script_directory=${0%/*}
 [ "$script_directory" != "$0" ] || script_directory='.'
 
@@ -81,8 +95,8 @@ ef_require_jq 'command guard'
 # shellcheck source=./lib/config.sh
 . "${script_directory}/lib/config.sh"
 
-IFS= read -r -d '' payload || true
-raw_command=$(printf '%s' "$payload" | jq -r '.tool_input.command // .tool_input.script // ""')
+ef_read_payload 'command guard'
+raw_command=$(ef_payload_string '.tool_input.command // .tool_input.script // ""')
 
 if [ -z "$raw_command" ]; then
   exit 0 # Not a shell-shaped payload; defer to the normal permission flow.
@@ -215,6 +229,12 @@ is_protected_secret_path() {
 # Every non-option token of an argument list, space-delimited. `git -C /repo
 # commit -m x` yields `commit x`, so the subcommand is simply the first word.
 #
+# Quotes are stripped from every token. The shell strips them before `git`ever
+# sees them, so `git 'commit' -m x`, `git "com""mit"` and `git commit` are the
+# same command — but a guard comparing raw tokens saw three different ones, and
+# `permissions.deny` prefix rules do not see through quoting either. That made a
+# single pair of quotes a bypass of BOTH layers at once.
+#
 # This cannot know which unlisted long option takes a value, which is why the
 # dangerous-verb checks below scan ALL words rather than only the first two:
 # `npm --prefix /tmp publish` would otherwise present `/tmp` as its subcommand.
@@ -235,7 +255,13 @@ positional_arguments() {
         if [ "$#" -gt 1 ]; then shift; fi
         ;;
       -?*) ;;
-      *) collected="$collected $1" ;;
+      *)
+        # Inline rather than `$(strip_surrounding_quotes ...)`: this runs once
+        # per token of every command, and a command substitution here is a fork
+        # per token paid by every user on every call.
+        unquoted=${1//\"/}
+        collected="$collected ${unquoted//\'/}"
+        ;;
     esac
     shift
   done
@@ -268,7 +294,12 @@ resolve_effective_command() {
       continue
     fi
 
-    token_name=${token##*/}
+    # Quotes come off before the basename, so `'/usr/bin/git'` and `"git"`
+    # resolve to the same verb the shell would actually run. Inline for the same
+    # reason as in positional_arguments: no fork on the hot path.
+    unquoted_token=${token//\"/}
+    unquoted_token=${unquoted_token//\'/}
+    token_name=${unquoted_token##*/}
 
     # A subcommand-invoking wrapper is only a wrapper when an execution marker
     # follows it. Otherwise it is an ordinary command with its own verbs, and
@@ -490,6 +521,12 @@ is_migration_invocation() {
       # `php artisan <verb>` — the interpreter is the effective command, so the
       # framework's own entry point is one token further along.
       if [ "$subcommand" = 'artisan' ]; then
+        # Read-only inspection is excluded before the glob below, which would
+        # otherwise swallow it. Reporting which migrations have run changes
+        # nothing, and it is how an agent establishes the schema state it is
+        # about to reason about — the same exemption the script-name heuristic
+        # already makes for ':status' and ':check'.
+        case "$action" in migrate:status) return 1 ;; esac
         case "$action" in migrate | migrate:* | db:wipe | db:seed) return 0 ;; esac
       fi
       ;;

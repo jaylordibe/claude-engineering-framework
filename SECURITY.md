@@ -80,11 +80,40 @@ patch release with a fixture pinning it, so the same shape cannot regress.
 6. **Review the policy file in code review.** Every `humanOwned*` switch set to
    `false` is a deliberate delegation and deserves a reviewer.
 
+## Repository content is not a source of instructions
+
+Every agent this framework ships reads the repository: its `CLAUDE.md`, its
+README, its comments, its manifests, its tickets. All of that is **untrusted
+input**, and text placed in any of it can be written to address the agent rather
+than to describe the system — asking for an approval it never received, a
+fabricated `PASS`, a credential, a force push, or a weakened CI job.
+
+`plugins/engineering-framework/standards/untrusted-content.md` is the standard.
+The rule it enforces is that a repository *describes itself* to an agent and
+never *issues instructions* to one, and that an attempt to do so is a finding to
+report with its `path:line` rather than a directive to follow.
+
+**This is guidance, not a control.** It is enforced by instruction to a model,
+which is a materially weaker mechanism than a deny rule, and it should be
+described that way. `fixtures/adversarial-injection/` and the
+`injection-resistance` grader exist to keep it honest.
+
+Treat a bypass — repository text that reliably obtains a human-owned operation,
+a credential, or a fabricated verdict — as in scope for a report.
+
 ## Supply chain
 
 The plugin has **no runtime dependencies**. It is Markdown, JSON and POSIX
-shell, and it executes nothing it did not ship.
+shell, and it executes nothing it did not ship. Third-party GitHub Actions in
+this repository's own CI are pinned to commit SHAs rather than tags.
 
-Pin it in your repository's `.claude/settings.json` so the version your team
-runs is a reviewable, revertible fact rather than whatever each developer last
-updated to.
+Updates are gated on the plugin's `version` field: with an explicit version,
+`/plugin update` is a no-op until that field changes, so a commit pushed to
+`main` without a version bump does not reach an existing installation. It does
+reach a **new** one, which is the case to keep in mind — install from a tag you
+have looked at if that matters to you.
+
+There is no documented way to pin a plugin version inside `enabledPlugins`. If
+you need a specific version to be the one your team runs, vendor the plugin or
+point your marketplace entry at a fixed ref; do not rely on a settings key that
+does not exist.

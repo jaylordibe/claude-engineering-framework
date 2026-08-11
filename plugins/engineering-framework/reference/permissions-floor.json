@@ -21,9 +21,22 @@
     "never consulted, and warns at startup - the worst failure shape available,",
     "because the file reads as protected. Use Read(...) and Edit(...).",
     "",
+    "EVERY Read deny below has a matching Edit deny. A Read rule also blocks",
+    "the Edit tool from v2.1.208, but Write and NotebookEdit are never covered",
+    "by it - so the Edit rule is what actually stops every editing tool, on",
+    "every version. Four paths were missing theirs and were writable.",
+    "",
     "Precedence is deny -> ask -> allow, first match wins, and a deny rule",
     "cannot carry an exception. Rules here override any allow rule a developer",
-    "adds in their own settings.local.json."
+    "adds in their own settings.local.json.",
+    "",
+    "WHAT THESE RULES DO NOT SEE: a Bash rule matches a command PREFIX, so it",
+    "is blind to the same operation written any other way - a flag before the",
+    "verb (git -C /elsewhere commit), an environment runner (dotenv -- ...), a",
+    "quoted subcommand (git 'commit'), or an interpreter given a string",
+    "(bash -c '...'). The plugin's command guard hook closes most of that gap",
+    "and is documented as defence in depth, not a sandbox. For a real",
+    "boundary, use OS-level sandboxing or a container."
   ],
   "permissions": {
     "deny": [
@@ -161,8 +174,12 @@
       "Edit(.env.*.local)",
       "Edit(**/*.pem)",
       "Edit(**/*.key)",
+      "Edit(**/*.p12)",
+      "Edit(**/*.pfx)",
       "Edit(**/id_rsa*)",
-      "Edit(**/id_ed25519*)"
+      "Edit(**/id_ed25519*)",
+      "Edit(**/.netrc)",
+      "Edit(**/.npmrc)"
     ],
     "ask": [
       "Bash(psql *)",

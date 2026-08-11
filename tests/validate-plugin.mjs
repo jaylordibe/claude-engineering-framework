@@ -75,6 +75,25 @@ const FILE_MUTATING_TOOLS = ['Edit', 'Write', 'NotebookEdit', 'MultiEdit'];
 // what "read-only" requires depending on where it was inserted.
 const REQUIRED_DISALLOWED_TOOLS = ['Edit', 'Write', 'NotebookEdit'];
 
+// Skills whose read-only-ness is a SAFETY property rather than a description,
+// with the property each one carries. `disallowed-tools` in the frontmatter is
+// what actually enforces it for the turn that invokes the skill; the prose
+// inside the file is a description of that enforcement, not the enforcement.
+//
+// This list exists because the agent check above had no counterpart here.
+// Deleting `disallowed-tools` from gate-validate — the single line stopping a
+// validation run from editing a test to make it pass — was undetected by the
+// entire suite. The skills that must NOT be here are just as deliberate:
+// gate-implement, gate-review, work-item and framework-install all write by
+// design, and pinning them read-only would break them loudly rather than
+// silently, which is why their absence is safe to leave implicit.
+const READ_ONLY_SKILLS = {
+  'gate-design': 'a design that can edit source has already skipped the approval gate it exists to reach',
+  'gate-approve': 'the gate whose whole purpose is to stop before source changes',
+  'gate-validate': 'validation that can edit anything can manufacture its own PASS, which destroys the only signal the gate produces',
+  'framework-doctor': 'an audit that can change what it is auditing is not an audit',
+};
+
 // Marketplace names reserved for official Anthropic use, plus the pattern of
 // names that impersonate one. Claude Code re-checks these on every load, so a
 // name that becomes reserved stops the marketplace loading for every user.
@@ -96,11 +115,12 @@ const RESERVED_MARKETPLACE_NAMES = new Set([
 // configure real tooling — and inside a line marked `example:`.
 const STACK_TERM_DENYLIST = [
   'nestjs', 'nest.js', 'prisma', 'casl', 'bullmq', 'swagger', 'pino',
-  'typeorm', 'sequelize', 'mongoose', 'knex', 'drizzle',
+  'typeorm', 'sequelize', 'mongoose', 'knex', 'drizzle', 'eloquent', 'artisan',
   'postgresql', 'postgres', 'mysql', 'mongodb', 'redis', 'sqlite',
   'django', 'flask', 'rails', 'laravel', 'symfony', 'spring boot',
   'express.js', 'fastify', 'react', 'vue', 'angular', 'svelte', 'flutter',
   'kubernetes', 'terraform', 'jest', 'vitest', 'pytest', 'rspec', 'junit',
+  'phpunit',
   'yarn ', 'npm run', 'pnpm ', 'composer ', 'bundler',
   '.env.test', 'docker compose', 'docker-compose',
 ];
@@ -468,6 +488,24 @@ function validateSkills() {
     if (entry.name.startsWith('gate-') && !humanOnly) {
       fail(skillFile, 'a `gate-` skill must set `disable-model-invocation: true`; otherwise Claude can start a gate on its own.');
     }
+
+    // Read-only-ness is judged by the declaration that enforces it, for the
+    // same reason it is for agents: a sentence in the body saying the gate
+    // never edits anything is a description, and a description cannot stop an
+    // Edit call.
+    if (entry.name in READ_ONLY_SKILLS) {
+      const declared = toList(frontmatter['disallowed-tools']);
+      const missing = REQUIRED_DISALLOWED_TOOLS.filter((tool) => !declared.includes(tool));
+      if (missing.length > 0) {
+        fail(skillFile, `\`disallowed-tools\` is missing ${missing.join(', ')}. This skill must be read-only: ${READ_ONLY_SKILLS[entry.name]}. The frontmatter is what enforces that for the turn; prose in the body is not.`);
+      }
+    }
+  }
+
+  for (const requiredName of Object.keys(READ_ONLY_SKILLS)) {
+    if (!seenNames.has(requiredName)) {
+      fail(skillsDirectory, `\`${requiredName}\` is declared read-only in this validator but no such skill exists. Either the skill was renamed and the guarantee silently stopped being checked, or this list is stale.`);
+    }
   }
 
   return seenNames;
@@ -663,6 +701,185 @@ function validateCrossReferences() {
 }
 
 // ---------------------------------------------------------------------------
+// 7b. Named-component references resolve
+//
+// A gate that says "launch `engineering-framework:security`" is naming a real
+// component, and if that component is gone the instruction silently does
+// nothing — the panel is one lens smaller and the report never says so.
+//
+// This is not a hypothetical. Deleting agents/security.md outright left every
+// suite green while five separate references went dangling, including the
+// review lens whose findings are the ones documented as blocking the gate.
+// ---------------------------------------------------------------------------
+
+function validateComponentReferences(agentNames, skillNames) {
+  const referenceable = new Set([...agentNames.keys(), ...skillNames.keys()]);
+  const markdownFiles = listFilesRecursively(pluginRoot, (path) => path.endsWith('.md'));
+
+  for (const filePath of markdownFiles) {
+    const content = readFileSync(filePath, 'utf8');
+    const lines = content.split('\n');
+
+    lines.forEach((line, index) => {
+      for (const match of line.matchAll(/engineering-framework:([a-z0-9][a-z0-9-]*)/g)) {
+        const referenced = match[1];
+        if (!referenceable.has(referenced)) {
+          fail(filePath, `line ${index + 1} names \`engineering-framework:${referenced}\`, which is neither an agent nor a skill in this plugin. An instruction to launch a component that does not exist fails silently: the lens is simply never run, and nothing in the report says so.`);
+        }
+      }
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 7c. Every repository-policy key is actually consumed
+//
+// `risk.highRiskPaths` was documented in the schema, shown in the example
+// config, and read by nothing at all. A repository could declare its
+// authentication and billing paths high-risk, see the key accepted, and get no
+// escalation whatsoever.
+//
+// That is the same failure shape as an inert `Write()` permission rule, which
+// this project already calls the worst available: the control reads as present
+// while doing nothing. A key in the schema is a promise, so this asserts each
+// one is kept somewhere.
+// ---------------------------------------------------------------------------
+
+function validateConfigKeysAreConsumed() {
+  const schemaPath = join(pluginRoot, 'reference', 'repo-config.schema.json');
+  if (!existsSync(schemaPath)) return;
+
+  const schema = readJson(schemaPath);
+  if (!schema?.properties) return;
+
+  // Where a key may legitimately be consumed: the guards and their library
+  // read policy at runtime; ef-doctor audits it; the skills act on it.
+  const consumerFiles = [
+    ...listFilesRecursively(join(pluginRoot, 'scripts')),
+    ...listFilesRecursively(join(pluginRoot, 'bin')),
+    ...listFilesRecursively(join(pluginRoot, 'skills'), (path) => path.endsWith('.md')),
+  ];
+  const consumerText = consumerFiles.map((path) => readFileSync(path, 'utf8')).join('\n');
+
+  const keys = [];
+  for (const [key, definition] of Object.entries(schema.properties)) {
+    if (key === '$schema') continue;
+    keys.push(key);
+    for (const nestedKey of Object.keys(definition.properties ?? {})) {
+      keys.push(nestedKey);
+    }
+  }
+
+  const unconsumed = keys.filter((key) => !consumerText.includes(key));
+  if (unconsumed.length > 0) {
+    fail(schemaPath, `these keys are offered to repositories but read by nothing in scripts/, bin/ or skills/: ${unconsumed.join(', ')}. A repository that sets one gets silence, and the schema entry reads as a control it can rely on. Consume the key or remove it.`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 7d. Normative guarantees are still stated
+//
+// The framework's safety properties live in prose, and prose has no compiler.
+// Mutation analysis showed the consequence plainly: deleting the adversarial
+// refutation pass from `gate-review`, the `N/A`-versus-`BLOCKED` distinction
+// from `evidence.md`, or the requirement for human security review on Critical
+// changes, left the entire suite green.
+//
+// This does NOT test that an agent obeys any of them — that is behavioural, it
+// is what `evals/` is for, and no static check can substitute. What it tests is
+// that the guarantee is still WRITTEN DOWN. A rule that has been silently
+// deleted cannot be obeyed by anyone, and that failure is mechanical.
+//
+// Anchors are concepts, not quotations, so the text can be rewritten freely.
+// Each entry names the guarantee, so a failure says what was lost rather than
+// which regex stopped matching.
+// ---------------------------------------------------------------------------
+
+const NORMATIVE_ANCHORS = [
+  {
+    file: 'standards/evidence.md',
+    guarantee: 'a gate this repository does not have is N/A, not BLOCKED',
+    patterns: [/\bN\/A\b/, /\bBLOCKED\b/, /do(es)? not (have|exist)|genuinely absent/i],
+  },
+  {
+    file: 'standards/evidence.md',
+    guarantee: 'skipped, partial and flaky are never PASS',
+    patterns: [/skipped/i, /partial/i, /flaky/i],
+  },
+  {
+    file: 'standards/evidence.md',
+    guarantee: 'never modify anything to manufacture a pass',
+    patterns: [/manufacture|make a check succeed/i],
+  },
+  {
+    file: 'standards/repository-evidence.md',
+    guarantee: 'the five evidence labels',
+    patterns: [/\bFACT\b/, /\bINFERENCE\b/, /\bASSUMPTION\b/, /\bABSENT\b/, /\bUNKNOWN\b/],
+  },
+  {
+    file: 'standards/repository-evidence.md',
+    guarantee: 'source precedence, with prior expectations ranked last',
+    patterns: [/precedence/i, /executable source code/i, /prior expectations/i],
+  },
+  {
+    file: 'standards/security.md',
+    guarantee: 'Critical changes require qualified human security review',
+    patterns: [/critical/i, /human/i, /security review/i],
+  },
+  {
+    file: 'standards/security.md',
+    guarantee: 'record-level access is enforced in the query, not a pre-check',
+    patterns: [/record-level/i, /quer(y|ies)/i],
+  },
+  {
+    file: 'standards/untrusted-content.md',
+    guarantee: 'repository content describes, it does not instruct',
+    patterns: [/instruct/i, /approval/i, /credential/i],
+  },
+  {
+    file: 'skills/gate-review/SKILL.md',
+    guarantee: 'adversarial refutation of Critical and High findings',
+    patterns: [/refute|refutation/i, /critical/i, /high/i],
+  },
+  {
+    file: 'skills/gate-validate/SKILL.md',
+    guarantee: 'exactly one verdict, and never a converted one',
+    patterns: [/\bPASS\b/, /\bFAIL\b/, /\bBLOCKED\b/, /never convert|skipped/i],
+  },
+  {
+    file: 'skills/gate-implement/SKILL.md',
+    guarantee: 'implementation requires an approval taken in this session',
+    patterns: [/approv/i, /this session/i, /stop and say so|treat the design as unapproved/i],
+  },
+  {
+    file: 'skills/gate-design/SKILL.md',
+    guarantee: 'the design does not approve itself',
+    patterns: [/do not approve it yourself|never infer approval/i],
+  },
+  {
+    file: 'standards/gate-handoff.md',
+    guarantee: 'continuing never authorises skipping a gate or a human-owned operation',
+    patterns: [/never authorises|skipping a gate/i, /commit/i],
+  },
+];
+
+function validateNormativeAnchors() {
+  for (const { file, guarantee, patterns } of NORMATIVE_ANCHORS) {
+    const filePath = join(pluginRoot, file);
+    if (!existsSync(filePath)) {
+      fail(filePath, `is missing, so the guarantee it carried (${guarantee}) is stated nowhere.`);
+      continue;
+    }
+
+    const content = readFileSync(filePath, 'utf8');
+    const missing = patterns.filter((pattern) => !pattern.test(content));
+    if (missing.length > 0) {
+      fail(filePath, `no longer states: ${guarantee}. This file is the single source of that rule, so deleting it deletes the rule everywhere at once — and nothing else in this suite would have noticed. Rewrite freely; if the guarantee genuinely no longer applies, remove its anchor in tests/validate-plugin.mjs deliberately.`);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 8. Stack-assumption leakage
 // ---------------------------------------------------------------------------
 
@@ -725,6 +942,9 @@ const skillNames = validateSkills();
 validateHooksAndScripts();
 validatePermissionsFloor();
 validateCrossReferences();
+validateComponentReferences(agentNames, skillNames);
+validateConfigKeysAreConsumed();
+validateNormativeAnchors();
 validateNoStackAssumptions();
 validateChangelog(manifest);
 

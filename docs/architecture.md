@@ -229,6 +229,24 @@ from a second real repository that needs it, not designed in advance from one.
 YAGNI applies to frameworks about engineering discipline exactly as it applies
 to everything else.
 
+### The first candidate, recorded rather than built
+
+Adding a second real stack to `fixtures/` surfaced guidance that is genuinely
+reusable *and* genuinely stack-specific — the combination that a pack exists
+for, and that a generic agent must never absorb:
+
+- Migration tooling that keys applied migrations **by filename** makes editing
+  an already-applied migration invisible to every environment that ran it. The
+  generic framework can only say "an applied migration is protected", which is
+  what the path guard already does. Naming the mechanism, and the CI shape that
+  catches it, needs the pack.
+- **Expand/contract sequencing** where the previous build serves traffic against
+  the new schema for the length of the deploy window. The failure is real and
+  the remedy is tool-specific.
+
+Neither is written into an agent today, and neither should be. They are recorded
+here so the first pack starts from evidence rather than from a blank page.
+
 ## What was deliberately left behind
 
 | Left behind | Why |

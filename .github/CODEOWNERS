@@ -1,0 +1,16 @@
+# Every change to the framework's enforcement surface needs the maintainer's
+# review. These are the files where a mistake is silent and remote: it ships to
+# every repository that installs the plugin, and the failure surfaces in
+# somebody else's session.
+#
+# The rest of the repository is deliberately not listed. A CODEOWNERS file that
+# covers everything is one that gets bypassed.
+
+/plugins/engineering-framework/scripts/          @jaylordibe
+/plugins/engineering-framework/hooks/            @jaylordibe
+/plugins/engineering-framework/bin/              @jaylordibe
+/plugins/engineering-framework/reference/        @jaylordibe
+/plugins/engineering-framework/standards/        @jaylordibe
+/tests/                                          @jaylordibe
+/.github/workflows/                              @jaylordibe
+/.claude-plugin/                                 @jaylordibe

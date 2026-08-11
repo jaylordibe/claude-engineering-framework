@@ -9,18 +9,31 @@ on:
 # The plugin ships Markdown, JSON and POSIX shell. There is nothing to compile
 # and nothing to install, so CI is fast enough to run on every push and is
 # expected to stay that way.
+#
+# Least privilege, repository-wide. No job here needs to write anything, and a
+# workflow that ships governance to other people's repositories should not be
+# the one asking for more scope than it uses.
 permissions:
   contents: read
 
+# Third-party actions are pinned to a commit SHA, not a tag. A tag is a mutable
+# pointer: `@v4` runs whatever its owner last moved it to, which is a change to
+# this repository's CI that nobody here reviewed. The trailing comment records
+# which release each SHA was, so the pin stays legible when it needs bumping.
 jobs:
   validate:
     name: Validate plugin
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          # The default leaves the job's token in .git/config for anything
+          # later in the job to find. Nothing here talks to the remote after
+          # checkout, and one step below installs a package from npm.
+          persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
 
@@ -55,21 +68,32 @@ jobs:
       - name: Static plugin validation
         run: node tests/validate-plugin.mjs --strict
 
-      - name: Command guard decision table
+      - name: Fixture corpus validation
+        # The graders' automatic-failure conditions are only meaningful if the
+        # fixtures really are as disjoint — and as hostile — as they claim.
+        # This is what enforces that, and it is cheap.
+        run: node tests/validate-fixtures.mjs
+
+      - name: Session charter budget and guarantees
+        run: node tests/validate-charter.mjs
+
+      - name: Guard decision tables
+        # Command guard, protected-path guard, and the command guard again
+        # under every repository policy profile.
         run: node tests/run-hook-fixtures.mjs
+
+      - name: Guard robustness against malformed and hostile payloads
+        # A guard that crashes exits non-zero, and Claude Code treats every
+        # non-zero exit except 2 as a non-blocking error — so a crash fails
+        # OPEN. This asserts it cannot be made to crash.
+        run: node tests/guard-robustness.mjs
 
       - name: Repository contract audit against fixtures
         # ef-doctor must behave correctly on repositories that satisfy the
         # contract to different degrees, including one that satisfies almost
         # none of it. A doctor that only works on a healthy repository is not a
-        # doctor.
-        run: |
-          set -uo pipefail
-          chmod +x plugins/engineering-framework/bin/ef-doctor
-          for fixture in fixtures/*/; do
-            echo "── $fixture"
-            plugins/engineering-framework/bin/ef-doctor --path "$fixture" || true
-          done
+        # doctor — and one whose exit code nobody asserts is not a check.
+        run: node tests/run-doctor-fixtures.mjs
 
   official-validator:
     name: claude plugin validate
@@ -80,13 +104,19 @@ jobs:
     continue-on-error: true
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
 
       - name: Install Claude Code
+        # Deliberately unpinned. The whole point of this job is to run against
+        # whatever version users are actually on, so pinning it would test a
+        # version nobody has. It runs with a read-only token, in a job whose
+        # result cannot fail the build, and touches nothing outside the runner.
         run: npm install --global @anthropic-ai/claude-code
 
       - name: Validate plugin manifest

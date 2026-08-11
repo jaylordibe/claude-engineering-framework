@@ -39,7 +39,11 @@ unavailable.
 
 Take them, in this order of authority:
 
-1. `.claude/engineering-framework.json` → `commands`;
+1. `.claude/engineering-framework.json` → `commands`, whose keys are `install`,
+   `build`, `lint`, `typecheck`, `test`, `testIntegration`, `testE2E`,
+   `securityScan` and `start`. A key that is absent was deliberately not
+   declared — treat it as undiscovered here and fall through, never as a gate
+   that does not exist;
 2. the repository's `CLAUDE.md` canonical-commands section;
 3. the dependency manifest's scripts;
 4. the CI workflow — the most reliable statement of what actually must pass.

@@ -81,6 +81,22 @@ deny	dropdb application_local	dropping a database
 ask	psql -c "select count(*) from users"	a live session this guard cannot read into
 ask	redis-cli KEYS '*'	a live session this guard cannot read into
 
+# ── An interpreter-fronted CLI, where the verb is two tokens along ──────────
+# The guard has to reach past `php` and past `artisan` to classify anything
+# here. These rows pin both halves: the destructive verbs are caught, and the
+# ordinary ones a repository runs all day stay silent.
+deny	php artisan migrate:fresh --seed	dropping every table and reseeding is destruction, not a build step
+deny	php artisan migrate --force	the force flag is what makes it run unprompted in a real environment
+deny	php artisan db:wipe	drops every table
+deny	php artisan db:seed	writes data to a live database
+allow	php artisan migrate:status	read-only inspection is how an agent establishes schema state
+allow	php artisan test --parallel	running the suite is not dangerous
+allow	php artisan route:list	read-only inspection of the routing table
+allow	php artisan app:format --check	a check-only formatter run
+allow	composer install	installing declared dependencies is not a migration
+allow	./vendor/bin/phpunit --filter AppVersion	a test runner invoked through its vendored binary
+allow	./test.sh AppVersionFeatureTest	a repository's own test wrapper
+
 # ── Infrastructure and deployment ───────────────────────────────────────────
 deny	terraform apply -auto-approve	changes real infrastructure
 deny	terraform destroy	changes real infrastructure
@@ -130,3 +146,26 @@ allow	poetry run pytest	an execution marker DOES make it a wrapper; the inner co
 allow	timeout 30 npm test	the ordinary wrapper form must still resolve and stay quiet
 allow	npm install publish	a package named `publish` is not the publish verb
 deny	direnv exec . git commit -m x	an environment runner with a directory argument
+
+# ── Quoting and case, found by the production-hardening audit ───────────────
+# The shell removes quotes before the command ever runs, so all of these are
+# the same operation. A guard comparing raw tokens saw different ones, and
+# `permissions.deny` prefix rules do not see through quoting either — so a
+# single pair of quotes defeated BOTH layers at once.
+deny	git 'commit' -m x	a quoted subcommand is the same subcommand
+deny	git "com""mit" -m x	adjacent quoted fragments concatenate into the same verb
+deny	'/usr/bin/git' commit -m x	a quoted absolute path resolves to the same verb
+deny	npm 'publish'	quoting does not make publication something else
+deny	cat '.env'	a quoted credential path is the same path
+deny	rm -rf '/'	a quoted filesystem root is the same root
+# macOS and Windows default to case-insensitive filesystems, so these address
+# exactly the same executable and the same file as their lowercase spellings.
+deny	GIT COMMIT -m x	the same verb on a case-insensitive platform
+deny	cat .ENV	the same credential file on a case-insensitive platform
+deny	NPM PUBLISH	the same publication verb
+# ...and the false-positive side of the same change. Mixed case in an argument
+# must not start matching dangerous verbs.
+allow	npm run Build	a capitalised script name is not a dangerous verb
+allow	git log --grep "Publish the release notes"	a verb inside a quoted search string is text
+allow	rg "COMMIT" src/	a search term is not a subcommand
+allow	echo 'git commit -m x'	quoting narration is not running it

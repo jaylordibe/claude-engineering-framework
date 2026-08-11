@@ -108,8 +108,12 @@ plan document at all.**
 | **High** | Authentication, authorization, tenancy, personal data, money or pricing, uploads, webhooks, external integrations, migrations, public contracts, concurrency | Full plan, explicit threat model, at least two credible alternatives, migration and rollback analysis. |
 | **Critical** | Identity infrastructure, cryptography, broad privileged access, destructive data work, production repair, release infrastructure | Everything High requires, plus the plan states plainly that automated review is not sufficient and names the human review still owed. |
 
-Also take the higher tier when the change touches any path the repository
-declared high-risk in `.claude/engineering-framework.json`.
+Also take the higher tier when the change touches any path matching a glob in
+`.claude/engineering-framework.json` → `risk.highRiskPaths`. **Read that key
+before classifying**, and say whether it exists: it is the one place a
+repository can tell you something about its own risk that the code cannot, and
+a tier assigned without reading it is a tier assigned from the diff alone.
+`risk.notes` carries the reasoning and is worth reading alongside it.
 
 **On a boundary between two tiers, you are in the higher one.**
 

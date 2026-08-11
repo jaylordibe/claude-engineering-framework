@@ -181,6 +181,84 @@ version's path until `/reload-plugins`.
 
 ---
 
+## C11 — A `Read` deny covers `Edit`, but never `Write` or `NotebookEdit`
+
+> A `Read` deny rule also blocks the Edit tool on the same path, including
+> creating a new file there. Write and NotebookEdit aren't covered, so add an
+> `Edit` deny rule for paths no tool may change. Requires Claude Code v2.1.208
+> or later. — *Configure permissions*
+
+**Consequence.** A `Read(**/*.p12)` rule alone leaves the file writable, and on
+any version before 2.1.208 editable too. The reference floor had four such
+paths — `*.p12`, `*.pfx`, `.netrc`, `.npmrc` — with a `Read` rule and no `Edit`
+rule, so they read as protected while a tool could still write them.
+
+**What we do instead.** Every `Read` deny in the floor has a matching `Edit`
+deny. An `Edit` rule covers all file-editing tools, which is what makes it the
+one to write.
+
+---
+
+## C12 — `additionalContext` is capped, and its framing matters
+
+> Capped at 10,000 characters; longer content is saved to a file. — *Hooks*
+
+> Write the text as factual statements rather than imperative system
+> instructions. [...] Text framed as out-of-band system commands can trigger
+> Claude's prompt-injection defenses, which causes Claude to surface the text to
+> you instead of treating it as context. — *Hooks*
+
+**Consequence.** Two separate limits on the SessionStart charter. Exceed the
+character cap and the charter silently stops being always-on context; write it
+as a wall of imperatives and it may be shown to the user as suspicious text
+rather than used — which is strictly worse than not shipping it.
+
+**Enforced by.** `tests/validate-charter.mjs` renders the hook and asserts the
+character cap, a tighter line ceiling, that every guarantee is still stated,
+and that imperative openers stay a minority of lines.
+
+---
+
+## C13 — Only exit code 2 blocks; every other failure fails open
+
+> For most hook events, only exit code 2 blocks the action. Claude Code treats
+> exit code 1 as a non-blocking error and proceeds with the action. — *Hooks*
+
+**Consequence.** A `PreToolUse` guard that crashes does **not** fail safe. Both
+guards ran `jq` inside a command substitution under `set -e`, so a payload that
+was not valid JSON exited 5 and the tool call proceeded — while both file
+headers promised FAIL CLOSED.
+
+`PreToolUse` also now accepts a fourth `permissionDecision`, `defer`, which is
+what emitting nothing already meant. The guards continue to emit nothing rather
+than `defer`: silence is the documented default and needs no jq process.
+
+**Enforced by.** `tests/guard-robustness.mjs` asserts that every malformed,
+empty, oversized and hostile payload produces exit 0 and either a valid decision
+or deliberate silence.
+
+---
+
+## C14 — Claude Code prompts for some forms the guard does not model
+
+> Exec wrappers such as `watch`, `setsid`, `ionice`, and `flock` always prompt
+> and can't be auto-approved by a prefix rule [...] The same applies to `find`
+> with `-exec` or `-delete`. — *Configure permissions*
+
+> Development environment runners such as `direnv exec`, `devbox run`,
+> `mise exec`, `npx`, and `docker exec` are not in the list. — *Configure permissions*
+
+**Consequence.** The division of labour between the two layers is not a matter
+of taste. Claude Code forces a prompt for `find -exec` and the exec wrappers, so
+the guard does not need to model them. It does **not** strip environment
+runners, which is precisely the gap the command guard exists to close.
+
+Recorded here because a future contributor looking at `find . -exec rm -rf {} \;`
+returning no decision from the guard will reasonably think it is a bypass. It is
+not: it prompts anyway, one layer up.
+
+---
+
 ## Things we checked and chose not to use
 
 | Feature | Why not |

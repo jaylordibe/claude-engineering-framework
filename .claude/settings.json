@@ -147,8 +147,12 @@
       "Edit(.env.*.local)",
       "Edit(**/*.pem)",
       "Edit(**/*.key)",
+      "Edit(**/*.p12)",
+      "Edit(**/*.pfx)",
       "Edit(**/id_rsa*)",
-      "Edit(**/id_ed25519*)"
+      "Edit(**/id_ed25519*)",
+      "Edit(**/.netrc)",
+      "Edit(**/.npmrc)"
     ],
     "ask": [
       "Bash(psql *)",

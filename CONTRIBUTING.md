@@ -29,12 +29,16 @@ of them lacks.
 
 ```bash
 node tests/validate-plugin.mjs --strict
+node tests/validate-fixtures.mjs
+node tests/validate-charter.mjs
 node tests/run-hook-fixtures.mjs
+node tests/guard-robustness.mjs
+node tests/run-doctor-fixtures.mjs
 claude plugin validate ./plugins/engineering-framework --strict
 shellcheck plugins/engineering-framework/scripts/*.sh
 ```
 
-All four run in CI and take seconds.
+All of them run in CI and take seconds together.
 
 ## What a good change looks like
 
@@ -43,11 +47,19 @@ All four run in CI and take seconds.
 The strongest additions to this framework are hard-won specifics that
 generalise — not more thoroughness.
 
-**Hook changes** ship fixtures in the same commit: one asserting the new
-decision, and one asserting a neighbouring legitimate command is still allowed.
-The second is not optional. Roughly half the decision table exists to prove
-ordinary commands are never prompted, because a guard that nags gets switched
-off within a day, and then it protects nothing.
+**Hook changes** ship fixtures in the same commit — in
+`tests/guard-hook-fixtures.tsv` for a command rule, `tests/guard-path-fixtures.tsv`
+for a path rule: one asserting the new decision, and one asserting a
+neighbouring legitimate command or path is still allowed. The second is not
+optional. Roughly half of each decision table exists to prove ordinary work is
+never prompted, because a guard that nags gets switched off within a day, and
+then it protects nothing.
+
+**A new fixture** is a stack the framework claims it can discover without
+assuming. It needs a row in `fixtures/README.md`, at least one eval case naming
+it, and a stack signature in `tests/validate-fixtures.mjs` declaring both what it
+must contain and what it must not. Skipping the second half is how a fixture
+quietly stops proving anything.
 
 **Constraint discoveries** — something Claude Code does or refuses that shaped
 a design decision — go in `docs/constraints.md` with a citation and a date,
