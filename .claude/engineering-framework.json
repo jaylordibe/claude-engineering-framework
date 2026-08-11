@@ -7,11 +7,6 @@
     "test": "node tests/validate-plugin.mjs --strict && node tests/validate-fixtures.mjs && node tests/validate-charter.mjs && node tests/run-hook-fixtures.mjs && node tests/guard-robustness.mjs && node tests/run-doctor-fixtures.mjs"
   },
 
-  "policy": {
-    "humanOwnedMigrations": false,
-    "humanOwnedDeployments": false
-  },
-
   "protectedPaths": [
     {
       "pattern": "*/plugins/engineering-framework/scripts/guard-*.sh",
@@ -28,6 +23,15 @@
   ],
 
   "risk": {
+    "highRiskPaths": [
+      "*/plugins/engineering-framework/scripts/guard-*.sh",
+      "*/plugins/engineering-framework/reference/permissions-floor.json",
+      "*/plugins/engineering-framework/scripts/session-charter.sh",
+      "*/plugins/engineering-framework/bin/ef-doctor",
+      "*/plugins/engineering-framework/hooks/hooks.json",
+      "*/plugins/engineering-framework/.claude-plugin/plugin.json",
+      "*/.claude-plugin/marketplace.json"
+    ],
     "notes": "This repository ships governance that runs in other people's repositories. A wrong hook rule blocks somebody's legitimate work; a wrong standard makes an agent describe an architecture that does not exist. Both are silent from here."
   }
 }
