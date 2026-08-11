@@ -191,6 +191,106 @@ is_environment_assignment() {
   esac
 }
 
+# Options that `docker exec` / `kubectl exec` take with a SEPARATE value, which
+# must be consumed together with that value or the value is mistaken for the
+# container name.
+CONTAINER_EXEC_OPTIONS_TAKING_A_VALUE=' -u --user -w --workdir -e --env --env-file --container -n --namespace --detach-keys '
+
+# The command a container-exec invocation runs INSIDE the container.
+#
+# `docker exec api php artisan migrate` is a migration. It is the same
+# operation as the bare `php artisan migrate` this guard already denies, and in
+# a containerised repository it is the form people actually type — so resolving
+# past the container boundary is the difference between governing a repository
+# and governing only the half of it that runs on the host.
+#
+# Everything after `--` wins when present (the kubectl form). Otherwise skip the
+# exec flags, then one bare token for the container or service name. Returns
+# empty when no inner command remains, which keeps the caller's "cannot classify
+# it" fallback reachable for `docker exec -it api sh`.
+container_exec_inner_command() {
+  set -f # Never let a segment's own glob expand against the real filesystem.
+  # shellcheck disable=SC2086 # Deliberate word splitting: we are tokenising.
+  set -- $1
+  set +f
+
+  # The explicit separator removes all ambiguity, so prefer it.
+  for token in "$@"; do
+    if [ "$token" = '--' ]; then
+      while [ "$#" -gt 0 ] && [ "$1" != '--' ]; do shift; done
+      shift # past the separator itself
+      printf '%s' "$*"
+      return 0
+    fi
+  done
+
+  while [ "$#" -gt 0 ] && is_option_token "$1"; do
+    if contains_word "$CONTAINER_EXEC_OPTIONS_TAKING_A_VALUE" "$1" && [ "$#" -gt 1 ]; then
+      shift
+    fi
+    shift
+  done
+
+  shift # the container or service name
+  printf '%s' "$*"
+}
+
+# `bash -c "php artisan migrate:fresh"` hides the real command inside a string
+# argument. Unwrap it, or the inner command resolves to the shell itself and
+# matches no rule.
+shell_dash_c_payload() {
+  set -f
+  # shellcheck disable=SC2086
+  set -- $1
+  set +f
+
+  candidate=${1:-}
+  case "${candidate##*/}" in
+    sh | bash | zsh | ash | dash | ksh) ;;
+    *) return 1 ;;
+  esac
+  shift
+
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -*c*)
+        shift
+        [ "$#" -gt 0 ] || return 1
+        printf '%s' "$(strip_surrounding_quotes "$*")"
+        return 0
+        ;;
+      -*) shift ;;
+      *) return 1 ;;
+    esac
+  done
+
+  return 1
+}
+
+# Classify what a container-exec invocation actually runs, then return to the
+# caller when nothing matched. classify_segment exits the process through
+# emit_decision when it finds something, so a plain return here means
+# "unclassified" and the caller's ask is still the right answer.
+#
+# The depth guard stops `docker exec a docker exec a ...` recursing without
+# bound; two levels is already past anything a real command does.
+container_exec_recursion_depth=0
+
+classify_container_exec_inner() {
+  [ "$container_exec_recursion_depth" -lt 2 ] || return 0
+
+  inner=$(container_exec_inner_command "$1")
+  [ -n "$inner" ] || return 0
+
+  if payload=$(shell_dash_c_payload "$inner"); then
+    inner=$payload
+  fi
+
+  container_exec_recursion_depth=$((container_exec_recursion_depth + 1))
+  classify_segment "$inner"
+  container_exec_recursion_depth=$((container_exec_recursion_depth - 1))
+}
+
 # Basename and quote stripping without forking. These run once per token of
 # every command, so `$(basename …)` and `$(… | tr …)` cost a subshell plus an
 # exec per token — measurably the largest avoidable cost in this hook.
@@ -724,14 +824,28 @@ classify_segment() {
           fi
           ;;
         compose)
-          if [ "$action" = 'down' ]; then
-            emit_ask 'docker compose down tears down the stack, and with -v it destroys its volumes. Confirm no volume flag is present and that losing this stack is acceptable.'
-          fi
+          case "$action" in
+            down)
+              emit_ask 'docker compose down tears down the stack, and with -v it destroys its volumes. Confirm no volume flag is present and that losing this stack is acceptable.'
+              ;;
+            exec | run)
+              # `compose exec <service> <cmd>`: drop the `compose` and the verb,
+              # then classify what actually runs. Without this, every guarded
+              # verb reached a live service unclassified.
+              classify_container_exec_inner "${effective_arguments#*"$action"}"
+              emit_ask 'this runs a command inside a compose service, and the inner command could not be classified. Confirm it is read-only.'
+              ;;
+          esac
           ;;
         down)
           emit_ask 'this tears down the stack, and with -v it destroys its volumes. Confirm no volume flag is present.'
           ;;
         exec)
+          # Classify the inner command first. It is the same operation whether
+          # it runs on the host or one process boundary away, and in a
+          # containerised repository this is the form people actually type.
+          # The leading `exec` must go, or it is consumed as the container name.
+          classify_container_exec_inner "${effective_arguments#*exec}"
           emit_ask 'this runs an arbitrary command inside a container, where this guard cannot classify it. Confirm the inner command is read-only.'
           ;;
       esac
@@ -787,6 +901,9 @@ classify_segment() {
 
     kubectl | oc)
       if [ "$subcommand" = 'exec' ]; then
+        # A cluster workload is the least forgiving place to run an unclassified
+        # command, so classify past the `--` separator before falling back.
+        classify_container_exec_inner "${effective_arguments#*exec}"
         emit_ask 'this runs an arbitrary command inside a cluster workload, where this guard cannot classify it. Confirm the inner command is read-only and the context is not production.'
       fi
       ;;
