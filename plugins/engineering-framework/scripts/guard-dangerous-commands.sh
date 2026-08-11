@@ -390,6 +390,10 @@ classify_recursive_removal() {
 
   for token in "$@"; do
     if is_option_token "$token"; then continue; fi
+    # These are literal patterns matched against the text of the command the
+    # user is about to run, not paths this script dereferences. `~` and `$HOME`
+    # must stay unexpanded so `rm -rf ~` is recognised as written.
+    # shellcheck disable=SC2088
     case "$(strip_surrounding_quotes "$token")" in
       / | /\* | '~' | '~/'* | '$HOME' | '$HOME/'* | '${HOME}'* | . | .. | ./ | ../ | '*')
         emit_deny 'this recursively removes a filesystem or home directory root. Destroying data outside the change under review is never part of an approved diff.'
