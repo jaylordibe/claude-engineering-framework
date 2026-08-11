@@ -169,3 +169,19 @@ allow	npm run Build	a capitalised script name is not a dangerous verb
 allow	git log --grep "Publish the release notes"	a verb inside a quoted search string is text
 allow	rg "COMMIT" src/	a search term is not a subcommand
 allow	echo 'git commit -m x'	quoting narration is not running it
+
+# Container boundaries. `docker exec <container> <cmd>` is the same operation as
+# the bare <cmd>, and in a containerised repository it is the form people
+# actually type. The rows below are the classifiable-inner-command case; the
+# `... sh` rows above remain ask, because there the inner command genuinely
+# cannot be classified.
+deny	docker exec api php artisan migrate	a migration is a migration on either side of a container boundary
+deny	docker exec -it laravel-api bash -c "php artisan migrate:fresh"	the real command hides in the -c string
+deny	docker exec api npx prisma migrate deploy	another ecosystem, same operation, same boundary
+deny	docker exec -u root -w /app api rails db:drop	exec options must not be mistaken for the container name
+deny	docker exec api git commit -m x	a git write is human-owned wherever it runs
+deny	docker compose exec api php artisan migrate:fresh	compose exec was previously unclassified entirely
+deny	kubectl exec pod -- php artisan migrate	the -- separator form
+deny	podman exec api php artisan db:wipe	podman is the same interface
+ask	docker exec api bash	an interactive shell is still unclassifiable
+ask	docker exec api composer install	unclassified inner commands keep the conservative fallback
