@@ -36,6 +36,20 @@
 
 set -euo pipefail
 
+# Path patterns match case-INSENSITIVELY.
+#
+# macOS and Windows default to case-insensitive filesystems, so
+# `database/Migrations/create_users.php` and `database/migrations/create_users.php`
+# are the same file. A case-sensitive guard let the identical edit through
+# unprompted on both platforms depending only on how the path was typed, which
+# is the cheapest possible bypass of a protection whose whole purpose is to be
+# hard to walk past by accident.
+#
+# On Linux this can over-match a path that genuinely differs only by case. That
+# direction is safe — it prompts — and the allow rows in
+# tests/guard-path-fixtures.tsv pin that ordinary source still does not.
+shopt -s nocasematch
+
 script_directory=${0%/*}
 [ "$script_directory" != "$0" ] || script_directory='.'
 
@@ -47,9 +61,8 @@ ef_require_jq 'protected-path guard'
 # shellcheck source=./lib/config.sh
 . "${script_directory}/lib/config.sh"
 
-IFS= read -r -d '' payload || true
-file_path=$(printf '%s' "$payload" |
-  jq -r '.tool_input.file_path // .tool_input.notebook_path // .tool_input.path // ""')
+ef_read_payload 'protected-path guard'
+file_path=$(ef_payload_string '.tool_input.file_path // .tool_input.notebook_path // .tool_input.path // ""')
 
 if [ -z "$file_path" ]; then
   exit 0 # No file path to classify; defer to the normal permission flow.
@@ -75,7 +88,13 @@ if [ "$(ef_config_flag useDefaultProtectedPaths true)" != 'true' ]; then
 fi
 
 case "$file_path" in
-  */migrations/* | */migrate/versions/* | */db/migrate/*)
+  # The bare forms cover a repository-root-relative path. The Edit tool
+  # documents file_path as absolute, so these are belt-and-braces rather than
+  # the primary match — but `db/migrate/x.rb` reaching this guard unmatched
+  # while `/repo/db/migrate/x.rb` matched is not a distinction anything should
+  # depend on.
+  */migrations/* | */migrate/versions/* | */db/migrate/* | \
+    migrations/* | migrate/versions/* | db/migrate/*)
     emit_ask "this edits a migration file. Never edit a migration that has already been applied anywhere: its checksum is recorded by the migration tool, and changing it breaks deployment in every environment that already ran it. Approve ONLY for a migration that has not been applied anywhere. Otherwise add a NEW migration."
     ;;
   *.tf | *.tfvars | *.tfvars.json | */terraform/* | */.terraform/* | *.bicep)

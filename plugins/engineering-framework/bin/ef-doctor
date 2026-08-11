@@ -240,6 +240,37 @@ elif command -v jq >/dev/null 2>&1; then
       warn "Relaxed policy: $relaxed"
       note 'This repository has deliberately delegated these operations. Make'
       note 'sure that decision is recorded somewhere a reviewer will see it.'
+      note 'Force pushes, history rewriting, publication, release, credential'
+      note 'reads and filesystem-root deletion stay denied regardless.'
+    fi
+
+    # A switch whose value is a string looks set in the file and is ignored by
+    # the guards, which read booleans only. That is the worst shape available:
+    # the policy reads as configured while the default silently applies.
+    mistyped=$(jq -r '(.policy // {}) | to_entries | map(select(.value | type != "boolean")) | map("\(.key)=\(.value|tostring)") | join(", ")' "$repo_config")
+    if [ -n "$mistyped" ]; then
+      fail "Policy switches that are not booleans: $mistyped"
+      note 'The guards read booleans only, so these are ignored and the'
+      note 'framework default applies instead. Written as a string, a switch'
+      note 'you believe is off is on. Use true/false without quotes.'
+    fi
+
+    # These are the two keys a repository sets and then has no way to confirm
+    # are in force, because nothing else reports them back.
+    high_risk_count=$(jq -r '((.risk // {}).highRiskPaths // []) | length' "$repo_config")
+    if [ "$high_risk_count" -gt 0 ]; then
+      pass "risk.highRiskPaths declares $high_risk_count path pattern(s)."
+      note 'The design and review gates read this and take the higher risk tier'
+      note 'for a change touching one. It is advisory guidance to an agent, not'
+      note 'a hook: it shapes ceremony, and it does not block an edit.'
+    fi
+
+    declared_commands=$(jq -r '(.commands // {}) | keys | join(", ")' "$repo_config")
+    if [ -n "$declared_commands" ] && [ "$declared_commands" != '' ]; then
+      pass "commands declares: $declared_commands"
+      note 'The validation gate prefers these over anything it infers. A gate'
+      note 'with no command declared here falls through to CLAUDE.md, the'
+      note 'manifest scripts, then CI.'
     fi
 
     if [ -n "$plugin_root" ] && [ -r "${plugin_root}/.claude-plugin/plugin.json" ]; then

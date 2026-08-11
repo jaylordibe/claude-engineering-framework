@@ -31,13 +31,25 @@ that was never loaded.
 ## Validating
 
 ```bash
-node tests/validate-plugin.mjs --strict     # structure, contracts, portability
-node tests/run-hook-fixtures.mjs            # the command guard's decision table
+node tests/validate-plugin.mjs --strict     # structure, contracts, normative anchors
+node tests/validate-fixtures.mjs           # the fixture corpus stays disjoint and hostile
+node tests/validate-charter.mjs            # the always-on context stays within budget
+node tests/run-hook-fixtures.mjs           # both guards, under five policy profiles
+node tests/guard-robustness.mjs            # neither guard can be made to fail open
+node tests/run-doctor-fixtures.mjs         # ef-doctor diagnoses 18 repository shapes
 claude plugin validate ./plugins/engineering-framework --strict
 shellcheck plugins/engineering-framework/scripts/*.sh
 ```
 
-All four run in CI. Run them locally before pushing; they take seconds.
+All of them run in CI. Run them locally before pushing; the whole suite is a
+few seconds.
+
+### Why there are so many validators
+
+Each one exists because a mutation proved the others could not see the failure.
+That is the standard for adding another: **weaken or delete a guarantee, run
+the suite, and if it stays green, the gap is real.** Do not add a check that
+cannot fail.
 
 ### What `validate-plugin.mjs` actually checks
 
@@ -126,11 +138,13 @@ zero findings is a valid result. That paragraph does real work.
 
 ### A hook rule
 
-1. Add the rule to `scripts/guard-dangerous-commands.sh`.
-2. **Add fixtures to `tests/guard-hook-fixtures.tsv` in the same commit** — at
-   least one asserting the new denial, and at least one asserting a
-   neighbouring legitimate command is still allowed.
-3. Run `node tests/run-hook-fixtures.mjs`.
+1. Add the rule to `scripts/guard-dangerous-commands.sh` (commands) or
+   `scripts/guard-protected-paths.sh` (paths).
+2. **Add fixtures to the matching decision table in the same commit** —
+   `tests/guard-hook-fixtures.tsv` or `tests/guard-path-fixtures.tsv` — at
+   least one asserting the new decision, and at least one asserting a
+   neighbouring legitimate command or path is still allowed.
+3. Run `node tests/run-hook-fixtures.mjs`, which drives both tables.
 4. Decide whether it should be policy-governed. A rule that a reasonable
    repository would want off needs a switch in `reference/repo-config.schema.json`.
 
@@ -162,7 +176,14 @@ looks.
 
 When changing an agent, run its case against `fixtures/vue-app` or
 `fixtures/minimal-repository` — the two where a carried-over assumption is
-provably wrong.
+provably wrong — and against `fixtures/laravel-api`, where an assumption
+carried over from the *other* API fixture produces a map that reads perfectly
+and is wrong in every specific.
+
+A fixture is not just a directory to add. `tests/validate-fixtures.mjs` requires
+each one to be described in `fixtures/README.md`, named by at least one eval
+case, and to carry a stack signature declaring what it must and must not
+contain. The "must not" half is what keeps the graders meaningful.
 
 ## Releasing
 
@@ -185,8 +206,8 @@ repository directly.
 plugins/engineering-framework/       the plugin
 docs/                                these documents
 evals/                               behavioural cases and grader rubrics
-fixtures/                            four tiny repositories of different shapes
-tests/                               validators and the guard decision table
+fixtures/                            eleven tiny repositories: six shapes, five situations
+tests/                               validators, decision tables, robustness and doctor suites
 .github/workflows/ci.yml             everything above, on every push
 ```
 

@@ -1,0 +1,9 @@
+{
+  "name": "fixture-legacy-invoicing",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/",
+    "lint": "echo 'lint is not configured yet' && exit 0"
+  }
+}

@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Models;
+
+use App\Constants\DatabaseTableConstant;
+use App\Enums\AppPlatform;
+use Illuminate\Support\Carbon;
+
+/**
+ * @property string $version
+ * @property string|null $description
+ * @property AppPlatform $platform
+ * @property Carbon $release_date
+ * @property string|null $download_url
+ * @property bool $force_update
+ */
+class AppVersion extends BaseModel
+{
+
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = DatabaseTableConstant::APP_VERSIONS;
+
+    /**
+     * Mass assignment is deliberately closed. Repositories assign explicitly.
+     *
+     * @var array
+     */
+    protected $fillable = [];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'platform' => AppPlatform::class,
+            'release_date' => 'datetime',
+            'force_update' => 'boolean'
+        ];
+    }
+
+}

@@ -1,0 +1,7 @@
+{
+  "name": "@fixture/api",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test src/", "start": "node src/server.js" },
+  "dependencies": { "@fixture/contracts": "1.0.0", "@fixture/shared": "1.0.0" }
+}

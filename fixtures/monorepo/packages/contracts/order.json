@@ -1,0 +1,8 @@
+{
+  "$comment": "The shape apps/api returns and apps/web consumes. Changing a field here changes both, plus the mobile client that is outside this workspace.",
+  "Order": {
+    "id": "string",
+    "totalCents": "integer",
+    "status": "one of: draft, placed, cancelled"
+  }
+}
