@@ -250,7 +250,28 @@ function validateMarketplace() {
     return manifest;
   }
 
-  const pluginRootPrefix = manifest.metadata?.pluginRoot ?? '.';
+  // `metadata.pluginRoot` is documented as a base directory prepended to
+  // relative sources. It is NOT honoured by the installer, and believing the
+  // documentation over the behaviour is what broke installation:
+  //
+  //   metadata.pluginRoot = "./plugins"  +  source = "./engineering-framework"
+  //     what this validator computed:  <root>/plugins/engineering-framework  ✓ exists
+  //     what the installer resolved:   <root>/engineering-framework          ✗ absent
+  //
+  // Verified against Claude Code v2.1.226 by building a marketplace for each
+  // form and running `claude plugin install`:
+  //
+  //   pluginRoot + "engineering-framework"          -> refused, `source: Invalid input`
+  //   pluginRoot + "./plugins/engineering-framework" -> installs; pluginRoot ignored
+  //   no pluginRoot + "./plugins/engineering-framework" -> installs
+  //
+  // So the key is inert in every form: it cannot rescue a bare source, because
+  // a relative source must start with `./`, and it changes nothing for one that
+  // does. An inert key that reads as functional is the failure shape this
+  // project already refuses in permission rules, so it is refused here too.
+  if (manifest.metadata?.pluginRoot !== undefined) {
+    fail(marketplaceManifestPath, '`metadata.pluginRoot` is not honoured by the plugin installer: a relative `source` is always resolved against the marketplace root, and a source that does not start with "./" is rejected outright. Its presence reads as a working base path and is what makes a short `source` look correct. Remove it and write the full path in each `source`.');
+  }
 
   for (const entry of manifest.plugins) {
     if (typeof entry.name !== 'string' || !isKebabCase(entry.name)) {
@@ -269,9 +290,29 @@ function validateMarketplace() {
       fail(marketplaceManifestPath, `plugin "${entry.name}" source traverses outside the marketplace root.`);
     }
 
-    const resolvedSource = resolve(repositoryRoot, pluginRootPrefix, entry.source);
-    if (!existsSync(resolvedSource)) {
-      fail(marketplaceManifestPath, `plugin "${entry.name}" source does not resolve to a directory: ${resolvedSource}`);
+    // Resolved exactly the way the installer resolves it: against the
+    // marketplace root — the directory holding `.claude-plugin/` — with no
+    // prefix of any kind. Anything else here is this file inventing a rule.
+    const marketplaceRoot = dirname(dirname(marketplaceManifestPath));
+    const resolvedSource = resolve(marketplaceRoot, entry.source);
+
+    if (!existsSync(resolvedSource) || !statSync(resolvedSource).isDirectory()) {
+      fail(marketplaceManifestPath, `plugin "${entry.name}" source "${entry.source}" does not resolve to a directory. The installer resolves it against the marketplace root, giving ${resolvedSource}, which does not exist — installation fails with "Source path does not exist".`);
+      continue;
+    }
+
+    // A directory is not a plugin. Pointing at one that exists but holds no
+    // manifest fails at install with a different message and is just as broken,
+    // so existence alone is not the assertion worth making.
+    const sourceManifestPath = join(resolvedSource, '.claude-plugin', 'plugin.json');
+    if (!existsSync(sourceManifestPath)) {
+      fail(marketplaceManifestPath, `plugin "${entry.name}" source "${entry.source}" resolves to ${resolvedSource}, which has no .claude-plugin/plugin.json. The path exists, so a directory check passes; the install still fails.`);
+      continue;
+    }
+
+    const sourceManifest = readJson(sourceManifestPath);
+    if (sourceManifest && sourceManifest.name !== entry.name) {
+      fail(marketplaceManifestPath, `plugin entry "${entry.name}" points at a plugin whose manifest is named "${sourceManifest.name}". Users install by the marketplace entry name, so the two disagreeing means the catalogue advertises something the plugin does not call itself.`);
     }
   }
 

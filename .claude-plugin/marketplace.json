@@ -6,13 +6,10 @@
     "name": "Jay Lord Ibe",
     "url": "https://github.com/jaylordibe"
   },
-  "metadata": {
-    "pluginRoot": "./plugins"
-  },
   "plugins": [
     {
       "name": "engineering-framework",
-      "source": "./engineering-framework",
+      "source": "./plugins/engineering-framework",
       "description": "A stack-agnostic engineering workflow for Claude Code: understand, design, human approval, implement, review, validate, present. Repository evidence outranks assumptions.",
       "category": "workflow",
       "keywords": [

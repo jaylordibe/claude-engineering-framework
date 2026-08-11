@@ -8,6 +8,10 @@ does not know about them will "fix" something that is not broken.
 **Verified against:** Claude Code **v2.1.226**, documentation at
 `code.claude.com/docs/en/`, on **2026-08-11**.
 
+Where an entry says *measured*, the behaviour was reproduced against the CLI
+rather than read from the documentation. C15 is there because the two
+disagreed, and believing the documentation broke installation.
+
 When one of these changes, update this file *and* the corresponding check in
 `tests/validate-plugin.mjs`. A constraint recorded here but not enforced there
 is a comment, not a guardrail.
@@ -256,6 +260,48 @@ runners, which is precisely the gap the command guard exists to close.
 Recorded here because a future contributor looking at `find . -exec rm -rf {} \;`
 returning no decision from the guard will reasonably think it is a bypass. It is
 not: it prompts anyway, one layer up.
+
+---
+
+## C15 — `metadata.pluginRoot` is documented but inert
+
+> `metadata.pluginRoot` | string | Base directory prepended to relative plugin
+> source paths (for example, `"./plugins"` lets you write `"source": "formatter"`
+> instead of `"source": "./plugins/formatter"`) — *Plugin marketplaces*
+
+> Relative path [...] Must start with `./`. Resolved relative to the marketplace
+> root, not the `.claude-plugin/` directory — *Plugin marketplaces*
+
+Those two rows contradict each other, and the second one is the one that runs.
+Measured against v2.1.226 by building a marketplace for each form and running
+`claude plugin install`:
+
+| `metadata.pluginRoot` | `source` | Result |
+|---|---|---|
+| `"./plugins"` | `"engineering-framework"` | **Refused** — `source: Invalid input` |
+| `"./plugins"` | `"./engineering-framework"` | **Installs nothing** — resolves to `<root>/engineering-framework`; `pluginRoot` ignored |
+| `"./plugins"` | `"./plugins/engineering-framework"` | Installs; `pluginRoot` ignored |
+| *absent* | `"./plugins/engineering-framework"` | Installs |
+
+**Consequence.** `pluginRoot` cannot do the one thing it is documented to do: a
+bare source is rejected by the schema before any prefix could be applied, and a
+`./` source is resolved against the marketplace root regardless. The key is
+inert in every combination.
+
+It is worse than merely useless. Its presence is an invitation to write the
+short source it claims to support — which is exactly how this repository shipped
+a marketplace that passed both validators and could not install: the manifest
+said `pluginRoot: "./plugins"` with `source: "./engineering-framework"`, and the
+installer looked for `<root>/engineering-framework`.
+
+**Enforced by.** `validate-plugin.mjs` rejects `metadata.pluginRoot` outright,
+resolves every relative source against the marketplace root with no prefix, and
+requires the resolved directory to contain a `.claude-plugin/plugin.json` whose
+`name` matches the catalogue entry.
+
+**If this is ever fixed upstream**, the enforcement is still correct: writing
+the full path in each `source` works under both behaviours, and is what the
+documentation's own relative-path example does.
 
 ---
 
