@@ -27,7 +27,7 @@
 //
 // No dependencies. Run with `node tests/run-doctor-fixtures.mjs`.
 
-import { existsSync, mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -50,6 +50,12 @@ const MINIMAL_FLOOR = {
     allow: [],
   },
 };
+
+// Read from the shipped floor rather than invented, so the threshold in
+// ef-doctor is asserted against the tier a real install actually produces.
+const GENEROUS_ALLOW_TIER = JSON.parse(
+  readFileSync(join(repositoryRoot, 'plugins', 'engineering-framework', 'reference', 'permissions-floor.json'), 'utf8'),
+).permissions.allow;
 
 function buildRepository(files) {
   const directory = mkdtempSync(join(tmpdir(), 'ef-doctor-'));
@@ -152,6 +158,40 @@ const CASES = [
     },
     exit: 0,
     mustReport: ['WARN  permissions.deny is empty.'],
+  },
+  {
+    // The floor before v0.3.0 shipped seven allow rules, so every ordinary
+    // command prompted. Twenty reflex approvals per feature are worth less
+    // than one that is read, and this warning is what tells a repository that
+    // installed the old floor to take the new one.
+    name: 'a thin allow tier means every ordinary command prompts',
+    build: {
+      'CLAUDE.md': HEALTHY_CLAUDE_MD,
+      '.claude/settings.json': {
+        permissions: {
+          ...MINIMAL_FLOOR.permissions,
+          allow: ['Bash(git status *)', 'PowerShell(git status *)'],
+        },
+      },
+    },
+    exit: 0,
+    mustReport: ['WARN  permissions.allow holds only 2 rules.'],
+  },
+  {
+    // The neighbouring legitimate case: a repository that installed the
+    // current floor must not be nagged about it.
+    name: 'a floor-sized allow tier is not a finding',
+    build: {
+      'CLAUDE.md': HEALTHY_CLAUDE_MD,
+      '.claude/settings.json': {
+        permissions: {
+          ...MINIMAL_FLOOR.permissions,
+          allow: GENEROUS_ALLOW_TIER,
+        },
+      },
+    },
+    exit: 0,
+    mustNotReport: ['WARN  permissions.allow holds only'],
   },
   {
     name: 'policy file is valid JSON of the wrong shape',

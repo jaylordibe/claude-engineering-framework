@@ -65,3 +65,13 @@ ask	migrations/0001_init.sql	the same, in the other common layout
 allow	/repository/src/Http/Controllers/UserController.php	PascalCase source is ordinary source
 allow	/repository/app/Models/User.php	so is a model
 allow	/repository/README.md	so is documentation
+
+# ── Adding a migration versus editing one ────────────────────────────────────
+# The reason on the migration rows above tells the human to add a NEW migration
+# instead. Prompting for that made the guard's own advice cost an approval.
+allow	/unwritten/database/migrations/2026_08_12_000000_create_orders_table.php	a migration that does not exist yet cannot have been applied anywhere
+allow	/unwritten/db/migrate/20260812000000_add_column.rb	another ecosystem, same reasoning
+ask	/repository/database/migrations/2024_01_01_000000_create_users_table.php	an existing migration is the checksum case the prompt exists for
+ask	database/migrations/2024_01_01_000000_create_users_table.php	a relative path resolves against a directory this hook does not control, so it stays conservative
+ask	/unwritten/.github/workflows/ci.yml	a NEW workflow runs with the repository's secrets too, so this exemption is migrations-only
+ask	/unwritten/infra/main.tf	and a new infrastructure file becomes real on the next apply

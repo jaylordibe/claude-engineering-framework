@@ -95,6 +95,31 @@ case "$file_path" in
   # depend on.
   */migrations/* | */migrate/versions/* | */db/migrate/* | \
     migrations/* | migrate/versions/* | db/migrate/*)
+    # A migration file that does not exist yet cannot have been applied
+    # anywhere, so the checksum argument below does not apply to it. Adding a
+    # migration is the standard way to change a schema — it is the very thing
+    # the reason string tells the human to do instead — and prompting for it
+    # made the framework's own advice cost an approval.
+    #
+    # The test is "the migrations directory is there and this file is not",
+    # never the weaker "this file is not there". A path the hook cannot resolve
+    # fails the first half and keeps its prompt, which is what a bare -e check
+    # got wrong: `…/create_users.php"; rm -rf /` does not exist as written, so
+    # a metacharacter suffix silently bought silence on a real migration.
+    #
+    # Only an ABSOLUTE path may answer this at all. A relative path resolves
+    # against a working directory this hook does not control, and a false
+    # "does not exist" there would skip the prompt for a migration that does.
+    #
+    # Adding the FIRST migration to a repository prompts once, because the
+    # directory does not exist yet. That is the correct side to be wrong on.
+    case "$file_path" in
+      /*)
+        if [ -d "${file_path%/*}" ] && [ ! -e "$file_path" ]; then
+          exit 0
+        fi
+        ;;
+    esac
     emit_ask "this edits a migration file. Never edit a migration that has already been applied anywhere: its checksum is recorded by the migration tool, and changing it breaks deployment in every environment that already ran it. Approve ONLY for a migration that has not been applied anywhere. Otherwise add a NEW migration."
     ;;
   *.tf | *.tfvars | *.tfvars.json | */terraform/* | */.terraform/* | *.bicep)

@@ -267,6 +267,178 @@ shell_dash_c_payload() {
   return 1
 }
 
+# A container-exec fallback prompt only earns its place when the first pass had
+# nothing to work with.
+#
+# classify_container_exec_inner already runs the inner command through every
+# rule in this file — `docker exec api php artisan migrate` denies, `docker exec
+# api psql` asks. Firing a second, blanket prompt after that pass told the human
+# nothing the pass had not already decided, and it fired on `docker exec api
+# php artisan test`, which is how a containerised repository runs its tests.
+# For those repositories it was the single noisiest rule in the guard.
+#
+# An interactive shell is the case that genuinely survives classification:
+# `docker exec -it api bash` opens a session this guard will never see again.
+inner_is_unclassifiable() {
+  inner=$(container_exec_inner_command "$1")
+  [ -n "$inner" ] || return 0 # No inner command at all: an implicit shell.
+
+  set -f
+  # shellcheck disable=SC2086
+  set -- $inner
+  set +f
+
+  case "${1##*/}" in
+    sh | bash | zsh | ash | dash | ksh | fish) return 0 ;;
+  esac
+
+  return 1
+}
+
+# `-v` on a teardown is the flag that turns "stop the stack" into "destroy the
+# data in it". The reason string already asked the human to check for it, which
+# is a check the guard can simply do.
+has_volume_flag() {
+  set -f
+  # shellcheck disable=SC2086
+  set -- $1
+  set +f
+
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -v | --volumes | -[!-]*v*) return 0 ;;
+    esac
+    shift
+  done
+
+  return 1
+}
+
+# `git branch` and `git worktree` both list by default and mutate only when
+# asked. Prompting on the whole verb meant `git branch -a` — the single most
+# common way to find out what exists — cost an approval, and an approval spent
+# on a listing is an approval not spent on the deletion.
+#
+# A prefix rule cannot make this distinction, which is why the floor no longer
+# carries `Bash(git branch *)` and this function exists instead.
+is_git_ref_mutation() {
+  set -f
+  # shellcheck disable=SC2086
+  set -- $1
+  set +f
+
+  [ "$#" -gt 0 ] || return 1
+  case "$1" in
+    worktree)
+      # list is the only read-only worktree subcommand; add, remove, move,
+      # prune, lock, unlock and repair all change something on disk.
+      [ "${2:-list}" = 'list' ] && return 1
+      return 0
+      ;;
+    branch) shift ;;
+    *) return 1 ;;
+  esac
+
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -d | -D | -M | -C | --delete | --move | --copy | --set-upstream-to* | \
+        --unset-upstream | --edit-description | -u)
+        return 0
+        ;;
+      # -m is move, but only with a name; bare `git branch -m` is invalid.
+      -m) return 0 ;;
+      # These take a value that is NOT a branch being created. Consuming the
+      # value here is what keeps `git branch --contains HEAD` a listing.
+      --contains | --no-contains | --merged | --no-merged | --points-at | \
+        --sort | --format | --color)
+        shift
+        [ "$#" -gt 0 ] && shift
+        ;;
+      -*) shift ;;
+      # A positional word is a branch name, and naming a branch creates it.
+      *) return 0 ;;
+    esac
+  done
+
+  return 1
+}
+
+# `gh api` and `glab api` read by default. Prompting on the verb meant every
+# read cost an approval; the method is right there in the command, so classify
+# on it. gh switches to POST implicitly when a field flag is present, so the
+# field flags count as a write.
+is_api_write_call() {
+  set -f
+  # shellcheck disable=SC2086
+  set -- $1
+  set +f
+
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      # Both cases are spelled out rather than folded: bash 3.2 has no
+      # ${var^^}, and `tr` here would fork on the hot path of every command.
+      -X | --method)
+        shift
+        case "${1:-}" in
+          POST | post | PUT | put | PATCH | patch | DELETE | delete) return 0 ;;
+        esac
+        ;;
+      -X* | --method=*)
+        case "${1#*[=X]}" in
+          POST | post | PUT | put | PATCH | patch | DELETE | delete) return 0 ;;
+        esac
+        ;;
+      -f | -F | --field | --raw-field | --input | --field=* | --raw-field=* | --input=*)
+        return 0
+        ;;
+    esac
+    shift
+  done
+
+  return 1
+}
+
+# An interpreter handed a PROGRAM on the command line rather than a path.
+#
+# WHY THIS IS THE LINE, AND RUNNING A SCRIPT FILE IS NOT.
+# The guard cannot read the program either way — Python is not shell. What
+# differs is what the human sees. `python3 -c 'import shutil; shutil.rmtree(p)'`
+# puts the code in the prompt, so the prompt is worth reading. A prompt on
+# `python3 scripts/fix_imports.py` shows a filename and nothing else: the human
+# would have to go and open the file to learn anything, which nobody does at
+# prompt number fifteen. An uninformative prompt is not a weaker control than
+# an informative one, it is a worse one, because it is what trains the reflex
+# that later approves the migration.
+#
+# The same blindness already applies to `npm run`, `make` and `rake`, which are
+# allowed. This is defence in depth, not a sandbox — see the file header.
+is_inline_code_execution() {
+  set -f
+  # shellcheck disable=SC2086
+  set -- $1
+  set +f
+
+  case "${1##*/}" in
+    python | python2 | python3 | python[0-9].[0-9] | python[0-9].[0-9][0-9] | \
+      node | deno | ruby | perl | php) ;;
+    *) return 1 ;;
+  esac
+  shift
+
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -c | -e | -r | -p | --eval | --print) return 0 ;;
+      # A short-flag cluster: `python3 -uc '…'` is the same operation with the
+      # same blindness, and a fixed list of single flags never sees it.
+      -[!-]*[cerp]) return 0 ;;
+      -*) shift ;;
+      *) return 1 ;;
+    esac
+  done
+
+  return 1
+}
+
 # Classify what a container-exec invocation actually runs, then return to the
 # caller when nothing matched. classify_segment exits the process through
 # emit_decision when it finds something, so a plain return here means
@@ -764,7 +936,12 @@ classify_segment() {
 
       case "$subcommand" in
         worktree | branch)
-          emit_ask "git $subcommand can create or delete refs. Approve only for a read-only listing."
+          # The RAW arguments, not `$words`: positional_arguments drops option
+          # tokens, so `git branch --contains HEAD` arrived here as
+          # "branch HEAD" and the value read as a branch name being created.
+          if is_git_ref_mutation "$effective_arguments"; then
+            emit_ask "git $subcommand is creating, deleting or moving a ref here rather than listing. Confirm the ref and that no work depends on it."
+          fi
           ;;
       esac
       ;;
@@ -784,7 +961,9 @@ classify_segment() {
           emit_deny "gh $subcommand publishes a release or triggers a workflow. Releasing is an act of record and belongs to the human."
           ;;
         api)
-          emit_ask 'gh api reads or writes depending on its method. Approve read-only calls; a write method is a human-owned operation.'
+          if is_api_write_call "$effective_arguments"; then
+            emit_ask 'gh api is being called with a write method, which changes state on the forge. Confirm the endpoint and the payload; a write here is a human-owned operation.'
+          fi
           ;;
       esac
       ;;
@@ -804,7 +983,9 @@ classify_segment() {
           emit_deny 'glab release publishes a release. Releasing is an act of record and belongs to the human.'
           ;;
         api)
-          emit_ask 'glab api reads or writes depending on its method. Approve read-only calls; a write method is a human-owned operation.'
+          if is_api_write_call "$effective_arguments"; then
+            emit_ask 'glab api is being called with a write method, which changes state on the forge. Confirm the endpoint and the payload; a write here is a human-owned operation.'
+          fi
           ;;
       esac
       ;;
@@ -826,27 +1007,55 @@ classify_segment() {
         compose)
           case "$action" in
             down)
-              emit_ask 'docker compose down tears down the stack, and with -v it destroys its volumes. Confirm no volume flag is present and that losing this stack is acceptable.'
+              if has_volume_flag "$effective_arguments"; then
+                emit_ask 'docker compose down -v destroys this stack'"'"'s volumes, and with them any database or cache data in it that is not reproducible from the repository. Confirm losing it is acceptable.'
+              fi
               ;;
             exec | run)
               # `compose exec <service> <cmd>`: drop the `compose` and the verb,
               # then classify what actually runs. Without this, every guarded
               # verb reached a live service unclassified.
+              #
+              # The fallback question is asked BEFORE classifying, because
+              # classify_container_exec_inner re-enters classify_segment and
+              # that overwrites `effective_arguments` and `action`. Reading them
+              # afterwards classified the inner command's own arguments.
+              # An `if`, never `x=$(… && printf ask)`: under `set -e` a failing
+              # command substitution takes the whole script down, and a guard
+              # that dies exits non-zero, which Claude Code treats as a
+              # non-blocking error. It fails OPEN. This exact line silently
+              # un-denied `docker exec api git commit` while under test.
+              container_exec_fallback=''
+              if inner_is_unclassifiable "${effective_arguments#*"$action"}"; then
+                container_exec_fallback='ask'
+              fi
               classify_container_exec_inner "${effective_arguments#*"$action"}"
-              emit_ask 'this runs a command inside a compose service, and the inner command could not be classified. Confirm it is read-only.'
+              if [ "$container_exec_fallback" = 'ask' ]; then
+                emit_ask 'this opens a shell inside a compose service, where nothing further can be classified. Confirm the session stays read-only and is not against production.'
+              fi
               ;;
           esac
           ;;
         down)
-          emit_ask 'this tears down the stack, and with -v it destroys its volumes. Confirm no volume flag is present.'
+          if has_volume_flag "$effective_arguments"; then
+            emit_ask 'tearing the stack down with -v destroys its volumes, and with them any database or cache data in it that is not reproducible from the repository. Confirm losing it is acceptable.'
+          fi
           ;;
         exec)
           # Classify the inner command first. It is the same operation whether
           # it runs on the host or one process boundary away, and in a
           # containerised repository this is the form people actually type.
           # The leading `exec` must go, or it is consumed as the container name.
+          # Asked before classifying, and as an `if`, for the two reasons given
+          # under `compose` above.
+          container_exec_fallback=''
+          if inner_is_unclassifiable "${effective_arguments#*exec}"; then
+            container_exec_fallback='ask'
+          fi
           classify_container_exec_inner "${effective_arguments#*exec}"
-          emit_ask 'this runs an arbitrary command inside a container, where this guard cannot classify it. Confirm the inner command is read-only.'
+          if [ "$container_exec_fallback" = 'ask' ]; then
+            emit_ask 'this opens a shell inside a container, where nothing further can be classified. Confirm the session stays read-only and is not against production.'
+          fi
           ;;
       esac
       ;;
@@ -928,6 +1137,29 @@ classify_segment() {
       emit_ask 'this runs with elevated privileges. Confirm the operation genuinely needs root and that its effects stay inside this project.'
       ;;
   esac
+
+  if is_inline_code_execution "$segment"; then
+    emit_ask 'this hands a program to an interpreter on the command line, where no rule here can read it. The program is in this prompt: read it, and approve it if it only does what the task needs. Running a script FILE is not prompted, so prefer writing the code to a file when it is long enough that reading it here is not realistic.'
+  fi
+
+  # LAST, and only after every rule above has had the outer segment.
+  #
+  # `bash -c 'git push --force'` reached here silent: the deny rules see `bash`,
+  # and the segment splitter only trips over the payload when it happens to
+  # hold a shell metacharacter. A shell payload IS shell, so re-entering
+  # classify_segment gives it every rule in this file rather than a blanket
+  # prompt — `bash -c 'ls'` stays silent, `bash -c 'git push'` denies.
+  #
+  # Running it last matters twice: the outer segment keeps its own findings
+  # (the sudo check above reads `$segment`), and recursion may clobber every
+  # global this function sets, which is safe only once nothing reads them again.
+  if payload=$(shell_dash_c_payload "$segment"); then
+    if [ "$container_exec_recursion_depth" -lt 2 ]; then
+      container_exec_recursion_depth=$((container_exec_recursion_depth + 1))
+      classify_segment "$payload"
+      container_exec_recursion_depth=$((container_exec_recursion_depth - 1))
+    fi
+  fi
 }
 
 # ---------------------------------------------------------------------------

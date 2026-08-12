@@ -33,6 +33,34 @@ const scriptsDirectory = join(repositoryRoot, 'plugins', 'engineering-framework'
 const commandGuard = join(scriptsDirectory, 'guard-dangerous-commands.sh');
 const pathGuard = join(scriptsDirectory, 'guard-protected-paths.sh');
 
+// The protected-path guard asks about a migration only when the file already
+// EXISTS: one that does not cannot have been applied anywhere, so the checksum
+// argument in its reason does not apply to it. That makes these fixtures depend
+// on the filesystem, so the table's paths are materialised under a temp root.
+//
+//   /repository/…  is created before the guard runs — "a file that exists".
+//   /unwritten/…   is deliberately never created — "a file being added".
+//
+// Anything else (a relative path) is passed through untouched, because that is
+// the case the guard must stay conservative about.
+const pathFixtureRoot = mkdtempSync(join(tmpdir(), 'ef-paths-'));
+
+function materialisePathFixture(filePath) {
+  if (!filePath?.startsWith('/repository/') && !filePath?.startsWith('/unwritten/')) {
+    return filePath;
+  }
+  const real = join(pathFixtureRoot, filePath);
+  // The containing directory is created either way. The guard's question is
+  // "does this directory exist and this file not", so an /unwritten/ row must
+  // model a new file in a directory that is already there — which is what
+  // adding a migration to an existing repository actually looks like.
+  mkdirSync(dirname(real), { recursive: true });
+  if (filePath.startsWith('/repository/')) {
+    writeFileSync(real, '');
+  }
+  return real;
+}
+
 try {
   execFileSync('jq', ['--version'], { stdio: 'ignore' });
 } catch {
@@ -181,7 +209,7 @@ const SUITES = [
       profile: 'defaults',
       reasonSubstring: null,
       script: pathGuard,
-      payload: { tool_name: 'Edit', tool_input: { file_path: filePath } },
+      payload: { tool_name: 'Edit', tool_input: { file_path: materialisePathFixture(filePath) } },
     }),
   },
   {

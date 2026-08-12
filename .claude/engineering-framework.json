@@ -1,6 +1,6 @@
 {
   "$schema": "../plugins/engineering-framework/reference/repo-config.schema.json",
-  "frameworkVersion": "0.2.0",
+  "frameworkVersion": "0.3.0",
 
   "commands": {
     "lint": "shellcheck plugins/engineering-framework/scripts/*.sh plugins/engineering-framework/bin/*",

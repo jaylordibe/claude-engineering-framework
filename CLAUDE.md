@@ -79,8 +79,16 @@ docs/                               design rationale and Claude Code constraints
   installs, which is why `framework-doctor` exists.
 - **These scripts must run under bash 3.2**, the version macOS ships. No
   `${var,,}`, no associative arrays.
+- **The permissions floor is a floor, not a ceiling.** Its `allow` tier is
+  load-bearing: a floor of deny and ask rules alone prompts for every ordinary
+  command, and twenty reflex approvals per feature are worth less than one
+  approval that is read. An entry earns its place only if it cannot write
+  outside the working tree, cannot execute remote code, and does not take an
+  arbitrary command as an argument.
 - This repository installs its own reference permissions floor into
-  `.claude/settings.json`. `validate-plugin.mjs` fails if the two drift apart.
+  `.claude/settings.json`. `validate-plugin.mjs` fails if a floor rule is
+  missing there — containment, not equality, so this repository can also allow
+  its own test suite.
 
 ## Consumers
 

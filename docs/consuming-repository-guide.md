@@ -113,8 +113,19 @@ later reader, and `ef-doctor` fails while the placeholder is still there.
 `framework-install` copies it from the plugin's reference file, merging into any
 `settings.json` you already have and never overwriting a rule.
 
-Two things to know:
+Four things to know:
 
+- **The `allow` tier is the half that makes the other two usable.** A floor of
+  deny and ask rules alone leaves every ordinary command — `ls`, `grep`, your
+  test suite — matching no rule, which means a prompt. Twenty prompts per
+  feature is not twenty decisions; it is one reflex, and the reflex is Yes. The
+  reflex is still armed when the twenty-first prompt is the migration.
+- **Add your own dev loop on top.** The floor cannot know which command is
+  *your* test suite. Put your install, build, lint, typecheck and test commands
+  in the `allow` tier, in the `verb:*` prefix form, mirrored for PowerShell.
+  `framework-install` proposes these from your `commands` block if you have
+  one. Never allow anything that takes an arbitrary command as an argument —
+  one `Bash(env:*)` or `Bash(npx:*)` rule is unrestricted execution.
 - **Mirror Bash rules as PowerShell rules.** The PowerShell tool is enabled by
   default on Windows without Git Bash, and `Bash(...)` rules do not govern it.
   An unmirrored floor silently disappears on those machines.
@@ -123,7 +134,23 @@ Two things to know:
   never enforced, and warns at startup — the path reads as protected while
   being fully writable.
 
-Both are checked by `ef-doctor`.
+All four are checked by `ef-doctor`.
+
+**Where the `ask` tier stops and the guard starts.** A prefix rule cannot tell
+`git branch -a` from `git branch -d`, `gh api` from `gh api -X DELETE`, or
+`docker exec api <test command>` from `docker exec -it api bash`. The command
+guard can, so those five live there now and the reading form no longer prompts.
+`kubectl exec` and the database clients keep their declarative `ask` rules on
+purpose: a rule cannot fail and a hook can, and a cluster or a live database
+session can be production.
+
+The floor also sets `permissions.defaultMode` to `acceptEdits`. This framework
+gates where a human reads a plan and a diff — the design, approve, review and
+validate steps. A per-file edit prompt is not one of those gates: it arrives
+with no plan and no diff attached, and one authorization change legitimately
+touches thirty files. The protected-path guard still asks for migrations, CI
+workflows, infrastructure definitions, lockfiles and environment files. Drop
+the key if you want the per-edit prompt back.
 
 ---
 
