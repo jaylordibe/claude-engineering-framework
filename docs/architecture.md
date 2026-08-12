@@ -70,12 +70,15 @@ own `.claude/engineering-framework.json`.
 
 The framework never competes with those. It cites them.
 
-Both guards have such an extension point, and symmetrically: `protectedPaths`
-for files, `protectedCommands` for commands. Each is checked *before* the
-framework's own tables, so a repository-authored reason wins. Without the
-command-side half, a repository could only switch the framework's ecosystem
-lists on and off — it could not teach the guard that `make db-reset` wipes its
-shared database, which is exactly the kind of truth the framework cannot know.
+The extension points that remain are the ones the *gates* read:
+`commands` tells the validation gate what to run instead of inferring, and
+`risk.highRiskPaths` tells the design and review gates which changes deserve
+more ceremony. Both are advisory guidance to an agent. Neither blocks anything,
+and no document may describe them as though they do.
+
+Until 1.0.0 there were also `protectedPaths` and `protectedCommands`, which
+configured two hooks that gated tool calls. Those hooks are gone; see *What was
+deliberately left behind*.
 
 ### 5. A vocabulary that can say "this repository does not have that"
 
@@ -125,8 +128,8 @@ plugins/engineering-framework/
 ├── agents/          eight read-only review lenses
 ├── standards/       the generic bar, cited by skills and agents
 ├── templates/       thinking aids: plan, threat model, worksheets, reports
-├── hooks/           hooks.json only
-├── scripts/         the guard implementations and the session charter
+├── hooks/           hooks.json only — a single SessionStart entry
+├── scripts/         session-charter.sh, the only hook the plugin registers
 ├── reference/       what a consuming repository copies or is scaffolded from
 └── bin/ef-doctor    contract audit, on PATH while the plugin is enabled
 ```
@@ -237,9 +240,9 @@ for, and that a generic agent must never absorb:
 
 - Migration tooling that keys applied migrations **by filename** makes editing
   an already-applied migration invisible to every environment that ran it. The
-  generic framework can only say "an applied migration is protected", which is
-  what the path guard already does. Naming the mechanism, and the CI shape that
-  catches it, needs the pack.
+  generic framework can only say "an applied migration deserves the higher risk
+  tier", which is what `risk.highRiskPaths` already does. Naming the mechanism,
+  and the CI shape that catches it, needs the pack.
 - **Expand/contract sequencing** where the previous build serves traffic against
   the new schema for the length of the deploy window. The failure is real and
   the remedy is tool-specific.
@@ -252,7 +255,7 @@ here so the first pack starts from evidence rather than from a blank page.
 | Left behind | Why |
 |---|---|
 | Repository-specific playbooks | They cite symbols that exist in one repository. They stay there. |
-| The declarative permissions floor | A plugin cannot ship permission rules. Shipped as reference + installer + audit instead. |
-| Issue-tracker specifics | Tracker-agnostic and optional; the write-blocking rules are permissions, which a plugin cannot ship. |
+| **Enforcement of any kind** | Removed in 1.0.0. The framework shipped a permissions floor and two hooks that gated tool calls; a six-lens review of the last attempt to extend them found two Critical and ten High defects in one pass. A text parser cannot out-guess a shell, and a plugin that rewrites a developer's permission rules confuses advice with authority. Permissions belong to the repository and its owner. |
+| Issue-tracker specifics | Tracker-agnostic and optional. |
 | A worktree fan-out for parallel implementation | Deferred in the original design for good reasons that still hold. |
 | `permissionMode` on agents | Not supported for plugin-shipped agents. Read-only comes from the tool pool and is asserted in CI. |

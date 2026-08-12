@@ -51,8 +51,13 @@ A framework that silently starts refusing a team's normal workflow is a
 framework that gets uninstalled. The version number is how that news travels,
 and it must arrive before the refusal does.
 
-Conversely, *removing* a denial is a PATCH: nobody's workflow breaks because a
-guard stopped being wrong.
+Conversely, *removing* a restriction is a PATCH: nobody's workflow breaks
+because the framework stopped being wrong about something.
+
+From 1.0.0 this rule has a much smaller surface, because the framework no
+longer refuses anything — it ships no permission rules and no hooks that gate a
+command. What can still "block a workflow" is a gate that stops, or a standard
+that makes a review demand something new. Both count.
 
 ## Pre-1.0
 
@@ -79,7 +84,8 @@ framework whose contract has not been tested.
 - `domain-background-work` playbook.
 
 ### Fixed
-- The command guard no longer prompts on `make build`.
+- `gate-validate` no longer reports `BLOCKED` when a repository declares no
+  linter.
 ```
 
 An entry that a reader cannot act on, or decide not to act on, is not an entry.

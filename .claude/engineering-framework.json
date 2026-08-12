@@ -1,31 +1,12 @@
 {
   "$schema": "../plugins/engineering-framework/reference/repo-config.schema.json",
-  "frameworkVersion": "0.3.1",
-
+  "frameworkVersion": "1.0.0",
   "commands": {
     "lint": "shellcheck plugins/engineering-framework/scripts/*.sh plugins/engineering-framework/bin/*",
-    "test": "node tests/validate-plugin.mjs --strict && node tests/validate-fixtures.mjs && node tests/validate-charter.mjs && node tests/run-hook-fixtures.mjs && node tests/guard-robustness.mjs && node tests/run-doctor-fixtures.mjs"
+    "test": "node tests/validate-plugin.mjs --strict && node tests/validate-fixtures.mjs && node tests/validate-charter.mjs && node tests/run-doctor-fixtures.mjs"
   },
-
-  "protectedPaths": [
-    {
-      "pattern": "*/plugins/engineering-framework/scripts/guard-*.sh",
-      "reason": "this changes what a guard blocks in every repository that installs the framework. Confirm the matching decision table (tests/guard-hook-fixtures.tsv for commands, tests/guard-path-fixtures.tsv for paths) gains a row for the new decision AND a row proving a neighbouring legitimate command or path is still allowed, and that a new denial gets a version bump."
-    },
-    {
-      "pattern": "*/plugins/engineering-framework/reference/permissions-floor.json",
-      "reason": "this is the layer that cannot fail open. Confirm every Bash rule is mirrored as a PowerShell rule and that no rule uses an inert Write()/Glob()/MultiEdit()/NotebookEdit() path form."
-    },
-    {
-      "pattern": "*/plugins/engineering-framework/scripts/session-charter.sh",
-      "reason": "this is the framework's entire always-on context budget, paid on every request in every repository. Confirm the addition genuinely applies to almost every request and does not belong in a skill instead."
-    }
-  ],
-
   "risk": {
     "highRiskPaths": [
-      "*/plugins/engineering-framework/scripts/guard-*.sh",
-      "*/plugins/engineering-framework/reference/permissions-floor.json",
       "*/plugins/engineering-framework/scripts/session-charter.sh",
       "*/plugins/engineering-framework/bin/ef-doctor",
       "*/plugins/engineering-framework/hooks/hooks.json",

@@ -38,9 +38,9 @@ jobs:
           node-version: '22'
 
       - name: Install jq
-        # The command guard fails closed to "ask" without jq, which would make
-        # every hook fixture pass as "ask" and prove nothing. The fixture runner
-        # checks for jq explicitly; this makes sure it is there.
+        # ef-doctor reads the repository policy file with jq. Without it the
+        # audit reports that it could not inspect, and the doctor fixtures
+        # would assert against that rather than against real findings.
         run: |
           sudo apt-get update
           sudo apt-get install --yes jq
@@ -76,17 +76,6 @@ jobs:
 
       - name: Session charter budget and guarantees
         run: node tests/validate-charter.mjs
-
-      - name: Guard decision tables
-        # Command guard, protected-path guard, and the command guard again
-        # under every repository policy profile.
-        run: node tests/run-hook-fixtures.mjs
-
-      - name: Guard robustness against malformed and hostile payloads
-        # A guard that crashes exits non-zero, and Claude Code treats every
-        # non-zero exit except 2 as a non-blocking error — so a crash fails
-        # OPEN. This asserts it cannot be made to crash.
-        run: node tests/guard-robustness.mjs
 
       - name: Repository contract audit against fixtures
         # ef-doctor must behave correctly on repositories that satisfy the

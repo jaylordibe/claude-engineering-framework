@@ -56,7 +56,7 @@ For `nestjs-api`, these came out wholesale:
 | `.claude/skills/gate-{design,approve,implement,review,validate}/` | the plugin's five gates |
 | `.claude/skills/work-item/` | the plugin's conductor |
 | `.claude/templates/plan.md`, `threat-model.md` | the plugin's templates |
-| `.claude/hooks/*.sh` | the plugin's guards, which cover more forms |
+| `.claude/hooks/*.sh` | **nothing — keep yours.** The plugin registers one `SessionStart` hook and no hooks that gate a tool call, so it replaces none of these. |
 
 Before deleting each one, read it once and ask: **does this file say anything
 the plugin's version does not?** If it does, that sentence is repository truth
@@ -137,23 +137,25 @@ Add one line near the top so precedence is explicit:
 
 ---
 
-## Step 6 — Reconcile the permissions floor
+## Step 6 — Keep your permissions exactly as they are
 
-Your existing `settings.json` almost certainly has more rules than the
-framework's floor, because it names your ecosystem's commands. **Keep all of
-them.** Run `framework-install` to add anything the floor has that you do not,
-and let it report anything of yours the floor would weaken.
+**Change nothing in `.claude/settings.json`.** The framework ships no permission
+rules and no hooks that gate a tool call, so there is nothing to reconcile
+against and nothing of yours it will weaken. Your rules are yours; keep every
+one.
 
-Then move the repository-specific parts of your old hooks into
-`.claude/engineering-framework.json`:
+The only thing to move into `.claude/engineering-framework.json` is what the
+*gates* read:
 
-- paths your protected-path hook guarded → `protectedPaths`, with the reason
-  text you already wrote;
-- any policy you deliberately relax → `policy`;
-- your canonical commands → `commands`.
+- your canonical commands → `commands`, so the validation gate runs them rather
+  than inferring;
+- the paths where a change deserves more ceremony → `risk.highRiskPaths`, which
+  raises the review tier and selects a wider lens panel.
 
-The plugin's guard covers the generic verbs across every ecosystem, so most
-custom hook code disappears here rather than moving.
+If you had a protected-path hook, its path list is usually a good starting point
+for `risk.highRiskPaths` — but note the difference: the old hook *prompted*, and
+this *raises the review tier*. If you want those paths prompted on, that is a
+rule in your own settings, and it stays yours.
 
 ---
 
@@ -165,9 +167,10 @@ Two of its ideas are worth keeping, and both have a new home:
 | Old check | New home |
 |---|---|
 | Plugin structure, frontmatter, collisions, read-only agents | The framework's own CI. Delete yours. |
-| Permissions floor present, Bash/PowerShell parity, inert file rules | `ef-doctor`, which runs in your repository |
+| `CLAUDE.md` completeness, resolvable commands, declared risk paths | `ef-doctor`, which runs in your repository |
+| Permission-rule checks of any kind | **Keep yours.** The framework has no opinion on your rules and no longer inspects them. |
 | **Documentation-versus-code symbol drift** | Keep this. It is repository-specific and it is the best check you had. |
-| **Hook decision fixtures** | The framework's, for the framework's guard. Keep yours for any hook you still own. |
+| **Hook decision fixtures** | Keep yours for any hook you still own. The framework ships none to test. |
 
 Keep your validator's drift check wired into your own CI. It is the thing that
 stops your `CLAUDE.md` from describing an architecture you no longer have —

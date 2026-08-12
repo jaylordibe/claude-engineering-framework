@@ -205,21 +205,30 @@ if (charter) {
 }
 
 // ---------------------------------------------------------------------------
-// 6. The missing-floor warning appears when, and only when, the floor is absent
+// 6. The charter says nothing about the repository's permission settings
 // ---------------------------------------------------------------------------
+//
+// INVERTED IN 1.0.0. This used to assert that the charter warned when a
+// repository had no `.claude/settings.json`, so the user knew the permissions
+// floor was missing. The framework ships no floor now, so there is nothing to
+// miss — and the charter is the always-on budget, paid on every request in
+// every repository. Spending any of it on an opinion about a file the framework
+// neither writes nor reads is exactly the overreach 1.0.0 removed.
 
-const withSettings = renderCharter(repositoryRoot);
-if (withSettings.status === 0) {
+for (const [label, rendered] of [
+  ['with a settings file', renderCharter(repositoryRoot)],
+  ['without a settings file', renderCharter(join(repositoryRoot, 'tests', 'no-such-directory'))],
+]) {
+  if (rendered.status !== 0) continue;
+  let emitted = '';
   try {
-    const installed = JSON.parse(withSettings.stdout).hookSpecificOutput?.additionalContext ?? '';
-    if (/permissions floor is not installed/i.test(installed)) {
-      fail('the charter warns that the permissions floor is missing in a repository that has one. A warning that fires when it should not is a warning people learn to ignore.');
-    }
-    if (charter && !/permissions floor is not installed/i.test(charter)) {
-      fail('the charter does NOT warn about a missing permissions floor in a repository that has none. That warning is the only thing telling a user they are relying on the layer that can fail open.');
-    }
+    emitted = JSON.parse(rendered.stdout).hookSpecificOutput?.additionalContext ?? '';
   } catch {
-    fail('the charter hook emitted invalid JSON when a settings file was present.');
+    fail(`the charter hook emitted invalid JSON ${label}.`);
+    continue;
+  }
+  if (/permissions floor|settings\.json|permission rule/i.test(emitted)) {
+    fail(`the charter comments on the repository's permission settings ${label}. The framework ships no permission rules and must not spend always-on context on somebody else's settings file.`);
   }
 }
 

@@ -114,20 +114,17 @@ CHARTER
 charter="${charter}
 "
 
-# The permissions floor is the only layer that cannot fail open, and a plugin
-# cannot ship it: plugin settings.json supports only `agent` and
-# `subagentStatusLine`. So the framework can only tell the truth about whether
-# this repository has one. A single line, once per session, never blocking.
-project_settings="${CLAUDE_PROJECT_DIR:-}/.claude/settings.json"
-if [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ ! -r "$project_settings" ]; then
-  charter="${charter}
-> This repository has no \`.claude/settings.json\`, so the framework's
-> declarative permissions floor is not installed and the command guard is the
-> only layer protecting human-owned operations. A hook is defence in depth and
-> can fail open; a deny rule cannot. Run
-> \`/engineering-framework:framework-install\` to add it.
-"
-fi
+# REMOVED IN 1.0.0: a per-session warning when the repository had no
+# `.claude/settings.json`, telling the user to install the framework's
+# permissions floor.
+#
+# The framework ships no permission rules now, so it has no floor to miss and
+# no standing to comment on a repository's settings. Saying anything here would
+# spend the always-on budget — paid on every request in every repository — on
+# an opinion about a file that belongs to somebody else.
+#
+# Nothing replaces it. The charter below states which operations are
+# human-owned; whether they are also *enforced* is the repository's decision.
 
 charter="${charter}
 _engineering-framework v${plugin_version} — methodology only. This repository's

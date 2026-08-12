@@ -6,7 +6,7 @@ How to change, validate and release the framework itself.
 
 - Claude Code (development is done against the version in `docs/constraints.md`)
 - Node 22 or later — only to run the validators; the plugin has no dependencies
-- `jq` — the guard hooks require it
+- `jq` — `ef-doctor` reads the repository policy file with it
 - `shellcheck` — for the shell in `scripts/` and `bin/`
 
 ## Loading your working copy
@@ -34,11 +34,9 @@ that was never loaded.
 node tests/validate-plugin.mjs --strict     # structure, contracts, normative anchors
 node tests/validate-fixtures.mjs           # the fixture corpus stays disjoint and hostile
 node tests/validate-charter.mjs            # the always-on context stays within budget
-node tests/run-hook-fixtures.mjs           # both guards, under five policy profiles
-node tests/guard-robustness.mjs            # neither guard can be made to fail open
-node tests/run-doctor-fixtures.mjs         # ef-doctor diagnoses 18 repository shapes
+node tests/run-doctor-fixtures.mjs         # ef-doctor diagnoses 12 repository shapes
 claude plugin validate ./plugins/engineering-framework --strict
-shellcheck plugins/engineering-framework/scripts/*.sh
+shellcheck plugins/engineering-framework/scripts/*.sh plugins/engineering-framework/bin/*
 ```
 
 All of them run in CI. Run them locally before pushing; the whole suite is a
@@ -69,9 +67,8 @@ The official validator checks the manifests. This one checks what fails
 - **gates are `disable-model-invocation: true`** and domain playbooks are
   `user-invocable: false`;
 - **hook scripts exist, are executable, and are wired to the manifest** — an
-  unwired or non-executable script still reads as an active guard;
-- **the permissions floor** mirrors Bash to PowerShell and contains no inert
-  file rules;
+  unwired or non-executable script still reads as active, and the charter
+  failing to load is silent;
 - **the stack-term denylist** (below);
 - **the changelog has an entry for the current version.**
 
@@ -136,21 +133,29 @@ not exist.
 Reuse the shared output-contract block verbatim, including the paragraph saying
 zero findings is a valid result. That paragraph does real work.
 
-### A hook rule
+### A rule that blocks something
 
-1. Add the rule to `scripts/guard-dangerous-commands.sh` (commands) or
-   `scripts/guard-protected-paths.sh` (paths).
-2. **Add fixtures to the matching decision table in the same commit** —
-   `tests/guard-hook-fixtures.tsv` or `tests/guard-path-fixtures.tsv` — at
-   least one asserting the new decision, and at least one asserting a
-   neighbouring legitimate command or path is still allowed.
-3. Run `node tests/run-hook-fixtures.mjs`, which drives both tables.
-4. Decide whether it should be policy-governed. A rule that a reasonable
-   repository would want off needs a switch in `reference/repo-config.schema.json`.
+**You cannot add one, and this is the 1.0.0 constraint that most often catches
+a contributor out.** The framework ships no permission rules and no hooks that
+gate a tool call. Nothing here may create or edit a `.claude/settings.json`, and
+nothing may register a `PreToolUse` hook.
 
-The "still allowed" fixture is not optional. Roughly half the table exists to
-prove ordinary commands are never prompted, because a guard that nags gets
-switched off within a day.
+If a change genuinely needs an operation stopped rather than reserved, the
+options in order of preference are:
+
+1. **State it in the charter** as a human-owned operation, if it belongs to
+   every repository. That is `scripts/session-charter.sh`, and it is paid for on
+   every request in every repository, so the bar is high.
+2. **Give a gate the check**, if it belongs to a stage. `gate-review` and
+   `gate-validate` already stop on what they find.
+3. **Tell the repository owner which rule to add** to their own settings, in
+   `ef-doctor` or a skill. Naming a rule is help; writing one is not ours to do.
+
+The history is in `CHANGELOG.md` under 1.0.0: the enforcement layer was a third
+of the plugin and half its test burden, and a six-lens review of the last
+attempt to extend it found two Critical and ten High defects in one pass. The
+conclusion was not "parse more carefully" but "a text parser cannot out-guess a
+shell, and a plugin should not rewrite the user's rules."
 
 ### A constraint discovered in Claude Code
 

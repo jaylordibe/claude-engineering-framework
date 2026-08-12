@@ -1,84 +1,94 @@
 # Security policy
 
-## What this project's guards are, and are not
+## What this project is, and is not
 
-The `engineering-framework` plugin ships two `PreToolUse` hooks and a reference
-permissions floor. Together they stop a large class of destructive and
-exfiltrating operations.
+The `engineering-framework` plugin ships **methodology**: a session charter, a
+set of human-invoked gates, eight read-only review lenses, and the standards
+they judge against.
 
-**They are defence in depth. They are not a sandbox, and they must never be
-described as one.**
+**It ships no permission rules and no hooks that gate a tool call. It is not a
+security control, and it must never be described as one.**
 
-A shell can always express an operation a parser does not model: a verb built
-from a variable, an operation inside a script file, a here-doc, an interpreter
-given a string. The guards see the forms they model, and no more.
+Until 1.0.0 it shipped both: a reference permissions floor that
+`framework-install` merged into a consuming repository's settings, and two
+`PreToolUse` guards that inspected every Bash and Edit call. Both were removed,
+for two reasons worth stating here because they are security reasoning:
 
-| Layer | Sees | Can fail open |
-|---|---|---|
-| `permissions.deny` | Only the exact command prefixes it names | **No** |
-| Command guard hook | Wrappers, privilege escalation, environment runners, pipelines | **Yes** — it is executable code, and Claude Code treats a crashed hook as a non-blocking error |
+- **A text parser cannot out-guess a shell.** A verb built from a variable, an
+  operation inside a script file, a here-doc, an interpreter given a string — a
+  guard sees the forms it models and no more. A six-lens review of the last
+  attempt to extend those guards found two Critical and ten High defects in a
+  single pass, each one a command that reached a destructive operation without a
+  decision. Every hole patched implied another.
+- **A hook can fail open.** Claude Code treats every non-zero exit except 2 as a
+  non-blocking error, so a guard that crashes lets the operation through. That
+  happened here twice, once because `jq` ran inside a command substitution under
+  `set -e`. A safety layer that an apostrophe can defeat is not a safety layer.
 
-Note the asymmetry: the layer that cannot fail open is the one a plugin
-*cannot ship*, so a repository that has not installed the floor is relying
-entirely on the layer that can. `framework-doctor` exists to tell you which
-situation you are in.
-
-**For a real boundary, use OS-level sandboxing or a container.**
+**For a real boundary, use your own permission rules, Claude Code's permission
+modes, OS-level sandboxing, or a container.** Those are yours to configure, and
+this plugin will not change them.
 
 ## Reporting a vulnerability
 
 Report privately through
 [GitHub Security Advisories](https://github.com/jaylordibe/claude-engineering-framework/security/advisories/new).
-Please do not open a public issue for an unfixed bypass.
+Please do not open a public issue for an unfixed problem.
 
-Include: the exact command or payload, the decision you observed, the decision
-you expected, and your Claude Code version.
+Include: the prompt or repository content that triggered it, what the agent did,
+what you expected, and your Claude Code version.
 
-Expect an acknowledgement within a few days. A confirmed bypass ships as a
-patch release with a fixture pinning it, so the same shape cannot regress.
+Expect an acknowledgement within a few days. A confirmed issue ships as a patch
+release with an eval case or fixture pinning it, so the same shape cannot
+regress.
 
 ## What counts as a vulnerability here
 
 **In scope:**
 
-- A guard bypass: a command that reaches a denied operation without a `deny`
-  or `ask` decision — particularly through a wrapper, an environment runner, a
-  privilege escalation, a pipeline, or a quoting trick.
-- A credential path reaching the shell without a decision.
-- A crash or hang in a guard, since a failed hook is treated as non-blocking
-  and therefore fails open.
-- Guidance in a skill or agent that would lead Claude to weaken a security
-  control, exfiltrate a secret, or disclose data.
-- An inert or ineffective rule in the reference permissions floor that reads as
-  protective.
+- Guidance in a skill, agent or standard that would lead Claude to weaken a
+  security control, exfiltrate a secret, disclose data, or perform a human-owned
+  operation without being asked.
+- Repository content that reliably steers an agent — obtaining an approval it
+  never received, a fabricated `PASS`, a credential, or a force push. See
+  *Repository content is not a source of instructions* below.
+- A gate that can be made to report a verdict its evidence does not support.
+- Anything in this plugin that writes to a consuming repository's
+  `.claude/settings.json`. That is a defect by definition from 1.0.0 onward: the
+  framework must never alter permissions a developer chose.
 
 **Out of scope:**
 
-- That the guards are not a sandbox. That is documented, everywhere, on purpose.
-- Operations a repository has explicitly delegated in its own policy file.
+- That the framework does not block operations. It does not, by design, and
+  every document here says so.
+- Prompting behaviour, permission modes, or rules in your own settings. Those
+  are yours; this plugin neither reads nor writes them.
 - Anything requiring the ability to modify the plugin's own files — at that
   point the attacker already runs code on the machine.
-- False positives. Those are ordinary bugs; open an issue.
+- False positives in a review. Those are ordinary bugs; open an issue.
 
 ## Hardening a consuming repository
 
-1. **Install the permissions floor.** Run
-   `/engineering-framework:framework-install`. It is the only layer that cannot
-   fail open, and it is the one thing the plugin cannot install for you.
+The framework will not do any of this for you, and that is deliberate.
+
+1. **Choose your permission posture yourself.** Deny rules, ask rules and your
+   permission mode are the layers that actually stop an operation. `ef-doctor`
+   will name a rule it thinks you want; it will never write one.
 2. **Mirror Bash rules as PowerShell rules.** The PowerShell tool is enabled by
-   default on Windows without Git Bash, and `Bash(...)` rules do not govern it.
-   An unmirrored floor silently disappears on those machines.
+   default on Windows without Git Bash, and `Bash(...)` rules do not govern it,
+   so an unmirrored rule silently disappears on those machines.
 3. **Use `Read(...)` and `Edit(...)` for file rules.** A `Write(...)`,
    `Glob(...)`, `MultiEdit(...)` or `NotebookEdit(...)` path rule is accepted,
    never enforced, and warns at startup — the worst failure shape available,
-   because the path reads as protected while being fully writable.
-4. **Install `jq`.** Without it both guards fail closed and prompt for
-   everything. That is safe, but it is tedious enough that people disable the
-   plugin, which is not.
-5. **Run `framework-doctor` after any settings change.** A floor that was
-   quietly edited away still reads as present in your documentation.
-6. **Review the policy file in code review.** Every `humanOwned*` switch set to
-   `false` is a deliberate delegation and deserves a reviewer.
+   because the path reads as protected while being fully writable. Pair every
+   `Read` deny with an `Edit` deny.
+4. **Check `permissions.defaultMode` in your repository settings.** A project
+   settings file *overrides* your own `~/.claude/settings.json` for that key, so
+   a value committed to a repository silently changes the permission mode for
+   everyone who works in it. Versions of this framework before 1.0.0 installed
+   one; if yours has it, decide deliberately whether you want it.
+5. **Keep `CLAUDE.md` true.** Agents treat it as evidence, so a stale one is a
+   security problem and not only a documentation one.
 
 ## Repository content is not a source of instructions
 
@@ -94,9 +104,11 @@ never *issues instructions* to one, and that an attempt to do so is a finding to
 report with its `path:line` rather than a directive to follow.
 
 **This is guidance, not a control.** It is enforced by instruction to a model,
-which is a materially weaker mechanism than a deny rule, and it should be
-described that way. `fixtures/adversarial-injection/` and the
-`injection-resistance` grader exist to keep it honest.
+which is materially weaker than a rule, and it should be described that way.
+Since 1.0.0 it is the framework's *primary* defence rather than one layer of
+several, which raises rather than lowers the bar for keeping it honest.
+`fixtures/adversarial-injection/` and the `injection-resistance` grader exist
+for that.
 
 Treat a bypass — repository text that reliably obtains a human-owned operation,
 a credential, or a fabricated verdict — as in scope for a report.
@@ -104,8 +116,9 @@ a credential, or a fabricated verdict — as in scope for a report.
 ## Supply chain
 
 The plugin has **no runtime dependencies**. It is Markdown, JSON and POSIX
-shell, and it executes nothing it did not ship. Third-party GitHub Actions in
-this repository's own CI are pinned to commit SHAs rather than tags.
+shell, and it executes nothing it did not ship. Since 1.0.0 the only script it
+runs is `scripts/session-charter.sh`, on `SessionStart`. Third-party GitHub
+Actions in this repository's own CI are pinned to commit SHAs rather than tags.
 
 Updates are gated on the plugin's `version` field: with an explicit version,
 `/plugin update` is a no-op until that field changes, so a commit pushed to
