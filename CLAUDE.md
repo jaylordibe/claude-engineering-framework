@@ -43,7 +43,8 @@ plugins/engineering-framework/
   templates/                        thinking aids, never committed by a run
   scripts/                          the SessionStart charter and two PreToolUse guards
   bin/ef-doctor                     repository contract audit
-  reference/                        the permissions floor, config schema, CLAUDE.md template
+  reference/                        the permissions floor, the rules it has withdrawn,
+                                    config schema, CLAUDE.md template
 fixtures/                           eleven tiny repositories of different shapes and situations
 evals/                              behavioural cases and grader rubrics
 tests/                              everything that runs in CI
@@ -79,6 +80,17 @@ docs/                               design rationale and Claude Code constraints
   installs, which is why `framework-doctor` exists.
 - **These scripts must run under bash 3.2**, the version macOS ships. No
   `${var,,}`, no associative arrays.
+- **Removing a rule from the floor does not remove it from anybody.**
+  `framework-install` merges and never overwrites, so it only ever adds. A
+  withdrawn rule survives in every repository that already had it, and since
+  `ask` beats `allow`, one stale rule cancels a whole release — which is
+  exactly what happened to 0.3.0. Any rule taken out of the floor must be
+  recorded in `reference/retired-permission-rules.json` in the same commit,
+  or the change reaches nobody.
+- **A false denial is worse than a false prompt.** A prompt costs a keystroke;
+  a denial cannot be clicked through and blocks the work outright. This is why
+  the command guard splits segments with quote awareness, and why a broad verb
+  deny (`git stash *`) must be narrowed when the verb has a read-only face.
 - **The permissions floor is a floor, not a ceiling.** Its `allow` tier is
   load-bearing: a floor of deny and ask rules alone prompts for every ordinary
   command, and twenty reflex approvals per feature are worth less than one

@@ -136,6 +136,42 @@ Four things to know:
 
 All four are checked by `ef-doctor`.
 
+### Upgrading the floor: the one thing a merge cannot do
+
+`framework-install` merges and never overwrites. That is the right default — it
+must not silently undo a decision you made on purpose — but it means the merge
+only ever **adds**. A rule a later floor *withdraws* cannot leave your
+repository on its own, and since `ask` outranks `allow`, one stale rule can
+cancel an entire release.
+
+This is not hypothetical. v0.3.0 withdrew `docker exec *`, `git branch *`,
+`git worktree *`, `gh api *` and `glab api *` from the `ask` tier so that
+running a test suite inside a container would stop prompting. In every
+repository that had already installed v0.2.0, all five survived, and the
+release removed none of the noise it was written to remove.
+
+So **re-run `framework-install` after every plugin upgrade**, not just the
+first time. It reads `reference/retired-permission-rules.json`, lists every
+withdrawn rule you still have with the reason it was withdrawn, and asks before
+removing any. `ef-doctor` reports the same thing under *Withdrawn floor rules
+are still installed*.
+
+A rule count cannot detect this drift — your `allow` tier grows while the stale
+`ask` rule quietly outranks it — so the repository looks healthier as it gets
+worse.
+
+### What a prefix rule cannot see
+
+`Bash(git log:*)` matches the string `git log`. It does **not** match
+`git --no-pager log`, `git -C /path log` or `git -c core.pager=cat log`, because
+a global option before the verb makes a different string. The floor enumerates
+the `--no-pager` forms for read-only verbs for exactly this reason, and
+deliberately does not enumerate `-C` or `-c`, which take an arbitrary argument.
+
+The lesson for your own dev-loop rules: **allow the form you actually run.** If
+your test command is `docker compose exec -T api ...`, check that the form with
+the flag is covered, not just the form without it.
+
 **Where the `ask` tier stops and the guard starts.** A prefix rule cannot tell
 `git branch -a` from `git branch -d`, `gh api` from `gh api -X DELETE`, or
 `docker exec api <test command>` from `docker exec -it api bash`. The command

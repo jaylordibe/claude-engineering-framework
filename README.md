@@ -131,9 +131,15 @@ A command guard that resolves the *effective* verb behind wrappers, so
 the edits whose failure is silent, remote and unrecoverable: migrations,
 infrastructure, CI configuration, lockfiles.
 
-Its behaviour is pinned by an 87-row decision table that runs on every commit —
-**half of which asserts that ordinary commands are never prompted**. A guard
-that nags gets switched off within a day, and then it protects nothing.
+Its behaviour is pinned by a 281-row decision table that runs on every commit —
+**106 of those rows assert that an ordinary command produces no prompt at all**.
+A guard that nags gets switched off within a day, and then it protects nothing.
+
+The guard reads a command the way a shell does, not the way a substring search
+does. `grep -rn "git push" .` searches for text; `ls; git push` is two
+commands and the second is denied. Getting that distinction wrong is not a
+lesser failure than missing a dangerous command — a denial cannot be clicked
+through, so a false one blocks ordinary work outright.
 
 ---
 
@@ -183,8 +189,40 @@ choice, and it shapes the framework's honesty about its own guarantees:
 They are complementary. The deny rule cannot fail open but only sees the exact
 command forms it names; the hook sees far more forms but can fail. Install both.
 
+### The `allow` tier is the half that makes the other two usable
+
+A floor of `deny` and `ask` rules alone leaves every ordinary command — `ls`,
+`grep`, your test suite — matching no rule, which means a prompt. So the floor
+ships **450 allow rules**, and that is not a relaxation of it. It is the reason
+the denials still mean something.
+
+Which rules belong there is decided by **measurement, not intuition**. Replaying
+20_498 real Bash invocations showed that `cd` alone caused about a fifth of all
+prompts — it cannot write, execute, or take a command as an argument, and had
+simply never been added — and that 88.7% of every `sed` call is `sed -n` reading
+a range of lines. Guessing at this produces a floor that feels careful and
+prompts on one command in five.
+
+Twenty prompts per feature is not twenty decisions. It is one reflex, and the
+reflex is Yes — still armed when the twenty-first prompt is the migration.
+
+**A permission prompt is not a gate.** The gates are the two places a human
+reads a plan or a diff. A prompt that arrives with neither attached buys no
+safety; it only spends the attention the real gate needs.
+
+A rule earns a place in the `allow` tier only if it cannot write outside the
+working tree, cannot execute remote code, does not take an arbitrary command as
+its argument, and cannot widen a rule above it. That last criterion is why
+`docker compose -f` is *not* allowed while `docker compose up` is: the file flag
+takes an arbitrary path and then an arbitrary verb, which would leave
+`docker compose -f x.yml down -v` matched by nothing but the hook.
+
 `framework-install` writes the floor and never overwrites what you already
-have. `framework-doctor` tells you if it goes missing.
+have. `framework-doctor` tells you if it goes missing — and, because merging
+only ever adds, it also reports any rule the floor has since **withdrawn** that
+is still installed. That drift is invisible to a rule count: the allow tier
+grows while a stale `ask` rule quietly outranks it, so the repository looks
+healthier as it gets worse.
 
 **Neither is a sandbox, and the documentation will never call one that.** A
 shell can always express an operation a parser does not model. For a real
@@ -222,8 +260,23 @@ Everything else is optional and has a working default. See the
 **Skills do not appear.** Run `/reload-plugins`, or restart. Confirm with
 `claude plugin list`.
 
-**Everything prompts for permission.** `jq` is missing. The guards fail closed
-by design. Install jq.
+**Everything prompts for permission.** Two causes, in order of likelihood.
+
+*You upgraded the plugin and nothing improved.* `framework-install` merges and
+never overwrites, so it only ever **adds** rules — a rule a later floor
+*withdraws* stays in your settings forever, and an `ask` rule outranks every
+`allow` rule beneath it. Re-run `/engineering-framework:framework-install`; it
+lists the withdrawn rules and asks before removing any. `framework-doctor`
+reports them under *Withdrawn floor rules are still installed*.
+
+*Every command prompts, including `ls`.* `jq` is missing and the guards fail
+closed by design. Install jq.
+
+**One specific ordinary command prompts.** The floor cannot know your dev loop.
+Add it to the `allow` tier in the `verb:*` prefix form, mirrored as a
+`PowerShell` rule. Note that a prefix rule is blind to a global option before
+the verb — `git --no-pager log` and `git log` are different strings to it — so
+the form you actually run is the form to allow.
 
 **A legitimate command is blocked.** Relax the specific policy in
 `.claude/engineering-framework.json` — `humanOwnedGitWrites`,

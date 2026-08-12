@@ -160,6 +160,47 @@ const CASES = [
     mustReport: ['WARN  permissions.deny is empty.'],
   },
   {
+    // The drift a merge can never repair. framework-install adds and never
+    // overwrites, so a rule the floor WITHDRAWS survives in every repository
+    // that already had it. v0.3.0 withdrew five coarse ask rules and, in an
+    // already-installed repository, all five stayed, ask still beat allow,
+    // and the release removed none of the noise it existed to remove.
+    //
+    // A rule count cannot see this: the allow tier grows while the stale ask
+    // rule quietly outranks it, so the repository looks healthier as it gets
+    // worse.
+    name: 'a withdrawn floor rule still installed keeps outranking the allow tier',
+    build: {
+      'CLAUDE.md': HEALTHY_CLAUDE_MD,
+      '.claude/settings.json': {
+        permissions: {
+          ...MINIMAL_FLOOR.permissions,
+          ask: ['Bash(docker exec *)', 'PowerShell(docker exec *)'],
+          allow: GENEROUS_ALLOW_TIER,
+        },
+      },
+    },
+    exit: 0,
+    mustReport: ['WARN  Withdrawn floor rules are still installed: Bash(docker exec *), PowerShell(docker exec *)'],
+  },
+  {
+    // The neighbouring legitimate case: an ask rule that the floor never
+    // withdrew must not be reported as stale.
+    name: 'an ask rule the floor still ships is not withdrawal drift',
+    build: {
+      'CLAUDE.md': HEALTHY_CLAUDE_MD,
+      '.claude/settings.json': {
+        permissions: {
+          ...MINIMAL_FLOOR.permissions,
+          ask: ['Bash(psql *)', 'PowerShell(psql *)'],
+          allow: GENEROUS_ALLOW_TIER,
+        },
+      },
+    },
+    exit: 0,
+    mustReport: ['PASS  No withdrawn floor rules remain installed.'],
+  },
+  {
     // The floor before v0.3.0 shipped seven allow rules, so every ordinary
     // command prompted. Twenty reflex approvals per feature are worth less
     // than one that is read, and this warning is what tells a repository that

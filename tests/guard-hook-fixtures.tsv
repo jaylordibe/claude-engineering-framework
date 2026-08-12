@@ -179,6 +179,41 @@ deny	NPM PUBLISH	the same publication verb
 # must not start matching dangerous verbs.
 allow	npm run Build	a capitalised script name is not a dangerous verb
 allow	git log --grep "Publish the release notes"	a verb inside a quoted search string is text
+allow	git stash list	listing shelved work reads nothing and writes nothing
+allow	git stash show	so does showing one
+deny	git stash	bare stash means stash push, which shelves the working tree
+deny	git stash push -m wip	the explicit form of the same write
+deny	git stash pop	restores and drops a stash entry
+deny	git stash drop	discards shelved work irrecoverably
+allow	git remote	with no action this only lists remote names
+allow	git remote -v	the -v listing is the single most common remote invocation
+allow	git remote show origin	show reads the remote, it does not change it
+allow	git remote get-url origin	reading a URL is not writing one
+deny	git remote add origin git@example.com:x/y.git	adding a remote changes where a push would land
+deny	git remote set-url origin git@example.com:x/y.git	so does repointing one
+deny	git remote remove origin	so does removing one
+allow	grep -rn "git remote" scripts/	a guarded verb inside a quoted search pattern is text, not an invocation
+allow	grep -n 'git stash|git remote' file.sh	a quoted pipe must not split a segment and invent a git command
+allow	echo "run git push --force to publish"	quoted prose naming a denied verb is still prose
+deny	ls "$(git push --force)"	command substitution executes inside double quotes, so it must still split
+deny	ls "`git push --force`"	backtick substitution executes inside double quotes too
+deny	ls $(git push --force)	unquoted substitution splits as it always did
+allow	echo "$message; git push"	a bare $ is a variable expansion, not a substitution, and the rest is text
+allow	sed -n 1,20p README.md	reading a line range is 88.7% of all measured sed use and must be silent
+allow	sed -n /warn/p app.log	a script containing w must not read as the w write flag
+allow	sed s/a/b/ input.txt	substituting to stdout writes no file
+ask	sed -i s/a/b/ config.yml	-i rewrites the file in place with no copy of what it replaced
+ask	sed --in-place s/a/b/ config.yml	the long spelling of the same write
+ask	sed -n s/a/b/w out.txt input.txt	the w flag writes a file even inside a reading script
+allow	awk {print $1}	awk writes nothing and runs nothing by default
+allow	awk -F: {print $NF} /etc/hosts	still a read
+ask	awk 'BEGIN{system("id")}'	system() runs a command no rule here can read
+allow	npx jest --coverage	the most used npx tool measured; naming the tool keeps the runner out of it
+allow	npx tsc --noEmit	a type check is a read
+allow	npx eslint src/	so is a lint
+allow	npx prisma generate	generate writes a client, it does not touch a database
+deny	npx prisma migrate deploy	applying a migration is human-owned however it is invoked
+deny	npx prisma db push	pushing a schema is the same act under another name
 allow	rg "COMMIT" src/	a search term is not a subcommand
 allow	echo 'git commit -m x'	quoting narration is not running it
 
