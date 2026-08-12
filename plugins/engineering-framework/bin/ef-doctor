@@ -16,7 +16,14 @@
 set -uo pipefail
 
 project_directory=${CLAUDE_PROJECT_DIR:-$PWD}
+# Claude Code sets CLAUDE_PLUGIN_ROOT; a human running bin/ef-doctor from a
+# checkout does not. Falling back to the script's own location keeps the
+# reference-file checks working in both, rather than silently skipping them
+# and reporting a clean bill of health it never actually verified.
 plugin_root=${CLAUDE_PLUGIN_ROOT:-}
+if [ -z "$plugin_root" ]; then
+  plugin_root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+fi
 strict=false
 
 while [ "$#" -gt 0 ]; do
@@ -205,6 +212,42 @@ else
           note 'floor, then add the test and lint commands this repo runs.'
         else
           pass "permissions.allow holds $allow_count rules."
+        fi
+
+        # Rules the floor has WITHDRAWN, which is the one kind of drift a merge
+        # can never repair. framework-install adds and never overwrites, so a
+        # rule the floor deletes stays in every repository that already had it,
+        # forever. That is not hypothetical: v0.3.0 withdrew five coarse ask
+        # rules to stop `docker exec api <test command>` and `git branch -a`
+        # prompting, and in an already-installed repository all five survived,
+        # ask still beat allow, and the release changed nothing at all.
+        #
+        # A count check cannot see this — the allow tier grows while the stale
+        # ask rule quietly outranks it — so it is checked by name.
+        retired_reference="${plugin_root}/reference/retired-permission-rules.json"
+        if [ -f "$retired_reference" ]; then
+          # The rule is bound to $rule before the membership test. Written as
+          # `... | index(.)` the dot rebinds to the array being piped in, so
+          # every rule reported as present regardless of the settings file.
+          retired_present=$(jq -r --slurpfile installed "$project_settings" '
+            ( ( $installed[0].permissions.deny  // [] )
+            + ( $installed[0].permissions.ask   // [] )
+            + ( $installed[0].permissions.allow // [] ) ) as $rules
+            | [ .retired[].rules[] as $rule
+                | select( $rules | index($rule) )
+                | $rule
+              ] | join(", ")' "$retired_reference" 2>/dev/null)
+
+          if [ -n "$retired_present" ]; then
+            warn "Withdrawn floor rules are still installed: $retired_present"
+            note 'These were removed from the floor because a narrower rule or'
+            note 'the command guard now does the job better. While they remain,'
+            note 'they outrank the allow tier and prompt on ordinary work. Run'
+            note '/engineering-framework:framework-install to be shown the'
+            note 'removals, or delete them by hand if you want them kept.'
+          else
+            pass 'No withdrawn floor rules remain installed.'
+          fi
         fi
 
         inert=$(jq -r '[.permissions.deny // [], .permissions.ask // [], .permissions.allow // []] | flatten | map(select(test("^(Write|Glob|MultiEdit|NotebookEdit)\\("))) | join(", ")' "$project_settings")

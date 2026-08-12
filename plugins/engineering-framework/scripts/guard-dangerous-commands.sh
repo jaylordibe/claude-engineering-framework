@@ -929,7 +929,34 @@ classify_segment() {
         esac
       fi
 
+      # `stash` and `remote` are write verbs that each have a purely read-only
+      # face, and denying the whole verb blocked `git stash list` and
+      # `git remote -v` — two of the most ordinary inspection commands there
+      # are. A denial cannot be clicked through, so this was not noise, it was
+      # a wall. The exemption is written as an allow-list of reading actions,
+      # never as "anything that is not a known write", because a git version
+      # that adds a subcommand must default to the guarded side.
+      #
+      # Bare `git stash` is NOT exempt: with no action it means `stash push`,
+      # which shelves the working tree. Bare `git remote` IS exempt: with no
+      # action it only lists remote names, and `-v` is dropped before this
+      # point because positional_arguments strips option tokens.
+      git_invocation_is_read_only='false'
+      case "$subcommand" in
+        stash)
+          case "$action" in
+            list | show) git_invocation_is_read_only='true' ;;
+          esac
+          ;;
+        remote)
+          case "$action" in
+            '' | show | get-url) git_invocation_is_read_only='true' ;;
+          esac
+          ;;
+      esac
+
       if [ "$policy_git_writes" = 'true' ] &&
+        [ "$git_invocation_is_read_only" = 'false' ] &&
         contains_word "$GIT_WRITE_SUBCOMMANDS" "$subcommand"; then
         emit_deny "git $subcommand writes history, moves HEAD, discards work or publishes it, and this repository reserves Git writes for the human. Prepare the diff and let the user commit. Read-only inspection with status, diff, log, show and blame stays allowed. Set policy.humanOwnedGitWrites to false in .claude/engineering-framework.json to change this."
       fi
@@ -986,6 +1013,42 @@ classify_segment() {
           if is_api_write_call "$effective_arguments"; then
             emit_ask 'glab api is being called with a write method, which changes state on the forge. Confirm the endpoint and the payload; a write here is a human-owned operation.'
           fi
+          ;;
+      esac
+      ;;
+
+    sed | awk | gawk | mawk)
+      # sed and awk are allowed in the floor, but only in their reading forms
+      # (`sed -n:*`, and awk which writes nothing by default). Measured across
+      # 20_498 real Bash invocations, 88.7% of every sed call was
+      # `sed -n '<range>p' <file>` — a pager — and 0.9% used -i. Excluding the
+      # verb outright to catch that 0.9% cost a prompt on 17% of all commands,
+      # which is the trade this framework exists to refuse.
+      #
+      # So the two ways these stop being read-only are caught here instead. A
+      # hook decision outranks the settings allow rule, so the narrow allow and
+      # this check compose: the reading form is silent, the writing form asks.
+      case "$effective_command" in
+        sed)
+          case " $effective_arguments " in
+            *' -i'* | *' --in-place'*)
+              emit_ask 'sed -i rewrites the file in place, with no copy of what it replaced. Confirm the pattern matches only what you mean it to.'
+              ;;
+          esac
+          # `s/a/b/w out` writes a file. Matched as `/w ` rather than a bare
+          # `w`, so that an ordinary script such as `/warn/p` is not caught.
+          case "$effective_arguments" in
+            */w\ *)
+              emit_ask 'this sed script writes its output to a file with the w flag. Confirm the path.'
+              ;;
+          esac
+          ;;
+        awk | gawk | mawk)
+          case "$effective_arguments" in
+            *system\(*)
+              emit_ask 'this awk program calls system(), which runs a shell command that no rule here can read. Confirm what it runs.'
+              ;;
+          esac
           ;;
       esac
       ;;
@@ -1173,6 +1236,145 @@ classify_remote_script_execution
 # level. Splitting on all of them means a guarded verb cannot be smuggled in as
 # the tail of an otherwise innocent line.
 #
+# WHY THIS IS NOT `tr ';|&()`' '\n\n\n\n\n\n'` ANY MORE
+# -----------------------------------------------------
+# That translate worked one character at a time and had no idea what a quote
+# was, so any quoted string CONTAINING a guarded verb produced a phantom
+# segment and a false DENIAL. `grep -n "git remote" file` split into
+# `grep -n "git remote` and ` file`, and the first read as a git remote
+# invocation. A false prompt costs a keystroke; a false denial blocks ordinary
+# read-only work with no way past it, and this one fired four times in a single
+# session on plain greps.
+#
+# Splitting with quote awareness is not a weakening, because it matches what
+# the shell actually executes:
+#
+#   single quotes  inert to the shell, so nothing inside them is ever split
+#   double quotes  only command substitution runs, so `$(` and ` still split
+#   unquoted       every separator splits, exactly as before
+#
+# So `foo; git push` still splits and still denies, while `grep "git push"`
+# is correctly read as one command that searches for a string.
+#
+# This is a pure-shell loop on purpose. Both guards run on every Bash call
+# forever, and the hot-path rule here is that a fork is paid by every user on
+# every command; character indexing costs no fork.
+split_into_segments() {
+  segment_source=$1
+  segment_length=${#segment_source}
+
+  # FAST PATH, and it is not an optimisation for its own sake. Walking 60_000
+  # characters in shell took longer than the harness timeout, and a guard that
+  # times out is a guard that did not run — which on this hot path fails OPEN.
+  #
+  # Quote awareness can only change the answer when there is a quote, so a
+  # command containing none is split by `tr`, exactly as every version before
+  # this one did. That covers the overwhelming majority of commands.
+  #
+  # The length ceiling is the same argument for the remaining case: past it,
+  # take the older, blunter split rather than risk not answering at all. It
+  # can only over-segment, which errs toward asking or denying, never toward
+  # silence.
+  case "$segment_source" in
+    *[\'\"]*)
+      if [ "$segment_length" -gt 8000 ]; then
+        printf '%s\n' "$segment_source" | tr ';|&()`' '\n\n\n\n\n\n'
+        return 0
+      fi
+      ;;
+    *)
+      printf '%s\n' "$segment_source" | tr ';|&()`' '\n\n\n\n\n\n'
+      return 0
+      ;;
+  esac
+
+  segment_buffer=''
+  quote_state='' # '' | single | double
+  segment_index=0
+
+  while [ "$segment_index" -lt "$segment_length" ]; do
+    segment_character=${segment_source:segment_index:1}
+
+    case "$quote_state" in
+      single)
+        # Nothing is special inside single quotes, not even a backslash.
+        if [ "$segment_character" = "'" ]; then
+          quote_state=''
+        fi
+        segment_buffer=$segment_buffer$segment_character
+        ;;
+      double)
+        case "$segment_character" in
+          '\')
+            # Consume the escaped character with its backslash so an escaped
+            # quote does not flip the state.
+            segment_index=$((segment_index + 1))
+            segment_buffer=$segment_buffer$segment_character${segment_source:segment_index:1}
+            ;;
+          '"')
+            quote_state=''
+            segment_buffer=$segment_buffer$segment_character
+            ;;
+          '`')
+            # Command substitution executes even inside double quotes, so it
+            # still has to break the segment. What follows is shell code
+            # again, so leave the quoted state: the separators inside it must
+            # split under the unquoted rules.
+            printf '%s\n' "$segment_buffer"
+            segment_buffer=''
+            quote_state=''
+            ;;
+          '$')
+            # Only `$(` is command substitution. A bare `$` is a variable
+            # expansion, and treating that as a separator denied things like
+            # `echo "$message; git push"` — text, not an invocation. The `(`
+            # is consumed here so the substituted code starts the next
+            # segment cleanly rather than as `(git ...`.
+            if [ "${segment_source:segment_index+1:1}" = '(' ]; then
+              printf '%s\n' "$segment_buffer"
+              segment_buffer=''
+              quote_state=''
+              segment_index=$((segment_index + 1))
+            else
+              segment_buffer=$segment_buffer$segment_character
+            fi
+            ;;
+          *)
+            segment_buffer=$segment_buffer$segment_character
+            ;;
+        esac
+        ;;
+      *)
+        case "$segment_character" in
+          '\')
+            segment_index=$((segment_index + 1))
+            segment_buffer=$segment_buffer$segment_character${segment_source:segment_index:1}
+            ;;
+          "'")
+            quote_state='single'
+            segment_buffer=$segment_buffer$segment_character
+            ;;
+          '"')
+            quote_state='double'
+            segment_buffer=$segment_buffer$segment_character
+            ;;
+          ';' | '|' | '&' | '(' | ')' | '`')
+            printf '%s\n' "$segment_buffer"
+            segment_buffer=''
+            ;;
+          *)
+            segment_buffer=$segment_buffer$segment_character
+            ;;
+        esac
+        ;;
+    esac
+
+    segment_index=$((segment_index + 1))
+  done
+
+  printf '%s\n' "$segment_buffer"
+}
+
 # The loop must NOT run in a pipeline: emit_decision exits, and from a subshell
 # that would print a decision and then let the remaining segments print more,
 # producing two JSON objects on stdout.
@@ -1182,7 +1384,7 @@ while IFS= read -r segment; do
     *[![:space:]]*) classify_segment "$segment" ;;
   esac
 done <<SEGMENTS
-$(printf '%s\n' "$raw_command" | tr ';|&()`' '\n\n\n\n\n\n')
+$(split_into_segments "$raw_command")
 SEGMENTS
 
 exit 0 # Nothing matched; the normal permission flow applies.

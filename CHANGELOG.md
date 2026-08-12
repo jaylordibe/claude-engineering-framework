@@ -10,6 +10,117 @@ treat a minor bump as potentially breaking.
 
 ---
 
+## 0.3.1 — 2026-08-12
+
+Everything here removes a stop that should never have existed. The target is
+the one stated in `docs/consuming-repository-guide.md`: after plan approval, a
+run reaches the human's review of the diff without interrupting, and the
+interruptions that remain are the dangerous ones.
+
+### v0.3.0 did not reach the repositories that had already installed v0.2.0
+
+`framework-install` merges the floor and never overwrites, so it only ever
+*adds*. A rule the floor **withdraws** therefore stays installed forever. v0.3.0
+withdrew five coarse `ask` rules — `docker exec *`, `git branch *`,
+`git worktree *`, `gh api *`, `glab api *` — so that running a test suite inside
+a container would stop prompting. In an already-installed repository all five
+survived, `ask` still outranked the new `allow` tier, and **the release removed
+none of the noise it was written to remove**.
+
+Withdrawal is now recorded rather than merely performed, in
+`reference/retired-permission-rules.json`:
+
+- `ef-doctor` reports any withdrawn rule still installed, by name. A rule count
+  cannot detect this — the allow tier grows while the stale `ask` rule quietly
+  outranks it, so the repository looks healthier as it gets worse.
+- `framework-install` proposes the removals, with the reason each was withdrawn.
+  Proposed, never automatic: a repository may have re-added one on purpose.
+
+**If you installed v0.2.0 or v0.3.0, re-run `/engineering-framework:framework-install`.**
+Nothing else in this release will reach you otherwise.
+
+### False denials on read-only commands
+
+A denial cannot be clicked through, so these blocked ordinary inspection with
+no way past it — strictly worse than a prompt.
+
+- **Quoted text is no longer read as a command.** The guard split segments with
+  a character-level `tr` that had no idea what a quote was, so
+  `grep -rn "git remote" scripts/` split into two fragments and the second read
+  as a `git remote` invocation. Splitting is now quote-aware: single-quoted text
+  is inert, `$(` and backticks still split inside double quotes because they
+  still execute, and unquoted separators split exactly as before. `foo; git push`
+  is still denied; `grep "git push"` is a search.
+- **`git stash list`, `git stash show`, `git remote -v`, `git remote show` and
+  `git remote get-url` are read-only** and no longer denied. The floor and the
+  guard now name the writing subcommands instead of the whole verb. Bare
+  `git stash` is still denied — with no action it means `stash push`.
+
+### Commands that matched no rule at all
+
+- **`git --no-pager <verb>`** matched nothing, so every one of them prompted.
+  Allowed per verb for the read-only verbs; a blanket rule is not used, because
+  it would also cover `git --no-pager push`.
+- **Read-only forge commands**: `gh run list/view/watch`, `gh pr view/list/diff/checks`,
+  `gh issue list/view`, `gh repo view`, `gh workflow list/view`, `gh auth status`,
+  `gh search`, and the `glab` equivalents. Checking a CI run is how a change gets
+  verified.
+- **`gh api` / `glab api`** are allowed; the guard still asks for the write
+  forms (`-X`/`--method` with POST, PUT, PATCH, DELETE, and the `-f`/`-F` field
+  flags that make `gh` POST implicitly).
+- **`npm ci`**, and `docker image rm` / `docker rmi` / `docker image ls` /
+  `docker image inspect`. `npm install` is deliberately *not* allowed: `npm ci`
+  installs what the lockfile already pins, while `npm install <package>` changes
+  the dependency set.
+
+`docker compose -f` was considered and **rejected**: the file flag takes an
+arbitrary path and then an arbitrary verb, so allowing it would leave
+`docker compose -f x.yml down -v` — which deletes volumes — matched by nothing
+but the hook. A hook can fail; that tier cannot.
+
+### Performance
+
+The quote-aware split is a pure-shell loop, so it adds no fork to a path that
+runs on every Bash call. Commands containing no quote take a `tr` fast path,
+and above 8000 characters the older split is used rather than risk exceeding
+the hook timeout — a guard that does not answer fails open, which is the one
+outcome worse than being slow. A 60_000-character command is handled in
+milliseconds; the worst realistic case measured 0.28s.
+
+### The exclusions were re-decided against measurement, not judgment
+
+The previous `allow` tier was reasoned about rather than measured. Replaying
+**20_498 real Bash invocations** from this machine's transcripts showed the
+reasoning was wrong in places, and by large margins:
+
+| Verb | Share of all commands | Verdict |
+|---|---|---|
+| `cd` | **~20%** | Allowed. It cannot write, execute, or take a command as an argument. `pwd` was already allowed; `cd` was simply never added, and it was the single largest source of prompts. |
+| `sed` | **17.4%** | `sed -n:*` allowed — 88.7% of every measured `sed` call is `sed -n '<range>p' <file>`, a pager. Only 0.9% used `-i`. |
+| `npx` | 1.4% | Allowed **per tool** (`jest`, `tsc`, `eslint`, `ts-node`, `vite`, `prettier`, …), never `npx:*`. `npx <package>` fetches and executes from the network. |
+| `awk` | 1.1% | Allowed. It writes nothing and runs nothing by default; exactly one measured call had a side effect. |
+| `git --no-pager` | 0.65% | Allowed per read-only verb. |
+| `git -C` | 0.29% | **Still prompts.** Every measured use was read-only, but a `Bash()` rule cannot express "any path, then only these verbs", and no Bash rule in the floor uses a mid-pattern wildcard. |
+| `bash <script>` | 0.11% | **Still prompts.** Rare enough that excluding it costs almost nothing. |
+| `docker compose -f` | 0.005% | **Still excluded**, as argued above. One occurrence in 20_498. |
+
+The two verbs that were allowed on read-only grounds keep their teeth through
+the guard, whose decision outranks a settings rule: `sed -i`, a `sed` script
+using the `w` write flag, and an `awk` program calling `system()` all ask.
+
+Measured effect on this machine's own repositories, replaying each repository's
+real command history against its own settings: commands that would prompt fell
+from **76.6% to 57.7%** in one and **75.4% to 55.9%** in the other. The
+residual is a flat tail with no single cause above 2%, much of it shell-script
+fragments rather than commands.
+
+### Counts
+
+`deny` 140 → 172, `ask` 14 (unchanged), `allow` 300 → 450. The command guard's
+decision table grows from 161 to 196 rows, 80 of which assert silence.
+
+---
+
 ## 0.3.0 — 2026-08-12
 
 The framework spent 0.1.0 and 0.2.0 building hard gates and never built the

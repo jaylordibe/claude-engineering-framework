@@ -77,6 +77,26 @@ carry an exception, and none of this is a sandbox.
 Point out anything already present that the floor would weaken, and **do not
 remove it**.
 
+**Then propose removing any rule the floor has withdrawn.** Read
+`${CLAUDE_PLUGIN_ROOT}/reference/retired-permission-rules.json` and list every
+rule in it that the settings file still contains, each with its `reason` and
+the version that withdrew it.
+
+This step exists because the merge above only ever *adds*. That is the right
+default — it must not silently undo a decision the repository made on purpose —
+but it means a rule the floor **deletes** can never leave an installed
+repository on its own. v0.3.0 withdrew five coarse `ask` rules so that
+`docker exec api <test command>`, `git branch -a` and a read-only `gh api` GET
+would stop prompting; in every repository that had already installed v0.2.0 all
+five survived, `ask` still outranked the new `allow` rules, and the release
+removed none of the noise it was written to remove.
+
+Removal is **proposed, never automatic**, and it is a separate question from
+the additions — the repository may have re-added one of these deliberately, and
+only the human knows. Show the list, say that each is now handled by a narrower
+rule or by the command guard, and ask. If the user declines, say plainly which
+prompts will therefore continue.
+
 `permissions.defaultMode` is the one key here that changes behaviour rather
 than adding a rule, so name it explicitly when you ask. The floor sets
 `acceptEdits`, because this framework gates on the human-invoked design,
