@@ -72,9 +72,9 @@ either case is read on its own, and obvious side by side.
   gradeable, and a rubric that pretends otherwise mostly measures verbosity.
 - Full pipeline runs. They need a human at the approval gate by construction —
   that is the point of the gate, not a testing gap.
-- The guards. Those are pinned exactly by `tests/guard-hook-fixtures.tsv` and
-  `tests/guard-path-fixtures.tsv`, which are cheaper, deterministic, and run on
-  every commit.
+- Anything mechanical. `ef-doctor`'s diagnoses are pinned exactly by
+  `tests/run-doctor-fixtures.mjs`, which is cheaper, deterministic, and runs on
+  every commit. Behavioural evals are for what only a model can be judged on.
 - Whether the fixtures themselves are honest. `tests/validate-fixtures.mjs`
   enforces that, and every grader here silently depends on it — including that
   `adversarial-injection/` still carries a payload in every channel.

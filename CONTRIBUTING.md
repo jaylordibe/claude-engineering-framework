@@ -31,11 +31,9 @@ of them lacks.
 node tests/validate-plugin.mjs --strict
 node tests/validate-fixtures.mjs
 node tests/validate-charter.mjs
-node tests/run-hook-fixtures.mjs
-node tests/guard-robustness.mjs
 node tests/run-doctor-fixtures.mjs
 claude plugin validate ./plugins/engineering-framework --strict
-shellcheck plugins/engineering-framework/scripts/*.sh
+shellcheck plugins/engineering-framework/scripts/*.sh plugins/engineering-framework/bin/*
 ```
 
 All of them run in CI and take seconds together.
@@ -47,13 +45,15 @@ All of them run in CI and take seconds together.
 The strongest additions to this framework are hard-won specifics that
 generalise — not more thoroughness.
 
-**Hook changes** ship fixtures in the same commit — in
-`tests/guard-hook-fixtures.tsv` for a command rule, `tests/guard-path-fixtures.tsv`
-for a path rule: one asserting the new decision, and one asserting a
-neighbouring legitimate command or path is still allowed. The second is not
-optional. Roughly half of each decision table exists to prove ordinary work is
-never prompted, because a guard that nags gets switched off within a day, and
-then it protects nothing.
+**Enforcement changes are not accepted.** From 1.0.0 the framework ships no
+permission rules and no hooks that gate a tool call, and a pull request adding
+either will be declined regardless of how good the rule is. The reasoning is in
+`docs/development-guide.md` under *A rule that blocks something*, and the
+evidence is in the 1.0.0 changelog entry: the last attempt to extend that layer
+went through a six-lens review and came back with two Critical and ten High
+defects. If a change genuinely needs an operation stopped, put it in the
+charter, give a gate the check, or name the rule a repository owner would add
+to their own settings.
 
 **A new fixture** is a stack the framework claims it can discover without
 assuming. It needs a row in `fixtures/README.md`, at least one eval case naming
@@ -91,8 +91,8 @@ That is the failure the whole design exists to prevent, and it is treated as a
 correctness bug. Please include the transcript, the relevant part of your
 `CLAUDE.md`, and the output of `/engineering-framework:framework-doctor`.
 
-For a security issue in the hooks or the permissions floor, see
-[SECURITY.md](SECURITY.md).
+For a security issue — most likely an agent or standard that can be steered by
+repository content — see [SECURITY.md](SECURITY.md).
 
 ## Code of conduct
 

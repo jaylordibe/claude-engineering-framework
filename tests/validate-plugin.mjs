@@ -642,95 +642,7 @@ function validateHooksAndScripts() {
 }
 
 // ---------------------------------------------------------------------------
-// 6. Reference permissions floor
-// ---------------------------------------------------------------------------
-
-function validatePermissionsFloor() {
-  const floorPath = join(pluginRoot, 'reference', 'permissions-floor.json');
-  if (!existsSync(floorPath)) {
-    fail(floorPath, 'reference permissions floor is missing; framework-install has nothing to copy.');
-    return;
-  }
-
-  const floor = readJson(floorPath);
-  if (!floor?.permissions) {
-    fail(floorPath, 'no `permissions` object.');
-    return;
-  }
-
-  const allRules = [
-    ...(floor.permissions.deny ?? []),
-    ...(floor.permissions.ask ?? []),
-    ...(floor.permissions.allow ?? []),
-  ];
-
-  // File permissions are only consulted for Read and Edit. Any other tool in a
-  // path rule is accepted, never enforced, and warns at startup - the worst
-  // failure shape available, because the path reads as protected.
-  const inert = allRules.filter((rule) => /^(Write|Glob|MultiEdit|NotebookEdit)\(/.test(rule));
-  if (inert.length > 0) {
-    fail(floorPath, `inert file rules that are accepted but never enforced: ${inert.join(', ')}. Use Read(...) and Edit(...).`);
-  }
-
-  // The PowerShell tool is enabled by default on Windows without Git Bash and
-  // Bash(...) rules do not govern it, so an unmirrored floor disappears there.
-  for (const tier of ['deny', 'ask', 'allow']) {
-    const rules = floor.permissions[tier] ?? [];
-    const bashRules = rules.filter((rule) => rule.startsWith('Bash(')).map((rule) => rule.slice(5));
-    const powershellRules = new Set(
-      rules.filter((rule) => rule.startsWith('PowerShell(')).map((rule) => rule.slice(11)),
-    );
-    const unmirrored = bashRules.filter((rule) => !powershellRules.has(rule));
-    if (unmirrored.length > 0) {
-      fail(floorPath, `${tier} rules not mirrored for PowerShell: ${unmirrored.slice(0, 5).join(', ')}${unmirrored.length > 5 ? ` (+${unmirrored.length - 5} more)` : ''}`);
-    }
-  }
-
-  for (const required of ['git commit', 'git push', 'gh pr create']) {
-    if (!(floor.permissions.deny ?? []).some((rule) => rule.includes(required))) {
-      fail(floorPath, `deny floor does not cover "${required}", which the framework's documentation promises.`);
-    }
-  }
-
-  // An allow tier is not optional politeness. Without one, every ordinary
-  // command matches no rule and prompts, which trains the reflex that then
-  // approves the migration too — the failure the floor exists to prevent.
-  if ((floor.permissions.allow ?? []).length === 0) {
-    fail(floorPath, 'the allow tier is empty. A floor of deny and ask rules alone prompts for every ordinary command, and twenty reflex approvals per feature are worth less than one that is read.');
-  }
-
-  // This repository installs its own reference floor, which is the only way the
-  // framework is exercised the way a consuming repository exercises it. That
-  // copy is unavoidable — a settings file has no include mechanism and a plugin
-  // cannot ship permission rules — but nothing else would notice it going
-  // stale, so assert it here where the floor is already loaded.
-  //
-  // A FLOOR, NOT A CEILING. This asserts containment rather than equality: a
-  // repository must carry every rule the floor names, and stays free to allow
-  // its own dev loop on top. Equality forbade exactly that, so the only place
-  // to record `node tests/…` as this repository's test suite was a gitignored
-  // settings.local.json, where no contributor inherits it. Containment still
-  // catches the failure that matters — a floor rule silently dropped here.
-  const ownSettingsPath = join(repositoryRoot, '.claude', 'settings.json');
-  if (existsSync(ownSettingsPath)) {
-    const ownSettings = readJson(ownSettingsPath);
-    if (ownSettings) {
-      for (const tier of ['deny', 'ask', 'allow']) {
-        const installed = new Set(ownSettings.permissions?.[tier] ?? []);
-        const missing = (floor.permissions[tier] ?? []).filter((rule) => !installed.has(rule));
-        if (missing.length > 0) {
-          fail(ownSettingsPath, `this repository does not install the floor's ${tier} tier: ${missing.slice(0, 5).join(', ')}${missing.length > 5 ? ` (+${missing.length - 5} more)` : ''}. Re-copy the floor, or the framework is shipping a floor its own maintainers do not run.`);
-        }
-      }
-      if (ownSettings.permissions?.defaultMode !== floor.permissions.defaultMode) {
-        fail(ownSettingsPath, `defaultMode is "${ownSettings.permissions?.defaultMode}" here and "${floor.permissions.defaultMode}" in the floor. The maintainers must run the prompting behaviour they ship.`);
-      }
-    }
-  }
-}
-
-// ---------------------------------------------------------------------------
-// 7. Cross-references and path portability
+// 6. Cross-references and path portability
 // ---------------------------------------------------------------------------
 
 function validateCrossReferences() {
@@ -1001,7 +913,6 @@ const manifest = validatePluginManifest(marketplace);
 const agentNames = validateAgents();
 const skillNames = validateSkills();
 validateHooksAndScripts();
-validatePermissionsFloor();
 validateCrossReferences();
 validateComponentReferences(agentNames, skillNames);
 validateConfigKeysAreConsumed();

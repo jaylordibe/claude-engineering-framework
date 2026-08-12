@@ -66,16 +66,25 @@ by their tool pool, not promised in prose.
 **Standards and templates** — loaded on demand by the gate that needs them,
 never all at once.
 
-**Safety hooks** — a command guard that resolves the effective verb behind
-wrappers and environment runners, and a protected-path guard for edits whose
-failure is silent, remote and unrecoverable.
+**One hook** — a `SessionStart` charter carrying the workflow, the risk tiers,
+the evidence language and the human-owned operations. That is the framework's
+entire always-on cost.
 
 ## Important
 
-The declarative permissions floor — the only layer that cannot fail open —
-**cannot ship inside a plugin**. `framework-install` writes it into your
-repository and `framework-doctor` tells you if it goes missing. Neither guard
-is a sandbox.
+**This plugin ships no permission rules and never edits your
+`.claude/settings.json`.** It cannot block a command, and it will not change
+how often you are prompted. Permissions belong to your repository and to you —
+if you turn on a permission mode, you get that mode.
+
+What it does instead is methodology: gates you invoke, review lenses that read
+your diff, and standards those lenses judge against. The charter states which
+operations are human-owned; the gates enforce that by stopping and handing off,
+not by blocking.
+
+Versions before 1.0.0 installed a permissions floor and two hooks that gated
+tool calls. Both were removed — see the 1.0.0 entry in the changelog for why,
+and for the two keys worth deleting from your settings if you have them.
 
 ## Documentation
 

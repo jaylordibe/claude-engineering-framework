@@ -10,6 +10,73 @@ treat a minor bump as potentially breaking.
 
 ---
 
+## 1.0.0 — 2026-08-12
+
+**The framework no longer ships permission rules or hooks that gate commands.**
+It ships methodology: the charter, the gates, the review lenses, the standards.
+
+Removed: the 172-rule permissions floor, both PreToolUse guards, the retired-rules
+mechanism, and every permission check in `ef-doctor` — about 3,000 lines, a third
+of the plugin and nearly half the test suite.
+
+### Why
+
+Two reasons, and the second is the one that decided it.
+
+**A text parser cannot out-guess a shell.** The last attempt to extend the guard
+— teaching it to read SQL statements and to tell a merge-conflict resolution from
+a discard — went through a six-lens review before release. It found two Critical
+and ten High defects in a single pass: `sqlite3` reaching `writefile()` behind a
+`SELECT`; `-hprod` bypassing a hostname check that only matched the spaced
+spelling; `git checkout --ours <path>` silently discarding uncommitted work,
+because the premise that `--ours` only applies during a conflict is simply false.
+Each hole patched implied another.
+
+**A plugin that rewrites your permission rules is confusing.** If you enable a
+permission mode, you should get that mode. The floor shipped
+`permissions.defaultMode: "acceptEdits"` into every consuming repository, and a
+project settings file *overrides* the user's own `~/.claude/settings.json` for
+that key — so the framework was silently cancelling the mode developers had
+chosen, and the symptom was the prompting it existed to prevent. Permissions
+belong to the repository and the person who owns it.
+
+### What you have to do
+
+Your `.claude/settings.json` still contains everything a previous
+`framework-install` merged into it, because a merge only ever adds. Nothing
+removes it for you and nothing depends on it any more. Two things worth doing:
+
+- **Delete `permissions.defaultMode`.** While it is set, it overrides the
+  permission mode you chose in your own user settings.
+- **Keep or delete the `allow`, `ask` and `deny` rules as you see fit.** They
+  are yours now. The framework has no opinion and no longer reads them.
+
+`.claude/engineering-framework.json` keeps `commands` and `risk`, which the
+gates read. `protectedCommands`, `protectedPaths`, `useDefaultCommandRules`,
+`useDefaultProtectedPaths` and the `policy` switches configured the guards and
+no longer do anything; `ef-doctor` names them if they are still present.
+
+### Unchanged
+
+The whole engineering half. Eight read-only review lenses, five gates plus the
+conductor, the standards, the risk tiers, the evidence language, the session
+charter and its statement of human-owned operations. `gate-review` still selects
+its panel from `risk.highRiskPaths`. What changes is that the charter and the
+gates carry that methodology by stopping and handing off, rather than by a hook
+blocking a command.
+
+### Also in this release
+
+- **`jq`'s `.key` accessor is no longer denied.** `is_protected_secret_path`
+  matched `*.key`, and `*` matches the empty string, so the token `.key` — the
+  ordinary way to iterate an object — was classified as a private key file and
+  **denied** in every repository that installed the framework. The guard is gone
+  now, but the bug was real and blocked work for as long as it shipped.
+- `ef-doctor` is 461 lines shorter and reports only the repository contract.
+- `framework-install` no longer writes to `.claude/settings.json` at all.
+
+---
+
 ## 0.3.1 — 2026-08-12
 
 Everything here removes a stop that should never have existed. The target is

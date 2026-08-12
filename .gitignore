@@ -17,8 +17,8 @@ tmp/
 *.local.json
 
 # Claude Code local state. `.claude/settings.json` IS committed (it pins the
-# marketplace and the permissions floor for contributors); the local override
-# and any transcript state are not.
+# marketplace and this repository's own test-suite rules for contributors); the
+# local override and any transcript state are not.
 .claude/settings.local.json
 .claude/plans/
 .claude/history/

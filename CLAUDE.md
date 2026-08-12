@@ -10,10 +10,10 @@ directly.
 Node is used only to run the validators in `tests/`. There is no package
 manifest and nothing to install.
 
-**What this repository ships runs in other people's repositories.** A wrong hook
-rule blocks somebody's legitimate work; a wrong standard makes an agent describe
-an architecture that does not exist. Both failures are silent from here, which
-is why almost everything in `tests/` exists.
+**What this repository ships runs in other people's repositories.** A wrong
+standard makes an agent describe an architecture that does not exist; a wrong
+gate lets a change through unreviewed. Both failures are silent from here,
+which is why almost everything in `tests/` exists.
 
 ## Canonical commands
 
@@ -22,15 +22,13 @@ is why almost everything in `tests/` exists.
 | Static plugin validation | `node tests/validate-plugin.mjs --strict` |
 | Fixture corpus validation | `node tests/validate-fixtures.mjs` |
 | Charter budget and guarantees | `node tests/validate-charter.mjs` |
-| Guard decision tables | `node tests/run-hook-fixtures.mjs` |
-| Guard robustness | `node tests/guard-robustness.mjs` |
 | Repository contract audit | `node tests/run-doctor-fixtures.mjs` |
 | Lint | `shellcheck plugins/engineering-framework/scripts/*.sh plugins/engineering-framework/bin/*` |
 | Official validator | `claude plugin validate ./plugins/engineering-framework --strict` |
 
-There is no build, no type check and no end-to-end suite. `jq` must be on
-`PATH`: both guards fail closed without it, so every fixture would pass as
-`ask` and prove nothing.
+There is no build, no type check and no end-to-end suite. `jq` is used by
+`ef-doctor` to read the repository policy file; without it the audit reports
+that it could not inspect, rather than passing silently.
 
 ## Architecture
 
@@ -41,10 +39,9 @@ plugins/engineering-framework/
   skills/                           five gates, a conductor, playbooks, install/doctor
   standards/                        the normative texts agents read
   templates/                        thinking aids, never committed by a run
-  scripts/                          the SessionStart charter and two PreToolUse guards
+  scripts/session-charter.sh        the SessionStart charter — the only hook
   bin/ef-doctor                     repository contract audit
-  reference/                        the permissions floor, the rules it has withdrawn,
-                                    config schema, CLAUDE.md template
+  reference/                        config schema, CLAUDE.md template
 fixtures/                           eleven tiny repositories of different shapes and situations
 evals/                              behavioural cases and grader rubrics
 tests/                              everything that runs in CI
@@ -62,45 +59,48 @@ docs/                               design rationale and Claude Code constraints
 - **Every non-obvious decision carries its reason in a comment.** Several
   choices here contradict the obvious design; a contributor who does not know
   why will "fix" something that is not broken.
-- **Guard changes ship with their fixtures in the same commit** — one asserting
-  the new decision, one asserting a neighbouring legitimate command or path is
-  still allowed.
 - The session charter is the framework's entire always-on context budget, paid
   on every request in every repository. It has a hard line ceiling.
 
 ## Non-obvious invariants
 
-- **A crashed hook fails OPEN.** Claude Code treats every non-zero exit except 2
-  as a non-blocking error, so a guard that errors lets the operation through.
-  Both guards must exit 0 and emit `ask` for anything they cannot classify.
-- **Both guards run on every Bash and every Edit call, forever.** A fork added
-  to the hot path is paid by every user on every command.
-- **The plugin cannot ship permission rules.** A plugin `settings.json` supports
-  only `agent` and `subagentStatusLine`. The floor is a reference file the user
-  installs, which is why `framework-doctor` exists.
-- **These scripts must run under bash 3.2**, the version macOS ships. No
-  `${var,,}`, no associative arrays.
-- **Removing a rule from the floor does not remove it from anybody.**
-  `framework-install` merges and never overwrites, so it only ever adds. A
-  withdrawn rule survives in every repository that already had it, and since
-  `ask` beats `allow`, one stale rule cancels a whole release — which is
-  exactly what happened to 0.3.0. Any rule taken out of the floor must be
-  recorded in `reference/retired-permission-rules.json` in the same commit,
-  or the change reaches nobody.
+- **The framework ships methodology and never writes permission rules.** This
+  is the 1.0.0 line, and it is the one that most constrains what may be added
+  here. Nothing in this plugin may create or edit `.claude/settings.json`, ship
+  a permissions floor, or register a hook that gates a tool call. Permissions
+  belong to the repository and the person who owns it: a developer who turns on
+  a permission mode is entitled to get that mode, not one a plugin rewrote
+  underneath them. The methodology is carried by the charter, which states the
+  human-owned operations, and by the gates, which stop and hand off.
+- **Why the enforcement layer was removed rather than fixed.** Until 1.0.0 this
+  plugin shipped a 172-rule permissions floor and two PreToolUse guards — about
+  a third of the code and nearly half the test burden, to enforce one clause of
+  a charter with seven. A multi-lens review of the last attempt to extend it
+  found two Critical and ten High defects in a single pass: a `SELECT`-shaped
+  statement reaching `sqlite3`'s `writefile()`, `-hprod` bypassing a hostname
+  check that only matched the separated spelling, `git checkout --ours` silently
+  discarding uncommitted work because the premise that it only applies to
+  conflicts is false. **A text parser cannot out-guess a shell.** The host
+  application's own permission modes do this work, and a plugin second-guessing
+  them adds confusion rather than safety.
 - **A false denial is worse than a false prompt.** A prompt costs a keystroke;
   a denial cannot be clicked through and blocks the work outright. This is why
-  the command guard splits segments with quote awareness, and why a broad verb
-  deny (`git stash *`) must be narrowed when the verb has a read-only face.
-- **The permissions floor is a floor, not a ceiling.** Its `allow` tier is
-  load-bearing: a floor of deny and ask rules alone prompts for every ordinary
-  command, and twenty reflex approvals per feature are worth less than one
-  approval that is read. An entry earns its place only if it cannot write
-  outside the working tree, cannot execute remote code, and does not take an
-  arbitrary command as an argument.
-- This repository installs its own reference permissions floor into
-  `.claude/settings.json`. `validate-plugin.mjs` fails if a floor rule is
-  missing there — containment, not equality, so this repository can also allow
-  its own test suite.
+  the framework now prefers stating a boundary to enforcing one: a wrong
+  standard is argued with, a wrong rule is a wall. The guard that shipped
+  `*.key` — matching the empty string, so jq's `.key` accessor was denied in
+  every installed repository — is the case that made this concrete.
+- **These scripts must run under bash 3.2**, the version macOS ships. No
+  `${var,,}`, no associative arrays. Only `session-charter.sh` and `ef-doctor`
+  remain, and both are read-only.
+- **`ef-doctor` reports, and changes nothing.** It audits whether this
+  repository supplies what the framework needs — `CLAUDE.md`, resolvable
+  commands, declared risk paths. Everything it finds is advisory. If a
+  repository wants an operation blocked, the doctor names the rule its owner
+  would add; it does not add it.
+- **Everything the framework declares about risk is advisory guidance to an
+  agent.** `risk.highRiskPaths` shapes which review lenses run and how much
+  ceremony a change gets. It does not block an edit, and no document may
+  describe it as though it does.
 
 ## Consumers
 
@@ -110,5 +110,6 @@ docs/                               design rationale and Claude Code constraints
 | `jaylordibe/laravel-api` | `jaylordibe/laravel-api` | Internal | Jay Lord Ibe |
 | `jaylordibe/nestjs-api` | `jaylordibe/nestjs-api` | Internal | Jay Lord Ibe |
 
-A change to a guard, a standard or the charter reaches every one of them on
-their next `/plugin update`, and only when `version` in `plugin.json` changes.
+A change to a standard, an agent, a gate or the charter reaches every one of
+them on their next `/plugin update`, and only when `version` in `plugin.json`
+changes.

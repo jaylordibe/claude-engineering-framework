@@ -24,16 +24,24 @@ is a comment, not a guardrail.
 > Currently, only the `agent` and `subagentStatusLine` keys are supported.
 > — *Create plugins*
 
-**Consequence.** The declarative `permissions.deny` floor — the only layer that
-cannot fail open — is not distributable. This is the single largest constraint
-on the framework's guarantees.
+**Consequence.** A declarative `permissions.deny` floor — the only layer that
+cannot fail open — is not distributable by a plugin.
 
-**What we do instead.** Ship `reference/permissions-floor.json`, install it
-with `framework-install`, audit it with `framework-doctor`, and warn once per
-session when it is absent. The command guard hook covers the same operations
-and more forms, but a hook is executable code and Claude Code treats a crashed
-hook as a non-blocking error — it can fail open. Both layers, and honest
-documentation about which is which.
+**What we did until 1.0.0.** Shipped `reference/permissions-floor.json` for
+`framework-install` to merge into the consuming repository's own settings, plus
+two `PreToolUse` hooks to cover the command forms a prefix rule cannot see.
+
+**What we do now: nothing.** The framework ships no permission rules and no
+hooks that gate a tool call. The constraint above is one reason — a merged copy
+can never be un-merged, so a rule the floor withdrew stayed in every repository
+that had it. The larger reason is that the workaround was worse than the
+limitation: a six-lens review of the last attempt to extend the guards found two
+Critical and ten High defects in one pass, and shipping `defaultMode` into a
+consuming repository silently overrode the permission mode its developers had
+chosen, because a project settings file outranks the user's own.
+
+Permissions belong to the repository and its owner. This constraint is no longer
+something to route around.
 
 ---
 
@@ -166,8 +174,10 @@ official-sounding prefix.
 startup. This is the worst failure shape available: the path reads as protected
 in the settings file while being fully writable.
 
-**Enforced by.** `validate-plugin.mjs` rejects inert forms in the reference
-floor; `ef-doctor` reports them in a consuming repository.
+**No longer enforced here.** The framework wrote no path rules from 1.0.0, so
+there is nothing of ours to check. Kept because it is the highest-value thing to
+say to a repository owner writing their own rules, and because it is exactly the
+shape of mistake that reads as protection.
 
 ---
 
@@ -193,13 +203,15 @@ version's path until `/reload-plugins`.
 > or later. — *Configure permissions*
 
 **Consequence.** A `Read(**/*.p12)` rule alone leaves the file writable, and on
-any version before 2.1.208 editable too. The reference floor had four such
-paths — `*.p12`, `*.pfx`, `.netrc`, `.npmrc` — with a `Read` rule and no `Edit`
-rule, so they read as protected while a tool could still write them.
+any version before 2.1.208 editable too. The floor this framework used to ship
+had four such paths — `*.p12`, `*.pfx`, `.netrc`, `.npmrc` — with a `Read` rule
+and no `Edit` rule, so they read as protected while a tool could still write
+them.
 
-**What we do instead.** Every `Read` deny in the floor has a matching `Edit`
-deny. An `Edit` rule covers all file-editing tools, which is what makes it the
-one to write.
+**No longer enforced here**, for the reason in C9: the framework writes no
+rules. Pair every `Read` deny with an `Edit` deny in your own settings — an
+`Edit` rule covers all file-editing tools, which is what makes it the one to
+write.
 
 ---
 
@@ -228,38 +240,22 @@ and that imperative openers stay a minority of lines.
 > For most hook events, only exit code 2 blocks the action. Claude Code treats
 > exit code 1 as a non-blocking error and proceeds with the action. — *Hooks*
 
-**Consequence.** A `PreToolUse` guard that crashes does **not** fail safe. Both
-guards ran `jq` inside a command substitution under `set -e`, so a payload that
-was not valid JSON exited 5 and the tool call proceeded — while both file
-headers promised FAIL CLOSED.
+**Consequence.** A `PreToolUse` guard that crashes does **not** fail safe. This
+was demonstrated twice here: both guards once ran `jq` inside a command
+substitution under `set -e`, so a payload that was not valid JSON exited 5 and
+the tool call proceeded — while both file headers promised FAIL CLOSED. The
+second time was during the 1.0.0 review cycle, when a new classifier returned
+non-zero outside a condition context and the whole hook exited 1.
 
-`PreToolUse` also now accepts a fourth `permissionDecision`, `defer`, which is
-what emitting nothing already meant. The guards continue to emit nothing rather
-than `defer`: silence is the documented default and needs no jq process.
+It is recorded because it generalises past the guards that are now gone: **a
+hook is a safety layer that can be defeated by an apostrophe.** A framework
+whose guarantees rest on one is making a promise it cannot keep, which is a
+large part of why 1.0.0 stopped making that kind of promise.
 
-**Enforced by.** `tests/guard-robustness.mjs` asserts that every malformed,
-empty, oversized and hostile payload produces exit 0 and either a valid decision
-or deliberate silence.
-
----
-
-## C14 — Claude Code prompts for some forms the guard does not model
-
-> Exec wrappers such as `watch`, `setsid`, `ionice`, and `flock` always prompt
-> and can't be auto-approved by a prefix rule [...] The same applies to `find`
-> with `-exec` or `-delete`. — *Configure permissions*
-
-> Development environment runners such as `direnv exec`, `devbox run`,
-> `mise exec`, `npx`, and `docker exec` are not in the list. — *Configure permissions*
-
-**Consequence.** The division of labour between the two layers is not a matter
-of taste. Claude Code forces a prompt for `find -exec` and the exec wrappers, so
-the guard does not need to model them. It does **not** strip environment
-runners, which is precisely the gap the command guard exists to close.
-
-Recorded here because a future contributor looking at `find . -exec rm -rf {} \;`
-returning no decision from the guard will reasonably think it is a bypass. It is
-not: it prompts anyway, one layer up.
+**Still applies to.** `scripts/session-charter.sh`, the only hook the plugin
+registers. It runs on `SessionStart`, so a crash costs the charter rather than a
+safety decision — but it must still not crash, because a session without the
+charter is a session with no methodology and no sign that anything is wrong.
 
 ---
 

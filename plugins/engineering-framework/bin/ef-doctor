@@ -144,127 +144,6 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 2. Permissions floor — the only layer that cannot fail open
-# ---------------------------------------------------------------------------
-
-project_settings="${project_directory}/.claude/settings.json"
-
-if [ ! -r "$project_settings" ]; then
-  warn 'No .claude/settings.json, so the declarative permissions floor is absent.'
-  note 'A plugin cannot ship permission rules, so the command guard hook is'
-  note 'the only layer here. A hook is defence in depth and can fail open; a'
-  note 'deny rule cannot. Run /engineering-framework:framework-install.'
-else
-  pass '.claude/settings.json exists.'
-
-  if command -v jq >/dev/null 2>&1; then
-    if ! jq -e '.' "$project_settings" >/dev/null 2>&1; then
-      fail '.claude/settings.json is not valid JSON, so none of it is in force.'
-    else
-      deny_count=$(jq -r '[.permissions.deny // []] | flatten | length' "$project_settings")
-      if [ "$deny_count" -eq 0 ]; then
-        warn 'permissions.deny is empty.'
-        note 'The human-owned operations list is documented but not enforced.'
-      else
-        pass "permissions.deny holds $deny_count rules."
-
-        for required in 'git commit' 'git push' 'gh pr create'; do
-          if ! jq -e --arg needle "$required" \
-            '[.permissions.deny // []] | flatten | map(select(contains($needle))) | length > 0' \
-            "$project_settings" >/dev/null 2>&1; then
-            warn "permissions.deny does not cover '$required'."
-          fi
-        done
-
-        # Compare the rule ARGUMENTS as sets, per tier. Counting Bash-prefixed
-        # against PowerShell-prefixed rules passed a file with forty Bash deny
-        # rules and one PowerShell ask rule — and this is the copy users
-        # actually run, so the weaker check was the one in the field.
-        unmirrored=$(SETTINGS="$(cat "$project_settings")" jq -rn '
-          ["deny", "ask"] | map(
-            . as $tier
-            | (($ENV.SETTINGS | fromjson).permissions[$tier] // []) as $rules
-            | ($rules | map(select(startswith("Bash("))   | ltrimstr("Bash("))) as $bash
-            | ($rules | map(select(startswith("PowerShell(")) | ltrimstr("PowerShell("))) as $pwsh
-            | ($bash - $pwsh)
-          ) | flatten | join(", ")
-        ' 2>/dev/null || true)
-
-        if [ -n "$unmirrored" ]; then
-          warn 'Bash rules are not mirrored as PowerShell rules.'
-          note 'The PowerShell tool is enabled by default on Windows without'
-          note 'Git Bash, and Bash(...) rules do not govern it, so these rules'
-          note 'silently disappear on those machines:'
-          note "  $(printf '%s' "$unmirrored" | cut -c1-120)"
-        fi
-
-        # A thin allow tier is a real finding, not a cosmetic one. Every
-        # command it does not cover prompts, and a developer answering twenty
-        # prompts per feature is not making twenty decisions — they are making
-        # one reflex, which is still armed when the twenty-first prompt is the
-        # migration. The floor before v0.3.0 shipped seven allow rules, so this
-        # fires on every repository that installed it and never re-ran install.
-        allow_count=$(jq -r '[.permissions.allow // []] | flatten | length' "$project_settings")
-        if [ "$allow_count" -lt 40 ]; then
-          warn "permissions.allow holds only $allow_count rules."
-          note 'Ordinary commands that match no rule prompt for approval. Run'
-          note '/engineering-framework:framework-install to take the current'
-          note 'floor, then add the test and lint commands this repo runs.'
-        else
-          pass "permissions.allow holds $allow_count rules."
-        fi
-
-        # Rules the floor has WITHDRAWN, which is the one kind of drift a merge
-        # can never repair. framework-install adds and never overwrites, so a
-        # rule the floor deletes stays in every repository that already had it,
-        # forever. That is not hypothetical: v0.3.0 withdrew five coarse ask
-        # rules to stop `docker exec api <test command>` and `git branch -a`
-        # prompting, and in an already-installed repository all five survived,
-        # ask still beat allow, and the release changed nothing at all.
-        #
-        # A count check cannot see this — the allow tier grows while the stale
-        # ask rule quietly outranks it — so it is checked by name.
-        retired_reference="${plugin_root}/reference/retired-permission-rules.json"
-        if [ -f "$retired_reference" ]; then
-          # The rule is bound to $rule before the membership test. Written as
-          # `... | index(.)` the dot rebinds to the array being piped in, so
-          # every rule reported as present regardless of the settings file.
-          retired_present=$(jq -r --slurpfile installed "$project_settings" '
-            ( ( $installed[0].permissions.deny  // [] )
-            + ( $installed[0].permissions.ask   // [] )
-            + ( $installed[0].permissions.allow // [] ) ) as $rules
-            | [ .retired[].rules[] as $rule
-                | select( $rules | index($rule) )
-                | $rule
-              ] | join(", ")' "$retired_reference" 2>/dev/null)
-
-          if [ -n "$retired_present" ]; then
-            warn "Withdrawn floor rules are still installed: $retired_present"
-            note 'These were removed from the floor because a narrower rule or'
-            note 'the command guard now does the job better. While they remain,'
-            note 'they outrank the allow tier and prompt on ordinary work. Run'
-            note '/engineering-framework:framework-install to be shown the'
-            note 'removals, or delete them by hand if you want them kept.'
-          else
-            pass 'No withdrawn floor rules remain installed.'
-          fi
-        fi
-
-        inert=$(jq -r '[.permissions.deny // [], .permissions.ask // [], .permissions.allow // []] | flatten | map(select(test("^(Write|Glob|MultiEdit|NotebookEdit)\\("))) | join(", ")' "$project_settings")
-        if [ -n "$inert" ]; then
-          fail "Inert file rules present: $inert"
-          note 'File permissions are only consulted for Read and Edit. These'
-          note 'rules are accepted and never enforced, so the paths read as'
-          note 'protected while being fully writable. Use Read(...)/Edit(...).'
-        fi
-      fi
-    fi
-  else
-    warn 'jq is unavailable, so settings.json could not be inspected.'
-  fi
-fi
-
-# ---------------------------------------------------------------------------
 # 3. Repository policy file
 # ---------------------------------------------------------------------------
 
@@ -272,50 +151,35 @@ repo_config="${project_directory}/.claude/engineering-framework.json"
 
 if [ ! -r "$repo_config" ]; then
   warn 'No .claude/engineering-framework.json; framework defaults apply.'
-  note 'That is a valid choice. Add one to declare canonical commands,'
-  note 'repository-specific protected paths, or to relax a default policy.'
+  note 'That is a valid choice. Add one to declare this repository canonical'
+  note 'commands, so the validation gate runs them rather than inferring, and'
+  note 'its high-risk paths, so the design and review gates raise the tier.'
 elif command -v jq >/dev/null 2>&1; then
   if ! jq -e '.' "$repo_config" >/dev/null 2>&1; then
     fail '.claude/engineering-framework.json is not valid JSON.'
-    note 'The guard hooks fall back to defaults, so a policy you believe is'
-    note 'configured is not in force.'
+    note 'The gates fall back to inference, so commands and risk paths you'
+    note 'believe are declared are not being read.'
   elif ! jq -e 'type == "object"' "$repo_config" >/dev/null 2>&1; then
     # Valid JSON of the wrong shape used to make every later query error to
     # stderr while the audit still reported PASS.
     fail '.claude/engineering-framework.json is valid JSON but is not an object.'
-    note 'The guard hooks ignore it entirely and fall back to defaults.'
+    note 'The gates ignore it entirely and fall back to inference.'
   else
     pass '.claude/engineering-framework.json is valid JSON.'
 
     unknown=$(jq -r '
-      keys - ["$schema","frameworkVersion","policy","useDefaultProtectedPaths","useDefaultCommandRules","protectedPaths","protectedCommands","commands","risk"]
+      keys - ["$schema","frameworkVersion","commands","risk"]
       | join(", ")' "$repo_config")
     if [ -n "$unknown" ]; then
       warn "Unrecognised keys ignored by the framework: $unknown"
+      note 'Permission and guard keys were removed in 1.0.0. The framework no'
+      note 'longer ships permission rules or hooks that gate commands, so'
+      note 'protectedCommands, protectedPaths and the policy switches no longer'
+      note 'do anything. Permissions belong to this repository and its owner.'
     fi
 
-    relaxed=$(jq -r '(.policy // {}) | to_entries | map(select(.value == false and (.key | startswith("humanOwned")))) | map(.key) | join(", ")' "$repo_config")
-    if [ -n "$relaxed" ]; then
-      warn "Relaxed policy: $relaxed"
-      note 'This repository has deliberately delegated these operations. Make'
-      note 'sure that decision is recorded somewhere a reviewer will see it.'
-      note 'Force pushes, history rewriting, publication, release, credential'
-      note 'reads and filesystem-root deletion stay denied regardless.'
-    fi
-
-    # A switch whose value is a string looks set in the file and is ignored by
-    # the guards, which read booleans only. That is the worst shape available:
-    # the policy reads as configured while the default silently applies.
-    mistyped=$(jq -r '(.policy // {}) | to_entries | map(select(.value | type != "boolean")) | map("\(.key)=\(.value|tostring)") | join(", ")' "$repo_config")
-    if [ -n "$mistyped" ]; then
-      fail "Policy switches that are not booleans: $mistyped"
-      note 'The guards read booleans only, so these are ignored and the'
-      note 'framework default applies instead. Written as a string, a switch'
-      note 'you believe is off is on. Use true/false without quotes.'
-    fi
-
-    # These are the two keys a repository sets and then has no way to confirm
-    # are in force, because nothing else reports them back.
+    # The two keys a repository sets and then has no way to confirm are in
+    # force, because nothing else reports them back.
     high_risk_count=$(jq -r '((.risk // {}).highRiskPaths // []) | length' "$repo_config")
     if [ "$high_risk_count" -gt 0 ]; then
       pass "risk.highRiskPaths declares $high_risk_count path pattern(s)."

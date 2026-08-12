@@ -1,6 +1,6 @@
 ---
 name: framework-doctor
-description: Audits the contract between the installed engineering framework and this repository — whether the required artefacts exist, whether the permissions floor is actually in force, whether repository documentation still matches repository reality, and what is advisory rather than enforced. Read-only; changes nothing.
+description: Audits the contract between the installed engineering framework and this repository — whether the required artefacts exist, whether the declared commands actually resolve, and whether repository documentation still matches repository reality. Read-only; changes nothing, and reports no permission state because the framework ships none.
 argument-hint: "[--strict]"
 disable-model-invocation: true
 disallowed-tools: Edit, Write, NotebookEdit
@@ -79,12 +79,17 @@ gate waiting to happen, and finding it now costs nothing.
 ```text
 Repository contract audit
   Mandatory:   <status of CLAUDE.md>
-  Enforced:    <what the permissions floor actually denies here>
-  Advisory:    <what only the hooks cover, and that hooks can fail open>
-  Policy:      <defaults in force, and any deliberate relaxation>
   Drift:       <stale or incorrect documentation claims, with path:line>
   Commands:    <declared vs. actually resolvable>
+  Risk paths:  <declared high-risk paths, and that they shape ceremony only>
+  Leftovers:   <pre-plugin .claude/ directories still overriding the plugin>
 ```
+
+Everything this reports is **advisory**. The framework ships no permission
+rules and no hooks that gate a command, so nothing here is enforced by the
+plugin. If the repository wants an operation blocked rather than reserved by
+the charter, say which rule its owner would add to their own settings — and do
+not add it.
 
 Then, at most five recommendations, **ordered by what they prevent** rather
 than by how easy they are. For each: what to do, and the concrete failure it
