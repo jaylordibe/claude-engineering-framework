@@ -77,6 +77,25 @@ carry an exception, and none of this is a sandbox.
 Point out anything already present that the floor would weaken, and **do not
 remove it**.
 
+`permissions.defaultMode` is the one key here that changes behaviour rather
+than adding a rule, so name it explicitly when you ask. The floor sets
+`acceptEdits`, because this framework gates on the human-invoked design,
+approve, review and validate steps — where a person reads a plan and a diff —
+and a per-file Edit prompt is not one of those gates. If the repository already
+sets a `defaultMode`, **keep theirs** and say which one won.
+
+**Then add the repository's own dev loop to the `allow` tier.** The floor is a
+floor, not a ceiling: no generic list can know which command is *this*
+repository's test suite. Read `commands` from
+`.claude/engineering-framework.json` if it exists, otherwise read the scripts
+the repository declares in its own manifest or task file, and propose an allow
+rule for each of install, build, lint, typecheck and test. Use the `verb:*`
+prefix form, mirror each as a `PowerShell` rule, and propose nothing that takes
+an arbitrary command as an argument. A floor
+whose allow tier does not cover the commands the agent runs forty times a day
+produces a prompt each time, and the twenty-first reflex Yes is the one that
+approves the migration.
+
 The two failure modes worth knowing about — unmirrored PowerShell rules, and
 inert file rules that are accepted but never enforced — are explained in the
 `_comment` of the reference file you just read, and `ef-doctor` checks both

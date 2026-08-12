@@ -55,8 +55,15 @@ deny	git reset --hard HEAD~1	discards work
 deny	git checkout -- src/main.ts	discards uncommitted work
 deny	git filter-branch --tree-filter x HEAD	rewrites history; never delegated
 deny	git update-ref refs/heads/main abc123	forges history; never delegated
-ask	git branch -a	listing is fine, deleting is not, and this cannot tell them apart
-ask	git worktree list	same shape as git branch
+allow	git branch -a	listing is the common case and is now told apart from mutating
+allow	git branch --contains HEAD	a value-taking flag must not read as a branch name
+allow	git branch --merged main	same shape, second flag
+ask	git branch -d old-feature	deleting a ref is the case the prompt is for
+ask	git branch feature/new	naming a branch creates it
+ask	git branch -m old new	moving a ref is a mutation
+allow	git worktree list	list is the only read-only worktree subcommand
+ask	git worktree add ../wt	adding a worktree writes to disk
+ask	git worktree remove ../wt	so does removing one
 
 # ── Publication and release ─────────────────────────────────────────────────
 deny	npm publish	releasing is an act of record
@@ -67,7 +74,10 @@ deny	docker push registry.example.com/app:1.0	image publication
 deny	gh pr create --title x	opening a pull request is human-owned
 deny	gh release create v1.0.0	releasing is human-owned
 deny	gh workflow run deploy.yml	triggering a pipeline is human-owned
-ask	gh api /repos/owner/name/pulls	read or write depending on method
+allow	gh api /repos/owner/name/pulls	a read is the default method and the common case
+ask	gh api -X DELETE /repos/owner/name/pulls/1	an explicit write method
+ask	gh api --method PATCH /repos/owner/name	the long spelling of the same thing
+ask	gh api repos/owner/name/issues -f title=x	a field flag makes gh POST implicitly
 
 # ── Migrations and data ─────────────────────────────────────────────────────
 deny	npx prisma migrate deploy	applying a schema change to a live database
@@ -113,7 +123,9 @@ deny	rm -rf $HOME/projects	unrecoverable, and never part of an approved diff
 deny	docker volume rm app_postgres_data	destroys data outside the change under review
 deny	docker system prune -af	destroys images and volumes beyond this project
 ask	rm -rf /usr	a shallow absolute path is a system directory
-ask	docker compose down	tears down a stack, and with -v destroys its volumes
+allow	docker compose down	stopping a stack is routine and loses nothing
+ask	docker compose down -v	-v is what destroys the data in it
+ask	docker compose down --volumes	the long spelling of the same flag
 ask	docker exec -it api sh	an arbitrary command this guard cannot classify
 
 # ── Credentials and remote code ─────────────────────────────────────────────
@@ -184,4 +196,24 @@ deny	docker compose exec api php artisan migrate:fresh	compose exec was previous
 deny	kubectl exec pod -- php artisan migrate	the -- separator form
 deny	podman exec api php artisan db:wipe	podman is the same interface
 ask	docker exec api bash	an interactive shell is still unclassifiable
-ask	docker exec api composer install	unclassified inner commands keep the conservative fallback
+allow	docker exec api composer install	the inner command already had a full pass; a second blanket prompt added nothing
+allow	docker exec api php artisan test	running the tests is how a containerised repository works
+allow	docker compose exec api npm test	same, via compose
+allow	docker compose run --rm api pytest	same, via run
+
+# ── Interpreters ─────────────────────────────────────────────────────────────
+# The line is what the PROMPT can show, not what the guard can read: inline
+# code is in the prompt and worth reading, a script path is not.
+allow	python3 scripts/fix_imports.py --write	running a script FILE is the common, uninformative-prompt case
+allow	node build.js	same, other ecosystem
+allow	ruby script.rb	same, other ecosystem
+allow	python3 -m pytest tests/	-m names a module, not inline code
+ask	python3 -c 'import shutil'	inline code the guard cannot read, and the prompt can show
+ask	python3 -uc 'import os'	a short-flag cluster is the same operation
+ask	node -e 'let a = 1'	node spells it -e
+ask	perl -e 'print 1'	perl spells it -e
+# `bash -c` was silent before v0.3.0: the deny rules see `bash`, and the
+# splitter only trips over the payload when it holds a shell metacharacter.
+deny	bash -c 'git push --force'	a shell payload is shell, so it gets every rule in the file
+deny	sh -c 'rm -rf /'	the same, one interpreter along
+allow	bash -c 'ls -la'	re-classifying the payload must not add a blanket prompt

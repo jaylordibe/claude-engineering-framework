@@ -674,7 +674,7 @@ function validatePermissionsFloor() {
 
   // The PowerShell tool is enabled by default on Windows without Git Bash and
   // Bash(...) rules do not govern it, so an unmirrored floor disappears there.
-  for (const tier of ['deny', 'ask']) {
+  for (const tier of ['deny', 'ask', 'allow']) {
     const rules = floor.permissions[tier] ?? [];
     const bashRules = rules.filter((rule) => rule.startsWith('Bash(')).map((rule) => rule.slice(5));
     const powershellRules = new Set(
@@ -692,18 +692,38 @@ function validatePermissionsFloor() {
     }
   }
 
+  // An allow tier is not optional politeness. Without one, every ordinary
+  // command matches no rule and prompts, which trains the reflex that then
+  // approves the migration too — the failure the floor exists to prevent.
+  if ((floor.permissions.allow ?? []).length === 0) {
+    fail(floorPath, 'the allow tier is empty. A floor of deny and ask rules alone prompts for every ordinary command, and twenty reflex approvals per feature are worth less than one that is read.');
+  }
+
   // This repository installs its own reference floor, which is the only way the
   // framework is exercised the way a consuming repository exercises it. That
   // copy is unavoidable — a settings file has no include mechanism and a plugin
   // cannot ship permission rules — but nothing else would notice it going
   // stale, so assert it here where the floor is already loaded.
+  //
+  // A FLOOR, NOT A CEILING. This asserts containment rather than equality: a
+  // repository must carry every rule the floor names, and stays free to allow
+  // its own dev loop on top. Equality forbade exactly that, so the only place
+  // to record `node tests/…` as this repository's test suite was a gitignored
+  // settings.local.json, where no contributor inherits it. Containment still
+  // catches the failure that matters — a floor rule silently dropped here.
   const ownSettingsPath = join(repositoryRoot, '.claude', 'settings.json');
   if (existsSync(ownSettingsPath)) {
     const ownSettings = readJson(ownSettingsPath);
     if (ownSettings) {
-      const canonical = (value) => JSON.stringify(value, Object.keys(value ?? {}).sort());
-      if (canonical(ownSettings.permissions) !== canonical(floor.permissions)) {
-        fail(ownSettingsPath, 'this repository\'s permissions no longer match the reference floor it dogfoods. Re-copy the floor, or the framework is shipping a floor its own maintainers do not run.');
+      for (const tier of ['deny', 'ask', 'allow']) {
+        const installed = new Set(ownSettings.permissions?.[tier] ?? []);
+        const missing = (floor.permissions[tier] ?? []).filter((rule) => !installed.has(rule));
+        if (missing.length > 0) {
+          fail(ownSettingsPath, `this repository does not install the floor's ${tier} tier: ${missing.slice(0, 5).join(', ')}${missing.length > 5 ? ` (+${missing.length - 5} more)` : ''}. Re-copy the floor, or the framework is shipping a floor its own maintainers do not run.`);
+        }
+      }
+      if (ownSettings.permissions?.defaultMode !== floor.permissions.defaultMode) {
+        fail(ownSettingsPath, `defaultMode is "${ownSettings.permissions?.defaultMode}" here and "${floor.permissions.defaultMode}" in the floor. The maintainers must run the prompting behaviour they ship.`);
       }
     }
   }

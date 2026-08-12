@@ -10,6 +10,133 @@ treat a minor bump as potentially breaking.
 
 ---
 
+## 0.3.0 — 2026-08-12
+
+The framework spent 0.1.0 and 0.2.0 building hard gates and never built the
+allow surface that makes them worth having. This release fixes that. Nothing
+becomes permitted that was denied; what changes is that ordinary work stops
+asking.
+
+**Upgrade note.** Re-run `/engineering-framework:framework-install`. The floor
+is not shipped by the plugin, so an existing `.claude/settings.json` keeps the
+old seven-rule allow tier until it is re-copied, and `ef-doctor` now warns
+while that is true. The floor also sets `permissions.defaultMode` to
+`acceptEdits`; if you want the per-file edit prompt back, drop that one key.
+
+Re-copying also **removes** five ask rules that moved into the command guard —
+`git branch`, `git worktree`, `gh api`, `glab api`, `docker exec`. If your
+repository would rather keep a declarative prompt on any of them, leave that
+rule in place; the guard's finer decision still applies underneath it.
+
+### The finding that motivated the release
+
+**A floor of 122 deny rules, 24 ask rules and 7 allow rules is a floor that
+prompts for everything.** `ls`, `grep`, `mkdir`, the test suite and the type
+check matched no rule, so each one produced an Allow/Decline prompt, and with
+no `defaultMode` every `Edit` produced one too. A single feature routinely cost
+twenty prompts.
+
+Twenty prompts is not twenty decisions. It is one reflex, and the reflex is
+Yes — and that reflex is still armed when the twenty-first prompt is the
+migration. This is the same argument `guard-protected-paths.sh` already made
+about not firing on every source file; the floor simply had not applied it to
+itself.
+
+Two of the seven allow rules did not even work. `Bash(git status *)` requires a
+space and an argument after `status`, so bare `git status` matched nothing and
+prompted despite the rule that existed to allow it.
+
+### Changed
+
+- **`reference/permissions-floor.json` ships a 262-rule allow tier**, covering
+  read-only shell inspection, read-only Git, task runners, the common test,
+  lint, type-check and build tools, and read-only container and infrastructure
+  inspection. Four admission criteria are stated in the file: it cannot write
+  outside the working tree, it cannot execute remote code, it does not take an
+  arbitrary command as an argument, and it cannot widen a deny or ask rule
+  above it. `env`, `xargs`, `npx`, `sudo`, `node`, `python` and `bash -c` are
+  excluded by the third criterion.
+- **The floor sets `permissions.defaultMode` to `acceptEdits`.** This framework
+  gates where a human reads a plan and a diff. A per-file edit prompt arrives
+  with neither attached, and one authorization change legitimately touches
+  thirty files. The protected-path guard still asks for migrations, CI
+  workflows, infrastructure definitions, lockfiles and environment files.
+- **Allow rules use the `verb:*` prefix form.** Deny and ask keep `verb *`:
+  the command guard matches those operations too, in more forms than a prefix
+  rule can express.
+- **`framework-install` now proposes the repository's own dev loop** — its
+  install, build, lint, typecheck and test commands — as allow rules, read from
+  `commands` in `.claude/engineering-framework.json` or from the repository's
+  own manifest. No generic list can know which command is a given repository's
+  test suite.
+- **`ef-doctor` warns when the allow tier holds fewer than 40 rules**, which is
+  how a repository still carrying the 0.2.0 floor finds out.
+- **`validate-plugin.mjs` asserts containment rather than equality** between
+  this repository's `.claude/settings.json` and the floor. A floor is a floor,
+  not a ceiling; equality forbade this repository from allowing its own test
+  suite in the settings file its contributors inherit.
+
+### The guard learned to tell reading from writing
+
+Five rules prompted on a whole verb because a prefix rule cannot see what the
+verb is doing. The guard can, so the decision moved to it. In every case the
+dangerous form still prompts — what stopped prompting is the reading form.
+
+| Command | Before | Now |
+|---|---|---|
+| `git branch -a`, `git worktree list` | ask | silent — `git branch -d`, `-m`, or a branch name still asks |
+| `gh api /repos/…`, `glab api …` | ask | silent — `-X DELETE`, `--method PATCH` and field flags still ask |
+| `docker exec api <test command>` | ask | silent — the inner command already had a full pass; `docker exec -it api bash` still asks |
+| `docker compose down` | ask | silent — `docker compose down -v` still asks |
+| Adding a **new** migration file | ask | silent — editing an **existing** migration still asks |
+
+The migration rule is the one worth reading twice. Its own reason string tells
+the human to add a new migration instead of editing an applied one, so
+prompting for exactly that made the framework's advice cost an approval. The
+test is "the migrations directory exists and this file does not", never the
+weaker "this file does not exist" — a path the hook cannot resolve keeps its
+prompt, which is what stops a metacharacter suffix from buying silence on a
+real migration.
+
+`git branch`, `git worktree`, `gh api`, `glab api` and `docker exec` also left
+the floor's `ask` tier, or the coarse rule would have prompted anyway. The
+trade is stated in the floor: a rule cannot fail, a hook can. `kubectl exec`
+and the database clients therefore **keep** their ask rules — a cluster or a
+live database session can be production, and that is the wrong place to depend
+on a hook running.
+
+### Interpreters
+
+`python`, `python3`, `node`, `ruby`, `perl` and `php` are now allowed, and the
+guard draws the line inside them instead: **inline code asks, a script file does
+not.** `python3 -c '…'` and `node -e '…'` ask; `python3 scripts/fix.py` and
+`node build.js` do not.
+
+The guard cannot read either one — Python is not shell. What differs is what
+the *prompt* shows. Inline code is in the prompt and can be judged. A prompt on
+`python3 scripts/fix_imports.py` shows a filename, and nobody opens the file at
+prompt fifteen; that prompt is a rubber stamp, and a rubber stamp is worse than
+no prompt because it is what trains the reflex.
+
+### Fixed
+
+- **`bash -c 'git push --force'` returned no decision at all.** The deny rules
+  see `bash`, and the segment splitter only tripped over the payload when it
+  happened to contain a shell metacharacter. A shell payload *is* shell, so
+  `classify_segment` now re-enters itself with it: `bash -c 'git push --force'`
+  denies, `sh -c 'rm -rf /'` denies, and `bash -c 'ls'` stays silent. The
+  floor's `_comment` had documented this gap as known since 0.1.0.
+- **`Bash(git status *)` never matched bare `git status`.** The allow tier now
+  uses the `verb:*` prefix form throughout.
+
+### Unchanged
+
+No `humanOwned*` switch changes behaviour, and no operation that was denied
+became permitted. The suite grew from 214 to 246 guard decisions and from 35 to
+36 robustness payloads; the fixture corpus passes unmodified.
+
+---
+
 ## 0.2.0 — 2026-08-11
 
 A production-hardening audit of 0.1.0, and the work it produced. The audit's

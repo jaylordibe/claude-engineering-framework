@@ -191,6 +191,22 @@ else
           note "  $(printf '%s' "$unmirrored" | cut -c1-120)"
         fi
 
+        # A thin allow tier is a real finding, not a cosmetic one. Every
+        # command it does not cover prompts, and a developer answering twenty
+        # prompts per feature is not making twenty decisions — they are making
+        # one reflex, which is still armed when the twenty-first prompt is the
+        # migration. The floor before v0.3.0 shipped seven allow rules, so this
+        # fires on every repository that installed it and never re-ran install.
+        allow_count=$(jq -r '[.permissions.allow // []] | flatten | length' "$project_settings")
+        if [ "$allow_count" -lt 40 ]; then
+          warn "permissions.allow holds only $allow_count rules."
+          note 'Ordinary commands that match no rule prompt for approval. Run'
+          note '/engineering-framework:framework-install to take the current'
+          note 'floor, then add the test and lint commands this repo runs.'
+        else
+          pass "permissions.allow holds $allow_count rules."
+        fi
+
         inert=$(jq -r '[.permissions.deny // [], .permissions.ask // [], .permissions.allow // []] | flatten | map(select(test("^(Write|Glob|MultiEdit|NotebookEdit)\\("))) | join(", ")' "$project_settings")
         if [ -n "$inert" ]; then
           fail "Inert file rules present: $inert"
