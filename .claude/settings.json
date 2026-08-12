@@ -1,7 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
-    "defaultMode": "acceptEdits",
     "allow": [
       "Bash(ls:*)",
       "Bash(pwd:*)",
@@ -465,7 +464,8 @@
       "PowerShell(sqlite3 *)",
       "PowerShell(pg_dump *)",
       "PowerShell(kubectl exec *)"
-    ]
+    ],
+    "defaultMode": "acceptEdits"
   },
   "enabledPlugins": {
     "engineering-framework@jaylordibe": true
@@ -475,7 +475,8 @@
       "source": {
         "source": "github",
         "repo": "jaylordibe/claude-engineering-framework"
-      }
+      },
+      "autoUpdate": true
     }
   }
 }
