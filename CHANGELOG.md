@@ -5,8 +5,10 @@ All notable changes to the `engineering-framework` plugin.
 Entries are grouped by **workflow impact** rather than by file: an entry a
 reader cannot act on, or decide not to act on, is not an entry.
 
-This project follows [semantic versioning](docs/versioning.md). During `0.x`,
-treat a minor bump as potentially breaking.
+This project follows [semantic versioning](docs/versioning.md). Since `1.0.0`
+the contract is the ordinary one: a MAJOR bump may ask a consuming repository to
+act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
+`0.x` convention, where a minor bump could break you.
 
 ---
 

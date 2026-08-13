@@ -3,8 +3,10 @@
 For a repository that already has a mature `.claude/` framework of its own and
 wants to move the reusable half into the plugin.
 
-The worked example throughout is `jaylordibe/nestjs-api`, the repository this
-framework was extracted from.
+The worked example throughout is **the source repository** — the codebase this
+framework was extracted from, which is private and is not described further
+here. Its counts are quoted below because the *proportions* are what transfer,
+not because your repository will match them.
 
 ---
 
@@ -35,6 +37,14 @@ mis-sorted in both directions.
 /engineering-framework:framework-doctor
 ```
 
+Those two `/plugin` commands are a **per-machine** step, and every colleague who
+works in this repository will need them too — the plugin is not something
+`git pull` can deliver. Once installed, later releases arrive via
+`/plugin update engineering-framework@jaylordibe`; see the
+[consuming repository guide](consuming-repository-guide.md#updating-the-framework).
+If you want colleagues to skip the manual install entirely, pin the marketplace
+in your committed settings — that guide shows the two keys required.
+
 The doctor reports your existing `.claude/agents/`, `.claude/standards/` and
 `.claude/templates/` as leftovers. Do not act on that yet — read it as an
 inventory.
@@ -48,7 +58,7 @@ reversible at every step.
 
 ## Step 2 — Delete what the plugin now owns
 
-For `nestjs-api`, these came out wholesale:
+In the source repository, these came out wholesale:
 
 | Deleted | Replaced by |
 |---|---|
@@ -69,7 +79,7 @@ that was living in the wrong file. Move it to `CLAUDE.md` first.
 This is the real work. Take each domain playbook and separate the **decisions
 and failure modes** from **your answers to them**.
 
-`nestjs-api` had five. They split like this:
+The source repository had five. They split like this:
 
 | File | Outcome |
 |---|---|
@@ -107,7 +117,7 @@ and rewrite any that remain. Two mechanical changes are required:
 - **Reference the plugin's standards** with `${CLAUDE_PLUGIN_ROOT}/standards/…`
   rather than `.claude/standards/…`.
 
-For `nestjs-api`, all eight agents were replaced by the plugin's eight. The
+In the source repository, all eight agents were replaced by the plugin's. The
 project-specific knowledge in them moved into `CLAUDE.md` conventions and the
 surviving playbooks, where it is read by whichever lens needs it.
 
@@ -125,9 +135,9 @@ human-owned operations list, the skill-naming rationale.
 paragraph, the architecture map, the cross-cutting conventions, the language
 gotchas, the migration policy, the consumers table, the deep-reference index.
 
-For `nestjs-api` this removes roughly 70 of 270 lines — and makes the remaining
-200 more valuable, because they are now unambiguously *truth* rather than truth
-mixed with methodology.
+In the source repository this removed roughly 70 of 270 lines — and made the
+remaining 200 more valuable, because they are now unambiguously *truth* rather
+than truth mixed with methodology.
 
 Add one line near the top so precedence is explicit:
 

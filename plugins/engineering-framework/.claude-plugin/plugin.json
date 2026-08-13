@@ -3,7 +3,7 @@
   "name": "engineering-framework",
   "displayName": "Engineering Framework",
   "version": "1.0.0",
-  "description": "A stack-agnostic engineering workflow for Claude Code: understand, design, human approval, implement, review, validate, present. Ships gates, read-only review agents, standards, templates and safety hooks that discover repository reality instead of assuming a stack.",
+  "description": "A stack-agnostic engineering workflow for Claude Code: understand, design, human approval, implement, review, validate, present. Ships gates, read-only review agents, standards and templates that discover repository reality instead of assuming a stack. No permission rules, and no hooks that gate a command.",
   "author": {
     "name": "Jay Lord Ibe",
     "url": "https://github.com/jaylordibe"

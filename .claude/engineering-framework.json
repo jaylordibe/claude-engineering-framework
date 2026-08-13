@@ -13,6 +13,6 @@
       "*/plugins/engineering-framework/.claude-plugin/plugin.json",
       "*/.claude-plugin/marketplace.json"
     ],
-    "notes": "This repository ships governance that runs in other people's repositories. A wrong hook rule blocks somebody's legitimate work; a wrong standard makes an agent describe an architecture that does not exist. Both are silent from here."
+    "notes": "This repository ships methodology that runs in other people's repositories, and from 1.0.0 it ships no permission rules and no hooks that gate a command — nothing here can block a consumer's work, and no document may describe it as though it can. What can still go wrong is silent from here: a wrong standard makes an agent describe an architecture that does not exist, and a wrong charter line is paid on every request in every installed repository. Consumers may auto-update, so the version bump in plugin.json is the only brake between a changed standard and all of them."
   }
 }

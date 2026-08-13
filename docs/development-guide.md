@@ -200,9 +200,27 @@ contain. The "must not" half is what keeps the graders meaningful.
 4. Run every validator.
 5. Merge to `main`. Users receive it on their next `/plugin update` — and only
    because the version changed.
+6. Tag the release:
+
+   ```bash
+   claude plugin tag ./plugins/engineering-framework
+   ```
+
+   This creates `engineering-framework--v<version>` and validates that
+   `plugin.json` and the marketplace entry agree before it does. Tagging is a
+   human-owned operation; prepare it, then run it yourself.
 
 There is no build step and no publish step. The marketplace serves the
 repository directly.
+
+**Why the tag matters even though nothing consumes it.** The marketplace serves
+`main`, so a tag delivers nothing and installs nothing. What it buys is the
+ability to answer "what exactly does a consumer have?" after the fact. A
+consumer records only a version string; without a tag there is no commit that
+string resolves to, so a bug report naming a version cannot be reproduced or
+diffed against the next one. Releases made before this step existed are
+untagged — backfill them from `CHANGELOG.md` dates if that question is ever
+asked.
 
 ## Repository layout
 
