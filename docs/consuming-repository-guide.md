@@ -6,7 +6,14 @@ What a repository has to provide, and what it gets in return.
 
 **One file is mandatory: `CLAUDE.md`.** Everything else has a working default.
 
-```bash
+Two things have to be in place, and they arrive by different routes. The plugin
+lives on your machine and you install it; the repository contract lives in the
+repository and arrives with `git pull`.
+
+**Bringing the framework to a repository for the first time** — the plugin, then
+the contract:
+
+```text
 /plugin marketplace add jaylordibe/claude-engineering-framework
 /plugin install engineering-framework@jaylordibe
 ```
@@ -16,7 +23,18 @@ What a repository has to provide, and what it gets in return.
 /engineering-framework:framework-doctor
 ```
 
-Then work:
+Commit what `framework-install` writes. That is the last time anyone in this
+repository runs it.
+
+**Joining a repository a colleague already set up** — you need the plugin only.
+The two `/plugin` commands above, then restart. **Do not run
+`framework-install`**: the contract is already in the commit you pulled, and
+re-running it only reports that everything is already correct. If the repository
+pins the marketplace (see [Making it one step for your
+team](#making-it-one-step-for-your-team)), even those two commands are
+unnecessary — accept the trust prompt and restart.
+
+Either way, then work:
 
 ```text
 /engineering-framework:work-item add rate limiting to the password reset endpoint
@@ -41,6 +59,36 @@ permission rules and never edits your settings — permissions belong to you.
 Earlier versions installed a permissions floor; if you have one, it is still
 there because a merge only ever adds, and nothing here reads it any more. See
 the 1.0.0 entry in `CHANGELOG.md` for what is worth deleting.
+
+### Making it one step for your team
+
+`framework-install` will not write this, because settings are yours. If you want
+colleagues to get the plugin without typing anything, add it yourself and commit
+it:
+
+```jsonc
+// .claude/settings.json — committed
+{
+  "extraKnownMarketplaces": {
+    "jaylordibe": {
+      "source": { "source": "github", "repo": "jaylordibe/claude-engineering-framework" },
+      "autoUpdate": true
+    }
+  },
+  "enabledPlugins": { "engineering-framework@jaylordibe": true }
+}
+```
+
+**Both keys are needed.** `enabledPlugins` names a plugin without saying where
+it comes from, so a colleague whose machine has never heard of the marketplace
+cannot resolve it and still has to run `/plugin marketplace add` by hand.
+`extraKnownMarketplaces` is the half that removes the manual step.
+
+`autoUpdate` keeps the marketplace catalogue fresh, so a released version
+arrives without anyone running an update command. That is a real trade: it makes
+**the framework's version bump the only thing standing between a changed
+standard and everyone on your team.** Leave it off if you would rather adopt
+releases deliberately.
 
 ---
 
@@ -163,6 +211,30 @@ authorization and background work; yours carry **this repository's answers**.
 
 Expect to be stopped for plan approval, and expect the run to end with a diff
 in your working tree and nothing committed. Both are the design.
+
+## Updating the framework
+
+```text
+/plugin marketplace update jaylordibe
+/plugin update engineering-framework@jaylordibe
+```
+
+Then restart — an update does not apply to a running session, and hooks in
+particular keep using the previous version's path until `/reload-plugins`. With
+`autoUpdate` set on the marketplace entry, the first command is done for you.
+
+An update **never** requires re-running `framework-install`, re-adding the
+marketplace, or any action from colleagues who have not pulled yet. Your
+repository contract is unaffected by a plugin update; it is already committed.
+
+You receive a new version only when `version` in the plugin's manifest is
+bumped. If the bump is **major**, read that entry in `CHANGELOG.md` before
+updating — a major bump is defined as one where a consuming repository may have
+to act. Minor and patch bumps never ask anything of you.
+
+`frameworkVersion` in your policy file records which version this repository was
+written against. `framework-doctor` compares it with what is installed and fails
+on a **major** gap, so the upgrade note gets read rather than discovered.
 
 ## When to run `framework-doctor`
 

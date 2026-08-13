@@ -107,9 +107,28 @@ docs/                               design rationale and Claude Code constraints
 | Consumer | Repository | Audience | Owner |
 |---|---|---|---|
 | Any repository that installs the plugin | External — not visible from here | Public | Unknown |
-| `jaylordibe/laravel-api` | `jaylordibe/laravel-api` | Internal | Jay Lord Ibe |
-| `jaylordibe/nestjs-api` | `jaylordibe/nestjs-api` | Internal | Jay Lord Ibe |
+| Private repositories maintained by the author | Not named here — see below | Internal | Maintainer |
+
+**This table is deliberately not a roster, and adding one is a defect.** This
+repository is published, so every file in it is published — this one included.
+The consumers are private codebases whose names, and whose owners' names, are
+not ours to disclose here.
+
+The instinct to fill this table in is a good one everywhere else: the framework
+itself insists that a contract change must name who breaks, and `ef-doctor`
+fails a consuming repository whose `Consumers` table is still a placeholder.
+That rule is for **repositories that own a contract**, where the reader is
+already inside the trust boundary. Here the reader is the public. What a release
+decision actually needs is the *shape* of the exposure, not the list — and the
+shape is below.
 
 A change to a standard, an agent, a gate or the charter reaches every one of
 them on their next `/plugin update`, and only when `version` in `plugin.json`
 changes.
+
+A consuming repository that pins the marketplace with `autoUpdate` in its own
+settings receives that release without anyone typing an update command, and
+which ones do is not visible from here. Assume all of them. **The version bump
+is then the only brake there is** — a standard changed without one reaches
+nobody, and a standard changed with one reaches every such repository at once.
+Neither outcome is recoverable by editing this repository afterwards.

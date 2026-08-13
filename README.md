@@ -454,9 +454,13 @@ ran, it did not — that claim is itself the bug.
 
 ## Status
 
-`1.0.0`. The framework ships methodology only: no permission rules, no hooks
-that gate a command. Its workflow is derived from a battle-tested
-implementation, and 1.0.0 marks the point at which real repositories are
-running on it.
+Stable, and past `1.0.0`. The framework ships methodology only: no permission
+rules, no hooks that gate a command. Its workflow is derived from a
+battle-tested implementation, and `1.0.0` marked the point at which real
+repositories were running on it.
+
+[CHANGELOG.md](CHANGELOG.md) is authoritative for the current release — this
+section deliberately does not name a version, because a README that does is a
+README that is wrong one release later.
 
 MIT licensed. Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
