@@ -45,13 +45,73 @@ and an optional `.claude/engineering-framework.json` naming your canonical
 commands and high-risk paths. It shows every change before writing it, never
 overwrites existing content, and writes no permission rules. Commit the result.
 
+### Removing one of your team's two setup commands — optional, and yours to write
+
+Nothing in this plugin will write this for you. `framework-install` names it and
+stops, because `.claude/settings.json` belongs to the repository and the person
+who owns it — the same reason the framework stopped shipping permission rules in
+1.0.0. If you want it, add it yourself and commit it:
+
+```jsonc
+// .claude/settings.json — committed
+{
+  "extraKnownMarketplaces": {
+    "jaylordibe": {
+      "source": { "source": "github", "repo": "jaylordibe/claude-engineering-framework" },
+      "autoUpdate": true
+    }
+  },
+  "enabledPlugins": { "engineering-framework@jaylordibe": true }
+}
+```
+
+**This removes one of two commands, not both.** Once a colleague trusts the
+repository folder, Claude Code registers the marketplace from
+`extraKnownMarketplaces` without a prompt — so they never run
+`/plugin marketplace add`.
+
+**They still have to install the plugin themselves.** From Claude Code v2.1.195,
+a plugin that only a project's `.claude/settings.json` enables, and that comes
+from an external source such as a git repository, **does not load until that
+person installs it**. Claude Code reports it as not installed and prints the
+command. So the block above buys your team this:
+
+```text
+before:  /plugin marketplace add jaylordibe/claude-engineering-framework
+         /plugin install engineering-framework@jaylordibe
+after:   /plugin install engineering-framework@jaylordibe
+```
+
+Worth committing — and not the zero-setup onboarding it looks like. `enabledPlugins`
+is what makes the plugin *active* for this repository once installed, and
+`extraKnownMarketplaces` is what lets that install resolve at all; neither
+performs the install.
+
+**`autoUpdate` is a real trade, in both directions.** On, Claude Code refreshes
+the marketplace **and updates the installed plugin on disk** in the background
+after a session starts — the new version loads on the next launch or after
+`/reload-plugins` — so a release arrives with nobody typing anything, and the
+framework's version bump becomes the only thing standing between a changed
+standard and everyone on your team. Off, you adopt releases deliberately, at the
+cost of both update commands at the top of this file each time.
+
+Both are defensible. Pick the one your team would defend in a review, and note
+that this file is committed, so whichever you pick applies to everyone who
+pulls.
+
+(Third-party marketplaces default to auto-update **off**, which is why the key
+is written explicitly above.)
+
 ### Joining a repository someone else set up
 
 **Do not run `framework-install`** — the contract is already in the commit you
 pulled, and re-running it only reports that everything is already correct. You
-need the plugin on your machine, and nothing else. If the repository pins the
-marketplace in its committed `.claude/settings.json`, even that is automatic:
-accept the trust prompt and restart.
+need the plugin on your machine, and nothing else.
+
+If the repository pins the marketplace as above, trust the folder when prompted
+and the marketplace registers itself; then run the install command Claude Code
+shows you. If it does not, add the marketplace first — both commands are at the
+top of this file.
 
 ### Updating
 

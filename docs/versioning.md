@@ -91,11 +91,39 @@ might break you no longer applies.
 
 **Assume consumers auto-update.** A repository that pins the marketplace with
 `autoUpdate` in its own settings receives a release without anyone typing an
-update command. You cannot see which ones do, so assume all of them: the version
-bump is not a notification, it is the only brake. A standard changed without a
-bump reaches nobody; a standard changed with one reaches every such repository
-at once, and neither outcome is recoverable by editing this repository
-afterwards. Decide the bump before merging, not after.
+update command — Claude Code refreshes the catalogue *and* updates the installed
+plugin on disk, in the background after a session starts. You cannot see which
+ones do, so assume all of them: the version bump is not a notification, it is the
+only brake. A standard changed without a bump reaches nobody; a standard changed
+with one reaches every such repository at once, and neither outcome is
+recoverable by editing this repository afterwards. Decide the bump before
+merging, not after.
+
+## A release cut minutes ago can still absorb changes
+
+Immutability starts at **propagation**, not at the push. A consumer's plugin
+cache is keyed by version — `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`
+— so once someone holds `1.1.0`, changing what `1.1.0` contains never reaches
+them: Claude Code sees that version installed and does nothing. *That* is what
+makes a published version immutable, and it is why amending one is worse than
+bumping.
+
+Before anyone has fetched it, none of that applies. More work landing in the
+same session as a release **folds into that release**: amend its `CHANGELOG`
+entry, leave `version` alone, and say plainly that the version's contents
+changed. Cutting a second number for a release nobody has seen the first one of
+spends a version on nothing.
+
+Check propagation with evidence rather than assuming it:
+
+```bash
+git log -1 --format=%cI <release-commit>          # when it actually went out
+ls ~/.claude/plugins/cache/<marketplace>/<plugin>/ # which versions exist on disk
+```
+
+Auto-update runs after session start with a delay of up to ten minutes, so a
+release younger than that has almost certainly reached nobody. Older than a few
+hours, or once any consumer machine shows the version in its cache, bump instead.
 
 ## Changelog
 

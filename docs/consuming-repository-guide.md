@@ -60,11 +60,11 @@ Earlier versions installed a permissions floor; if you have one, it is still
 there because a merge only ever adds, and nothing here reads it any more. See
 the 1.0.0 entry in `CHANGELOG.md` for what is worth deleting.
 
-### Making it one step for your team
+### Taking one command off your team's setup
 
 `framework-install` will not write this, because settings are yours. If you want
-colleagues to get the plugin without typing anything, add it yourself and commit
-it:
+colleagues to skip registering the marketplace by hand, add it yourself and
+commit it:
 
 ```jsonc
 // .claude/settings.json — committed
@@ -79,13 +79,23 @@ it:
 }
 ```
 
-**Both keys are needed.** `enabledPlugins` names a plugin without saying where
-it comes from, so a colleague whose machine has never heard of the marketplace
-cannot resolve it and still has to run `/plugin marketplace add` by hand.
-`extraKnownMarketplaces` is the half that removes the manual step.
+**This removes one of two setup commands, not both.** Once a colleague trusts
+the repository folder, Claude Code registers the marketplace without a further
+prompt, so they never run `/plugin marketplace add`.
 
-`autoUpdate` keeps the marketplace catalogue fresh, so a released version
-arrives without anyone running an update command. That is a real trade: it makes
+**They still install the plugin themselves.** From Claude Code v2.1.195, a
+plugin that only a project's `.claude/settings.json` enables, and that comes
+from an external source such as a git repository, does not load until that
+person installs it — Claude Code reports it as not installed and prints the
+command to run. `enabledPlugins` makes the plugin active for this repository
+once installed; `extraKnownMarketplaces` makes that install resolvable. Neither
+performs the install, so onboarding goes from two commands to one rather than to
+none.
+
+`autoUpdate` refreshes the marketplace catalogue **and updates the installed
+plugin on disk**, in the background after a session starts, so a released
+version arrives without anyone running an update command. That is a real trade:
+it makes
 **the framework's version bump the only thing standing between a changed
 standard and everyone on your team.** Leave it off if you would rather adopt
 releases deliberately.
@@ -220,8 +230,13 @@ in your working tree and nothing committed. Both are the design.
 ```
 
 Then restart — an update does not apply to a running session, and hooks in
-particular keep using the previous version's path until `/reload-plugins`. With
-`autoUpdate` set on the marketplace entry, the first command is done for you.
+particular keep using the previous version's path until `/reload-plugins`.
+
+With `autoUpdate` set on the marketplace entry, **both commands are done for
+you**: Claude Code refreshes the catalogue and updates the installed plugin in
+the background after a session starts, up to about ten minutes in. The new
+version loads on your next launch, or after `/reload-plugins`. So the only thing
+left is the restart.
 
 An update **never** requires re-running `framework-install`, re-adding the
 marketplace, or any action from colleagues who have not pulled yet. Your

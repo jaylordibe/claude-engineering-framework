@@ -397,6 +397,52 @@ magnitude.
 
 ---
 
+## C19 — Committed settings register a marketplace but never install the plugin
+
+> Once a team member trusts the repository folder, Claude Code adds these
+> marketplaces without a further prompt. — *Discover and install plugins*
+
+> As of Claude Code v2.1.195, adding the marketplace doesn't install plugins that
+> come from an external source, on any path that loads plugins. A plugin that
+> only the project's `.claude/settings.json` enables, and that comes from an
+> external source such as a GitHub repository or npm package, doesn't load until
+> the team member installs it. — *Discover and install plugins*
+
+**Consequence.** A repository that commits `extraKnownMarketplaces` and
+`enabledPlugins` takes its team's setup from **two commands to one, not to
+zero.** The marketplace registers itself after folder trust; the install is
+still per-developer, and Claude Code reports the plugin as not installed until
+they run it.
+
+This documentation said otherwise in four places — that a colleague "gets the
+plugin without typing anything", and a command-reference row marking the install
+"required *unless* the repository pins `enabledPlugins`". Wrong in the direction
+that matters: a maintainer commits the block, tells the team onboarding is
+automatic, and every one of them hits a plugin that silently is not there.
+
+**Not mechanically checkable.** Nothing in this repository can observe another
+person's install, so `validate-plugin.mjs` gets no counterpart check here. It is
+recorded because it is the single most likely thing for this project to
+over-claim: the block *looks* like zero-setup onboarding, and the half that works
+is the half you can see on your own machine.
+
+**Related, and the reason the confusion arose:** auto-update defaults differ by
+marketplace. Anthropic's official marketplace is registered automatically on
+first interactive start and has auto-update **on** by default; third-party and
+local marketplaces default to **off**. A plugin from the official marketplace
+therefore appears to need no configuration and to keep itself current, while an
+identical third-party plugin needs both the marketplace entry and an explicit
+`autoUpdate`. Nothing about the plugins differs — only the defaults.
+
+**Confirmed by the same page:** with `autoUpdate` on, Claude Code "refreshes the
+marketplace data **and updates installed plugins to their latest versions on
+disk**", after session start with a delay of up to ten minutes, taking effect on
+the next launch or after `/reload-plugins`. So [versioning](versioning.md)'s
+claim that a pinned consumer receives a release without typing an update command
+is correct as written.
+
+---
+
 ## Things we checked and chose not to use
 
 | Feature | Why not |

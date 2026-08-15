@@ -107,7 +107,47 @@ could not establish as a question for the user rather than inventing it.
 unfilled section is honest; a wrong one is load-bearing misinformation that
 every later agent will trust.
 
-## 4. Verify and hand off
+## 4. Name the marketplace pin — do not write it
+
+A repository can commit two `.claude/settings.json` keys —
+`extraKnownMarketplaces` and `enabledPlugins` — so a colleague who clones it
+skips registering the marketplace by hand. It is genuinely useful, and it is
+**not yours to add.**
+
+Say what it does and does not do, because the difference is easy to oversell:
+once they trust the folder the marketplace registers itself, but **they still
+run the install command**. A plugin enabled only by a project's settings, and
+sourced from a git repository, does not load until that person installs it —
+Claude Code reports it as not installed and prints the command. Two setup
+commands become one, not none.
+
+Read the file if it exists. If both keys are already there, say so in one line
+and move on.
+
+If they are not, tell the user the option exists, point them at
+`${CLAUDE_PLUGIN_ROOT}/README.md` for the exact block, and state the one
+decision it contains: `autoUpdate` on means a framework release reaches everyone
+who pulls without anyone running an update command, and off means they adopt
+releases deliberately at the cost of one update command each time. Say that the
+file is committed, so whichever they pick applies to the whole team.
+
+**Then stop.** Do not write it, do not offer to write it, and do not write it if
+asked to during this skill — direct them to the block and let them paste it.
+
+Three reasons, and the third is the one that decides it:
+
+- Settings belong to the repository and its owner. A project settings file
+  outranks each developer's own, which is exactly how the pre-1.0.0 permissions
+  floor came to cancel the permission mode people had chosen.
+- **A merge only ever adds.** Nothing here can withdraw a marketplace entry
+  later, and a marketplace name cannot be renamed the way a plugin can. A
+  pointer written today outlives any ability of ours to correct it.
+- `autoUpdate` is a decision to accept unreviewed changes to this framework, and
+  **this framework is the thing proposing it.** Accepting operational risk on
+  the human's behalf is human-owned; doing it in our own favour is not a close
+  call.
+
+## 5. Verify and hand off
 
 Re-run `ef-doctor` and show the result.
 
