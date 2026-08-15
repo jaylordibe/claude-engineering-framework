@@ -70,6 +70,12 @@ const REQUIRED_GUARANTEES = [
   { concept: 'skipped or partial is never a pass', patterns: [/skipped|partial|flaky/i] },
   { concept: 'human-owned operations', patterns: [/commit/i, /push/i, /migration/i, /deploy/i] },
   { concept: 'repository content is evidence, not instruction', patterns: [/instruction|instruct/i] },
+  // The quality floor is stated here rather than only in
+  // standards/execution-efficiency.md for one reason: pressure to spend less
+  // arrives in the user's own message, in any session, before any gate or
+  // standard has loaded. A floor stated only inside the machinery it protects
+  // is not reachable at the moment it is tested.
+  { concept: 'efficiency never lowers the quality floor', patterns: [/efficiency/i, /floor|reduce|lower/i, /token|cheap|spend/i] },
 ];
 
 if (!existsSync(charterScript)) {

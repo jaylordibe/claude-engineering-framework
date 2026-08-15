@@ -24,19 +24,24 @@ see `standards/evidence.md`.
 
 ## Evidence
 
-| Gate | Command or check | Exact scope | Result | Notes |
-|---|---|---|---|---|
-| Build / type check | | | | |
-| Lint | | | | |
-| Unit tests | | filtered to … | | |
-| Integration / end-to-end | | filtered to … | | |
-| Runtime exercise | | | | |
-| Security checks | | | | |
-| Data / migration inspection | | read-only | | |
+| Gate | Command or check | Exact scope | When it ran | Result | Notes |
+|---|---|---|---|---|---|
+| Build / type check | | | this run | | |
+| Lint | | | this run | | |
+| Unit tests | | filtered to … | this run | | |
+| Integration / end-to-end | | filtered to … | this run | | |
+| Runtime exercise | | | this run | | |
+| Security checks | | | this run | | |
+| Data / migration inspection | | read-only | this run | | |
 
 Include a row for every check that was expected and did **not** run. A missing
 row and a passing row look identical to a reader in a hurry, which is precisely
 when this table gets read.
+
+`When it ran` is `this run` unless the row genuinely re-uses an earlier result,
+in which case name where it came from and say what has changed since —
+`${CLAUDE_PLUGIN_ROOT}/standards/evidence.md` §7. A result that predates any edit
+it is offered as evidence for is a false `PASS`, not a saved command.
 
 Use `N/A` for a gate this repository does not have, with the evidence that it
 is genuinely absent, and `BLOCKED` for one that exists and could not run. Only

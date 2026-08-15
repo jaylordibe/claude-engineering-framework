@@ -75,11 +75,24 @@ recorded but not enforced is a comment.
   every request. It is the framework's entire always-on context budget in every
   repository a user opens. The first question for a new rule is which skill it
   belongs in instead.
-- **New hook denials without a version bump and a policy switch.** A framework
-  that silently starts refusing a team's normal workflow gets uninstalled.
+- **A gate that starts refusing something, without a version bump.** The
+  framework denies nothing at the tool level any more, but a gate that stops
+  where it used to continue still changes a team's workflow, and the version
+  number is how that news travels. See [versioning](docs/versioning.md).
+- **A second copy of the efficiency policy.** Investigation depth, per-launch
+  model choice, fan-out and output size live in
+  `standards/execution-efficiency.md`; a skill or agent that needs one cites the
+  section. `validate-plugin.mjs` fails a file that restates the depth-band
+  vocabulary without the citation.
+- **An efficiency saving whose default fails toward spending less.** Every
+  default in that standard fails toward spending more, deliberately:
+  overspending is visible in a transcript, and underspending produces a
+  *shorter, more confident* output than the correct run. A saving that has to be
+  argued for is not one worth taking.
 - **Abstractions for a second case that does not exist.**
-- **Describing either guard as a sandbox.** It is not one and cannot become
-  one.
+- **Describing anything the framework ships as a sandbox.** Nothing here is one
+  and nothing here can become one. It ships no permission rules, and its only
+  hook emits the session charter.
 
 ## Reporting a problem
 

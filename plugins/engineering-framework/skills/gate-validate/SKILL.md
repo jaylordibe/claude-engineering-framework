@@ -100,6 +100,14 @@ every filtered or partial run as partial, on the verdict line.**
 
 Run the full suite only when the unit of work is complete or the user asks.
 
+**This gate runs the checks; it does not inherit them.** A focused run from the
+implementation or review stage is not this gate's evidence, and a result that
+predates any edit made since is not evidence at all —
+`${CLAUDE_PLUGIN_ROOT}/standards/evidence.md` §7. Where a result genuinely still
+holds because nothing it covers has changed, re-use it and **say in the row that
+you did, and what has changed since**. A row whose age is invisible reads as
+fresh, and this is the table that gets read in a hurry.
+
 If the suite runs in parallel, confirm the new tests respect the isolation the
 topology provides.
 

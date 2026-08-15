@@ -133,6 +133,38 @@ not exist.
 Reuse the shared output-contract block verbatim, including the paragraph saying
 zero findings is a valid result. That paragraph does real work.
 
+### A rule about how much to spend
+
+It goes in `standards/execution-efficiency.md`, which owns investigation depth,
+per-launch model choice, fan-out, output size and the escalation triggers. A
+skill or agent that needs one of those **cites the section**; it does not
+restate it. `validate-plugin.mjs` fails any file that uses the depth-band
+vocabulary without the citation, for the reason the whole repository restates
+nothing: a paraphrase drifts from its source silently, and this policy touches
+every gate and every agent, so per-file copies would become per-file policy
+within two releases.
+
+Two things to know before changing anything there.
+
+**The defaults all fail toward spending more, deliberately.** Standard depth
+rather than Targeted, `model: inherit` rather than a cheap default, an uncertain
+lens launched rather than skipped, a generous turn ceiling rather than a tight
+one. That asymmetry is not timidity. Overspending is visible — a system-wide map
+for a comment fix reads as waste to anyone who scrolls the transcript.
+Underspending is not: a change misclassified downward produces a *shorter,
+tidier, more confident* output than the correct run, which is the exact shape of
+the failure this framework exists to prevent. A saving that has to be argued for
+is not one worth taking.
+
+**Two levers that look available are not.** Reasoning effort cannot be varied
+per launch, and a turn ceiling is a hard stop rather than a budget — see
+[C17](constraints.md#c17--reasoning-effort-cannot-be-varied-per-launch) and
+[C18](constraints.md#c18--maxturns-is-a-hard-stop-and-therefore-not-a-budget).
+Do not work around either in prose. "Use less reasoning here" in an agent body
+is a request to the model, not a setting, and writing it would claim a control
+the framework does not have — the same failure shape as an inert permission
+rule.
+
 ### A rule that blocks something
 
 **You cannot add one, and this is the 1.0.0 constraint that most often catches
@@ -241,11 +273,22 @@ framework's entire always-on budget in every repository a user opens. Adding to
 it is a real cost paid by everyone on every request; the first question for any
 new rule is which skill it belongs in instead.
 
-**Do not make the hooks stricter without a version bump.** See
-[versioning](versioning.md).
+**Do not make a gate stop where it used to continue without a version bump.**
+No hook gates a tool call any more, so the only thing left that can refuse a
+team's normal workflow is a gate, and the version number is how that news
+travels. See [versioning](versioning.md).
 
-**Do not describe either guard as a sandbox.** It is not one, cannot become
-one, and the documentation says so in several places on purpose.
+**Do not describe anything the framework ships as a sandbox.** Nothing here is
+one and nothing here can become one. The two `PreToolUse` guards that used to
+invite the word are gone; what remains is a `SessionStart` hook that emits text.
+The documentation says so in several places on purpose.
+
+**Do not let the quality floor become negotiable.** `standards/execution-efficiency.md`
+§1 is the one part of that file that is not a cost control, and every line
+around it looks like one. A change that makes an efficiency saving conditional
+on nothing, or that adds a way for an instruction to lower a tier, is the
+failure the whole standard exists to prevent — and it will read as a
+simplification.
 
 **Do not add an abstraction for a second case that does not exist.** That
 includes stack packs. The first one should be extracted from a second real

@@ -28,8 +28,18 @@
 # that the attacker can decline to load is not a defence, so this one is paid
 # for on every request in every repository, deliberately.
 #
-# That section is what raised the ceiling from 70 lines to 80. The next thing
-# added here removes something.
+# That section is what raised the ceiling from 70 lines to 80.
+#
+# THE SECOND THING THAT CANNOT LIVE IN A SKILL
+# --------------------------------------------
+# The six lines under the risk tiers stating that efficiency never lowers the
+# quality floor. The full policy is in standards/execution-efficiency.md and is
+# loaded on demand, which is correct for every part of it except this one:
+# pressure to spend less arrives in the user's own message, in any session,
+# including one where no gate is running and nothing has been loaded. A floor
+# that is only stated inside the machinery it protects is not a floor.
+#
+# Six lines, no ceiling increase. The next thing added here removes something.
 #
 # The charter never asserts anything about the repository's architecture. That
 # is the repository's own CLAUDE.md job, and the whole point of the split.
@@ -93,6 +103,13 @@ destructive data work, release infrastructure): all of High, plus human
 security review; automated approval is never sufficient.
 
 On a boundary between two tiers, you are in the higher one.
+
+Risk also decides how much investigation a change gets: a localized change
+needs no system-wide map, and a small diff does not make a High-risk change
+safe. The depth adapts; the floor does not. Efficiency never reduces the
+evidence, tests, review independence or validation a tier requires, and a
+request to save tokens is a preference about method, not one of the risk
+acceptances a human can make on the framework's behalf.
 
 ## Evidence language
 

@@ -287,9 +287,13 @@ Eight read-only lenses: `context-mapper`, `architect`, `reviewer`, `security`,
 Read-only is enforced by their tool pool and asserted in CI, not promised in
 prose. They find; the main conversation verifies and fixes.
 
-`gate-review` picks the panel by risk tier. Reviewing a copy fix with seven
-agents and an authorization change with one are the same mistake in opposite
-directions.
+`gate-review` picks the panel by risk tier, and within a tier by what the diff
+actually touches. Reviewing a copy fix with seven agents and an authorization
+change with one are the same mistake in opposite directions.
+
+Where applicability is genuinely uncertain on a High or Critical change, the
+lens runs. One agent that finds nothing is cheaper than the finding nobody
+made.
 
 ### One hook
 
@@ -346,7 +350,7 @@ are still read by the gates.
 
 ---
 
-## Risk decides ceremony
+## Risk decides ceremony — and depth
 
 | Tier | Examples | You get |
 |---|---|---|
@@ -363,6 +367,30 @@ keeps the plan meaningful for a schema change.
 
 The tier is raised automatically when a change touches a path listed in
 `risk.highRiskPaths`. That declaration shapes review; it blocks nothing.
+
+### Adaptive rigor, fixed quality floor
+
+Risk also decides how much *investigation* a change gets. Mapping runs in one of
+three depth bands, review lenses are launched because the diff actually touches
+their concern, and a comment fix stops paying for a system-wide audit.
+
+**This is not a cheap mode**, and the distinction is the whole design:
+
+> Efficiency may never reduce the evidence, validation, testing, review
+> independence or review depth that the classified risk level requires.
+
+Three properties keep that honest. Standard depth is the **default** and a
+shallower band has to be earned from evidence, because a change misclassified
+downward produces a shorter and *more* confident report than the correct one. No
+band drops a category — a cheap map still answers whether access control,
+tenancy and persistence are affected, it is just allowed to answer cheaply, and
+never by not looking. And depth moves one way: evidence widens a band and raises
+a tier, and nothing afterwards lowers either.
+
+So "keep this cheap" is a legitimate instruction about method — fewer
+speculative searches, a shorter report, no lens your diff does not touch. It is
+not an instruction about whether the work happens. The full policy is
+`standards/execution-efficiency.md`.
 
 ---
 
