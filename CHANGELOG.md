@@ -67,6 +67,18 @@ ceremony it produces.** Nothing a risk tier required before is optional now.
 
 ### New
 
+- **`framework-install` names the marketplace pin, and refuses to write it.** A
+  repository can commit `extraKnownMarketplaces` and `enabledPlugins` so a
+  colleague who clones it skips registering the marketplace by hand. The
+  installer says the option exists, points at the block in the plugin's own
+  `README.md`, states plainly that the install is still per-developer, states
+  the `autoUpdate` decision, and stops — including if asked to write it during
+  the skill. Settings belong to the repository's owner; a merge only ever adds
+  and nothing here could withdraw a marketplace entry later; and `autoUpdate` is
+  a decision to accept unreviewed changes to this framework, which this
+  framework should not be making in its own favour.
+- The plugin's bundled `README.md` carries the exact settings block, so the
+  payload states it once and the installer can cite it.
 - **`standards/execution-efficiency.md`** — the single source for investigation
   depth, model choice per launch, fan-out, output size, escalation triggers and
   anti-patterns. Skills and agents cite it; none of them restate it.
@@ -108,6 +120,22 @@ ceremony it produces.** Nothing a risk tier required before is optional now.
   a policy switch" six lines after stating that enforcement changes are not
   accepted at all, and both it and `docs/development-guide.md` warned against
   describing "either guard" as a sandbox — guards removed in 1.0.0.
+- **The documentation claimed committed settings give a teammate zero-setup
+  onboarding. They do not.** From Claude Code v2.1.195, a plugin enabled only by
+  a project's `.claude/settings.json`, and sourced from a git repository, does
+  **not** load until that person installs it: the marketplace registers itself
+  after folder trust, the install does not. Onboarding goes from two commands to
+  one, not to none. Corrected in the plugin README, the root README — including
+  a command-reference row that marked the install "required *unless* the
+  repository pins `enabledPlugins`" — the consuming-repository guide, and
+  `framework-install`. Recorded as C19, with the honest note that no mechanical
+  check can cover it.
+- **`autoUpdate` verified rather than assumed.** It refreshes the marketplace
+  **and** updates installed plugins on disk, after session start with a delay of
+  up to ten minutes, loading on the next launch or after `/reload-plugins` — so
+  `docs/versioning.md` is correct as written. Four passages described it as
+  covering only the catalogue refresh, and so understated the manual case as one
+  command when it is two.
 
 ### Deliberately not done
 
