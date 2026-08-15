@@ -64,10 +64,30 @@ product behaviour.
 mapped. Never skip it, and **state that you ran it** — an unexplained skip is
 indistinguishable from an oversight to whoever reads the plan.
 
+Name the **depth band** you are asking it for —
+`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §3. Standard is the
+default; Targeted is earned from evidence, not from how small the request
+sounds. The mapper may widen the band, and §4 requires it to say so when it
+does.
+
 For cross-cutting work, launch additional read-only agents in parallel:
-`architect`, `security`, `contract`, `data`, `performance`, `tester`.
+`architect`, `security`, `contract`, `data`, `performance`, `tester`. **On
+cross-cutting work, assume each is engaged** — that is what cross-cutting means
+— and omit one only where the map has already established that its concern is
+not reached, saying which you omitted and on what evidence. An unexplained
+omission and an oversight read identically in a plan.
+
+Below cross-cutting, the reverse applies: launch the lens the change actually
+turns on, not all six. Six reports on a change that engages one are five the
+plan cannot use, and they crowd out the one it needed.
 
 Read the complete map before deciding anything.
+
+**A map that reports its floor as `Incomplete`, or leaves access control,
+tenancy or persistence `UNKNOWN`, is not a map you can classify risk from.**
+Close the gap first — re-launch narrowed onto it, or launch the lens that owns
+it. The tier below is assigned from evidence, and an unexamined area produces
+the cheapest tier and the worst outcome.
 
 The map must establish, from evidence, and label anything it cannot as
 `UNKNOWN`:
@@ -122,6 +142,38 @@ skipped, and a skipped step reads exactly like a completed one. Refusing to
 write a plan for a copy fix is what keeps the plan meaningful for a schema
 change. Equally, do not use a Low classification to avoid a plan the change
 actually needs.
+
+**The tier can still rise, and a rise is never overridden.** It is assigned from
+the map, but the map is not the last evidence this change will produce:
+implementation reaches somewhere the plan did not anticipate, review finds a
+boundary nobody had traced, the diff turns out to touch a declared high-risk
+path. Any of those re-classifies the change upward, and the higher tier's
+ceremony then applies to what remains — a wider review panel, negative tests,
+the human security review a Critical change owes.
+
+It moves in one direction only. Nothing later in the pipeline lowers a tier that
+evidence raised, and neither the size of the resulting diff nor how far along
+the work is counts as evidence that it should be lower.
+
+**A rise is a material change in risk, so it obliges what the new tier's design
+required — not only its review panel.** The distinction matters because the
+review panel is the cheap half. A change that becomes High after the plan was
+approved owes a threat model, credible alternatives, migration and rollback
+analysis and negative tests, and **none of those are review artefacts**: they
+were meant to shape what got built.
+
+So, when a tier rises:
+
+- **Before or during implementation** — it is a material divergence. Return to
+  the approval gate with the new tier and what the new tier requires. Do not
+  carry on under an approval given for a smaller change; the human approved a
+  Medium plan, and this is no longer one.
+- **During review** — the panel runs at the higher tier immediately. Where the
+  higher tier's *design* obligations were never met, that is a blocker to state
+  in the report, owned by the human. **Do not backfill a threat model after the
+  fact and present it as though it had informed the design.** A document written
+  to close a gap it did not prevent records nothing, and reads exactly like one
+  that did.
 
 ## 5. Evaluate alternatives
 

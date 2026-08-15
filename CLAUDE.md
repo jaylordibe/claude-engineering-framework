@@ -59,6 +59,11 @@ docs/                               design rationale and Claude Code constraints
 - **Every non-obvious decision carries its reason in a comment.** Several
   choices here contradict the obvious design; a contributor who does not know
   why will "fix" something that is not broken.
+- **How much computation a stage spends is one policy, in
+  `standards/execution-efficiency.md`.** Depth bands, per-launch model choice,
+  fan-out, output size and the escalation triggers live there and nowhere else;
+  a skill or agent that needs one cites it. `validate-plugin.mjs` fails a file
+  that restates the depth-band vocabulary without the citation.
 - The session charter is the framework's entire always-on context budget, paid
   on every request in every repository. It has a hard line ceiling.
 
@@ -89,6 +94,16 @@ docs/                               design rationale and Claude Code constraints
   standard is argued with, a wrong rule is a wall. The guard that shipped
   `*.key` — matching the empty string, so jq's `.key` accessor was denied in
   every installed repository — is the case that made this concrete.
+- **Efficiency work here has one asymmetry, and it decides every judgement
+  call.** Overspending is visible: a system-wide map for a comment fix reads as
+  waste to anyone who scrolls the transcript. Underspending is not — a change
+  misclassified downward produces a *shorter, tidier, more confident* output
+  than the correct run, which is the exact shape of the failure this framework
+  exists to prevent. So every default in the efficiency policy fails toward
+  spending more: Standard depth rather than Targeted, `model: inherit` rather
+  than a cheap default, an uncertain lens launched rather than skipped, a
+  generous turn ceiling rather than a tight one. A saving that has to be argued
+  for is not a saving worth taking.
 - **These scripts must run under bash 3.2**, the version macOS ships. No
   `${var,,}`, no associative arrays. Only `session-charter.sh` and `ef-doctor`
   remain, and both are read-only.

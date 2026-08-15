@@ -124,6 +124,17 @@ the fixing form, when producing evidence — see
 `${CLAUDE_PLUGIN_ROOT}/standards/evidence.md` §4.
 
 Do not run the full suite unless the unit of work is complete or the user asks.
+Capture the failing output, not the whole log: a passing run needs one line, and
+a failure needs the part that shows why.
+
+**A focused run is a working signal, not the validation gate.** It tells you
+this slice behaves; it does not tell you the repository still does. The full
+canonical checks run at `gate-validate`, and nothing here replaces them.
+
+Do not re-run a check nothing has invalidated — and re-run every check whose
+code you have since touched, including after a review fix.
+`${CLAUDE_PLUGIN_ROOT}/standards/evidence.md` §7: a result that predates the
+edit it is offered as evidence for is a false `PASS`, not a saved command.
 
 ## Reconciliation
 

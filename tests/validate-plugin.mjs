@@ -44,18 +44,45 @@ const warn = (file, message) => warnings.push(`${relative(repositoryRoot, file)}
 // Plugin-shipped agents support exactly these frontmatter fields. `hooks`,
 // `mcpServers` and `permissionMode` are refused for security reasons: an agent
 // that declares one is not restricted the way its author believes.
+//
+// Checked against the documented field tables on 2026-08-15 (Claude Code
+// v2.1.233). A STALE ALLOWLIST IS NOT A HARMLESS OMISSION: a warning fails the
+// build under --strict, so a missing entry rejects valid frontmatter with a
+// message asserting a platform fact that is false — and the obvious fix a
+// contributor reaches for is to add whatever it complained about, which is
+// correct for a merely-missing field and wrong for a deliberately refused one.
+// That is why the two lists below are separate and each says which authority it
+// answers to.
 const SUPPORTED_AGENT_FIELDS = new Set([
   'name', 'description', 'model', 'effort', 'maxTurns',
   'tools', 'disallowedTools', 'skills', 'memory', 'background', 'isolation',
+  'color', 'initialPrompt',
 ]);
 
+// Refused by CLAUDE CODE. A plugin agent declaring one of these is not
+// restricted the way its author believes, because the field is ignored at load.
 const REFUSED_AGENT_FIELDS = new Set(['hooks', 'mcpServers', 'permissionMode']);
 
 const SUPPORTED_SKILL_FIELDS = new Set([
   'name', 'description', 'when_to_use', 'argument-hint', 'arguments',
   'disable-model-invocation', 'user-invocable', 'allowed-tools',
   'disallowed-tools', 'model', 'effort', 'context', 'background',
-  'agent', 'license', 'compatibility', 'metadata',
+  'agent', 'paths', 'shell', 'license', 'compatibility', 'metadata',
+]);
+
+// Refused by THIS FRAMEWORK, not by the platform — the distinction matters,
+// because the failure message has to say so or the fix looks like "add it to
+// the supported list".
+//
+// Claude Code accepts `hooks` on a skill and keeps the registered hook running
+// for the rest of the session. That is exactly what 1.0.0 removed: this plugin
+// ships methodology and registers no hook that gates a tool call, and the only
+// hook it registers at all is the SessionStart charter. A skill quietly
+// bringing one back would reinstate the enforcement layer through the one door
+// nothing was watching — the agent check above has covered `hooks` since it was
+// written, and its counterpart over here did not exist.
+const REFUSED_SKILL_FIELDS = new Map([
+  ['hooks', 'this plugin registers no hook that gates a tool call — that is the 1.0.0 line, and a skill-registered hook keeps running for the rest of the session. The single SessionStart charter hook is declared in hooks/hooks.json and is the only one there is.'],
 ]);
 
 // The combined description + when_to_use text is truncated at this many
@@ -413,7 +440,17 @@ function validateAgents() {
       fail(filePath, `\`effort\` must be one of ${[...VALID_EFFORT_LEVELS].join(', ')}.`);
     }
 
-    if (frontmatter.maxTurns !== undefined && !/^\d+$/.test(String(frontmatter.maxTurns))) {
+    // Every agent needs a ceiling, and the ceiling is a RUNAWAY BACKSTOP rather
+    // than a budget: an agent that finishes in eight turns costs eight turns
+    // whatever the number says. That is why presence is asserted and the value
+    // is not. Lowering a ceiling saves nothing on the runs that were already
+    // short and truncates the one run that needed the room — the deepest,
+    // highest-risk investigation there is. Omitting it entirely is the other
+    // failure: an agent with no ceiling has no backstop at all, and nothing
+    // else in this suite would notice.
+    if (frontmatter.maxTurns === undefined) {
+      fail(filePath, 'declares no `maxTurns`, so a runaway investigation has no backstop. Set a ceiling generous enough that the deepest legitimate run fits inside it; see standards/execution-efficiency.md §8 for why it is not a cost lever.');
+    } else if (!/^\d+$/.test(String(frontmatter.maxTurns))) {
       fail(filePath, '`maxTurns` must be an integer.');
     }
 
@@ -474,7 +511,9 @@ function validateSkills() {
     }
 
     for (const key of Object.keys(frontmatter)) {
-      if (!SUPPORTED_SKILL_FIELDS.has(key)) {
+      if (REFUSED_SKILL_FIELDS.has(key)) {
+        fail(skillFile, `\`${key}\` is supported by Claude Code but refused by this framework: ${REFUSED_SKILL_FIELDS.get(key)} Adding it to SUPPORTED_SKILL_FIELDS is not the fix.`);
+      } else if (!SUPPORTED_SKILL_FIELDS.has(key)) {
         warn(skillFile, `\`${key}\` is not a documented skill frontmatter field and will be ignored.`);
       }
     }
@@ -834,7 +873,99 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'continuing never authorises skipping a gate or a human-owned operation',
     patterns: [/never authorises|skipping a gate/i, /commit/i],
   },
+  // The efficiency policy is the newest place a quality guarantee can be
+  // deleted by someone acting in good faith, because every line of it looks
+  // like a cost control. These four are the ones that are not.
+  {
+    file: 'standards/execution-efficiency.md',
+    guarantee: 'the quality floor outranks every efficiency saving',
+    patterns: [/quality floor/i, /never reduce|may never/i, /\bUNKNOWN\b/, /\bBLOCKED\b/],
+  },
+  {
+    file: 'standards/execution-efficiency.md',
+    guarantee: 'depth is banded, Standard is the default, and Targeted omits no category',
+    patterns: [/targeted/i, /standard/i, /deep/i, /default/i, /floor/i],
+  },
+  {
+    file: 'standards/execution-efficiency.md',
+    guarantee: 'evidence widens the band and raises the tier, and never lowers either',
+    patterns: [/widen/i, /re-?classif/i, /blast radius/i, /does not exist|may not lower|never lower/i],
+  },
+  {
+    file: 'standards/execution-efficiency.md',
+    guarantee: 'exhausting a budget is never a verdict, and escalation is what replaces it',
+    patterns: [/escalat/i, /budget/i, /\bPASS\b/, /\bFAIL\b/],
+  },
+  {
+    file: 'standards/execution-efficiency.md',
+    guarantee: 'a request to spend less cannot lower the floor',
+    patterns: [/cheap|save tokens|spend less/i, /risk acceptance/i],
+  },
+  {
+    file: 'standards/evidence.md',
+    guarantee: 'evidence is invalidated by a later edit to the code it covers',
+    patterns: [/age/i, /invalidat/i, /false `?PASS/i],
+  },
+  {
+    file: 'agents/context-mapper.md',
+    guarantee: 'the map declares its depth band, any widening, and whether the floor was established',
+    patterns: [/depth band/i, /widen/i, /incomplete/i],
+  },
+  {
+    file: 'skills/gate-review/SKILL.md',
+    guarantee: 'a lens is selected by what the diff touches, and uncertainty on High or Critical means launch it',
+    patterns: [/uncertain/i, /high or critical/i, /launch it/i],
+  },
+  {
+    file: 'skills/gate-design/SKILL.md',
+    guarantee: 'the risk tier can rise on later evidence and is never lowered afterwards',
+    patterns: [/tier can still rise|re-?classif/i, /one direction/i],
+  },
+  {
+    file: 'skills/work-item/SKILL.md',
+    guarantee: 'an incomplete map stops the pipeline rather than starting the design',
+    patterns: [/incomplete/i, /stop/i, /re-?launch|resolve it/i],
+  },
 ];
+
+// Where a policy is defined, and the vocabulary that gives it away. A second
+// file may USE these words freely — it just has to cite the file that owns
+// them, so a reader who follows the citation reaches the current rule rather
+// than a paraphrase of an older one.
+//
+// This is the mechanical form of the repository's oldest convention: a contract
+// is stated once. The efficiency policy is the case that most needs it, because
+// it touches every gate and every agent, and a per-file copy of "how deep to
+// investigate" would drift into per-file policy within two releases.
+const SINGLE_SOURCE_POLICIES = [
+  {
+    owner: 'standards/execution-efficiency.md',
+    vocabulary: /\bdepth band\b|\bTargeted\b.*\bStandard\b.*\bDeep\b/i,
+    what: 'investigation depth banding',
+  },
+];
+
+function validateSingleSourcePolicies() {
+  const markdownFiles = listFilesRecursively(pluginRoot, (path) => path.endsWith('.md'));
+
+  for (const { owner, vocabulary, what } of SINGLE_SOURCE_POLICIES) {
+    const ownerPath = join(pluginRoot, owner);
+    if (!existsSync(ownerPath)) {
+      fail(ownerPath, `owns the ${what} policy but does not exist.`);
+      continue;
+    }
+
+    for (const filePath of markdownFiles) {
+      if (filePath === ownerPath) continue;
+
+      const content = readFileSync(filePath, 'utf8');
+      if (!vocabulary.test(content)) continue;
+      if (content.includes(owner)) continue;
+
+      fail(filePath, `uses the vocabulary of ${what} without citing \${CLAUDE_PLUGIN_ROOT}/${owner}, which owns it. A second unlinked statement of a policy is a second thing to drift, and nothing can detect a paraphrase that has quietly fallen behind its source. Cite the owner, or say it in words that are not the policy's.`);
+    }
+  }
+}
 
 function validateNormativeAnchors() {
   for (const { file, guarantee, patterns } of NORMATIVE_ANCHORS) {
@@ -917,6 +1048,7 @@ validateCrossReferences();
 validateComponentReferences(agentNames, skillNames);
 validateConfigKeysAreConsumed();
 validateNormativeAnchors();
+validateSingleSourcePolicies();
 validateNoStackAssumptions();
 validateChangelog(manifest);
 

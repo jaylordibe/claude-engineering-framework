@@ -1,6 +1,6 @@
 {
   "$schema": "../plugins/engineering-framework/reference/repo-config.schema.json",
-  "frameworkVersion": "1.0.0",
+  "frameworkVersion": "1.1.0",
   "commands": {
     "lint": "shellcheck plugins/engineering-framework/scripts/*.sh plugins/engineering-framework/bin/*",
     "test": "node tests/validate-plugin.mjs --strict && node tests/validate-fixtures.mjs && node tests/validate-charter.mjs && node tests/run-doctor-fixtures.mjs"

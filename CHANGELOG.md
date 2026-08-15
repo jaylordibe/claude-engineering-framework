@@ -12,6 +12,115 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 1.1.0 — 2026-08-15
+
+**Risk now decides how much investigation a change gets, not only how much
+ceremony it produces.** Nothing a risk tier required before is optional now.
+
+### Changed workflow
+
+- **Repository mapping runs in one of three depth bands.** `context-mapper`
+  states which band it worked in and why, and a localized Low-risk change no
+  longer receives a system-wide audit. **Standard is the default; a shallower
+  band is earned from evidence, never from how small a request sounds.** No
+  action required.
+- **A map that could not finish now says so.** `context-mapper` returns an
+  explicitly `Incomplete` map naming what it could not establish, instead of a
+  partial map that reads as complete. `work-item` and `gate-design` respond by
+  closing the gap — a narrowed re-launch, or the lens that owns it — before
+  classifying risk, rather than designing over it. This spends *more* on the
+  runs where evidence was missing; it is not a new refusal, and the pipeline
+  continues once the gap is closed. Where it genuinely cannot be, the existing
+  unresolved-blocker stop applies as it did before. No action required.
+- **Evidence widens the investigation and raises the tier, and nothing lowers
+  either afterwards.** A change that turns out to reach a trust boundary, a
+  persisted shape or an unbounded blast radius is re-classified upward mid-run,
+  and the higher tier's rigor applies to what remains. The eventual size of the
+  diff is not evidence that the tier should be lower.
+- **`gate-review` selects domain lenses by what the diff touches**, with a
+  per-lens trigger table. On a High or Critical change, uncertain applicability
+  means the lens runs. Fewer agents on changes that engage one concern; the same
+  panel, or a wider one, on changes that engage several. No action required.
+- **A check is invalidated by a later edit to the code it covers**
+  (`standards/evidence.md` §7). Re-using still-valid evidence is efficiency and
+  is now explicitly allowed — the row has to say it was re-used and what has
+  changed since. Reporting a result from before a review fix is a false `PASS`.
+- **`work-item` names the durable state that must survive compaction** —
+  requirement, stage, tier, band, approved scope, verbatim human conditions,
+  non-goals, decisions, blockers, review and validation state — and requires
+  re-reading source rather than resuming from a summary of it.
+- **A risk tier that rises now obliges what the new tier's *design* required,
+  not only its review panel.** Before or during implementation that is a
+  material divergence and returns to the approval gate; during review the panel
+  runs at the higher tier and anything the higher tier's design owed is stated
+  as a blocker for the human. A threat model written afterwards to close the gap
+  is explicitly not the fix.
+- **`gate-review` can never state a tier below the one carried in.** It
+  classifies independently and takes the higher of its own answer and the tier
+  design or implementation assigned. A finished diff often looks calmer than the
+  investigation that produced it, and reviewing it at the tier it *looks* like
+  shrank the panel exactly where the evidence said not to.
+- **The evidence table gains a `When it ran` column**, in
+  `standards/evidence.md` §6 and both report templates. Age is part of whether a
+  row is evidence at all, and anything optional in that table is what gets left
+  out. No action required.
+
+### New
+
+- **`standards/execution-efficiency.md`** — the single source for investigation
+  depth, model choice per launch, fan-out, output size, escalation triggers and
+  anti-patterns. Skills and agents cite it; none of them restate it.
+- **A quality floor that outranks a request to spend less.** Efficiency may
+  never reduce the evidence, validation, testing, review independence or review
+  depth a tier requires, and no budget converts `UNKNOWN` into safe, `BLOCKED`
+  into `PASS`, or material uncertainty into accepted risk. "Keep it cheap" is a
+  preference about method; it is not one of the risk acceptances a human can
+  make, because it names no risk. Stated in six lines of the always-on charter
+  as well, because that pressure arrives before any gate has loaded.
+- **`efficiency-discipline` grader and nine eval cases** covering Low through
+  Critical, a local change whose evidence widens it, unresolved uncertainty,
+  a resumed run with no approval trace, and explicit token pressure on a
+  High-risk change. The grader fails over-investigation at 0.4 and a moved
+  quality floor at 0.0.
+- **`docs/constraints.md` C16–C18** — what Claude Code actually guarantees for
+  per-launch model selection, reasoning effort and turn ceilings, verified
+  against v2.1.233 on 2026-08-15.
+
+### Fixed
+
+- `validate-plugin.mjs` now fails an agent that declares no `maxTurns` (no
+  runaway backstop at all), and fails any file that restates the depth-band
+  policy without citing the standard that owns it.
+- **The validator's frontmatter allowlists were stale, and a stale allowlist
+  fails the build.** `paths` and `shell` on a skill, and `color` and
+  `initialPrompt` on an agent, are documented fields that were rejected under
+  `--strict` with a message asserting they did not exist. Corrected against the
+  field tables on 2026-08-15.
+- **`hooks` on a skill is now refused explicitly, and says by whom.** Claude Code
+  supports it and the hook keeps running for the rest of the session; this
+  framework registers no hook that gates a tool call. It previously produced the
+  same "not a documented field" warning as a typo — so the obvious fix was to
+  add it to the supported list, which would have reinstated the enforcement
+  layer through the one door the agent-level refusal did not cover.
+- `docs/constraints.md` claimed `color` is not a documented agent field. It is;
+  it is omitted here because it is decoration, not because it would fail.
+- `CONTRIBUTING.md` still declined "new hook denials without a version bump and
+  a policy switch" six lines after stating that enforcement changes are not
+  accepted at all, and both it and `docs/development-guide.md` warned against
+  describing "either guard" as a sandbox — guards removed in 1.0.0.
+
+### Deliberately not done
+
+- **Reasoning effort still does not scale with risk.** `effort` is fixed per
+  component and has no per-launch parameter, so the obvious design is not
+  expressible; every reasoning-bearing component stays at `high`. See C17.
+- **No turn ceiling was lowered.** A ceiling is a hard stop, so lowering one
+  saves nothing on runs that finish early and truncates the deepest, riskiest
+  investigation. Changing one is a measurement question and this repository has
+  nothing to measure against. See C18.
+
+---
+
 ## 1.0.0 — 2026-08-12
 
 **The framework no longer ships permission rules or hooks that gate commands.**

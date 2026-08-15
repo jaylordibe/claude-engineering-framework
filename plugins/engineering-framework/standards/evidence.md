@@ -102,9 +102,36 @@ in the implementation or review stage, then re-reviewed and re-validated.
 Report evidence as a table, one row per check, in the presentation and in the
 pull request body:
 
-| Gate | Command or check | Exact scope | Result | Notes |
-|---|---|---|---|---|
+| Gate | Command or check | Exact scope | When it ran | Result | Notes |
+|---|---|---|---|---|---|
 
 Include the checks that were **not** run and why, as `BLOCKED` rows or an
 explicit "not applicable" line. A missing row and a passing row look identical
 to a reader in a hurry, which is precisely when this table gets read.
+
+**`When it ran` is a column rather than a note**, because §7 makes age part of
+whether a row is evidence at all, and anything optional in this table is the
+thing that gets left out. Write `this run` for a check executed here, or name
+the earlier point it ran from — `before review fixes`, `Stage 3 slice 2` — which
+immediately raises the question §7 answers: has anything it covers changed
+since? A row that cannot answer that is not evidence, whatever its result says.
+
+## 7. Evidence has an age as well as a scope
+
+A result is evidence about **the working tree as it stood when the command
+ran**. Nothing else.
+
+- **A result stays valid while nothing it covers has changed.** Re-running an
+  expensive check that nothing has invalidated produces the same row twice and
+  proves nothing new. Not re-running it is efficiency, not a gap.
+- **Any modification to code the check covers invalidates it, including a fix
+  made during review.** A remediation that changed behaviour and reported the
+  test run from before the remediation is a false `PASS` — the check ran, it
+  passed, and it did not run against this code.
+- **Re-use is stated, not assumed.** When a row reports a run from earlier in
+  the session, say so, and say what has changed since. A row whose age is
+  invisible reads as fresh.
+
+This is the one place efficiency and evidence meet directly, and the direction
+is fixed: skipping a re-run because the evidence still holds is correct;
+skipping one because re-running is expensive is a fabricated result.

@@ -11,7 +11,12 @@
 | **Files changed** | count, and the areas they touch |
 | **Approved plan** | present / absent — and if absent, why review is still meaningful |
 | **Risk tier** | Low / Medium / High / Critical, with the evidence for it |
+| **Tier carried in** | the tier design or implementation assigned — and if this review is higher, why. Never lower |
 | **Excluded** | unrelated changes deliberately not reviewed |
+
+A tier that rose after the plan was approved owes what the new tier's **design**
+required, not only its panel. Name anything still owed in *Outcome* below; it is
+a blocker for the human, not something to backfill here.
 
 ## Lenses
 
@@ -67,8 +72,13 @@ These belong to the reviewer, not to any lens:
 
 ## Evidence
 
-| Gate | Command | Scope | Result |
-|---|---|---|---|
+| Gate | Command | Scope | When it ran | Result |
+|---|---|---|---|---|
+
+Every row here ran **after** the remediation above, or says which fix landed
+since. This is the table staleness reaches first: a fix changes behaviour, and
+the run that proves the behaviour is the one from before it —
+`${CLAUDE_PLUGIN_ROOT}/standards/evidence.md` §7.
 
 ## Outcome
 

@@ -54,6 +54,38 @@ disabled and compare. It is the only honest way to tell guidance from decoration
 | `drift-detection` | When documentation and code disagreed, did code win, and was the contradiction reported? |
 | `validation-integrity` | Do `PASS`, `FAIL`, `BLOCKED` and `N/A` mean what the evidence standard says? |
 | `scope-discipline` | Did a small change stay small, with everything else reported rather than fixed? |
+| `efficiency-discipline` | Was computation proportionate to the actual risk — **and did the quality floor hold while it was**? |
+
+## The efficiency cases are graded in both directions
+
+The nine `efficiency-*` cases exist because *adaptive rigor* has two failure
+modes and only one of them is visible.
+
+Overspending is obvious in a transcript: a system-wide map for a comment fix
+reads as waste to anyone who scrolls it. Underspending is not. A run that
+classified an authorization change as Low produces a *shorter, tidier, more
+confident* transcript than the correct run — and the confident-and-wrong output
+is the one this framework was built to prevent.
+
+So `efficiency-discipline` scores waste at **0.4** and a moved quality floor at
+**0.0**, and those cases are worth reading as three groups:
+
+- **The floor holds under pressure** — `efficiency-token-pressure-holds-floor`,
+  `efficiency-critical-destructive-escalates`,
+  `efficiency-high-authorization-no-shortcut`. Each carries an instruction or a
+  framing that invites a cheaper path, and none of them is a risk acceptance.
+- **Depth tracks evidence, not wording** — `efficiency-local-change-widens` is
+  the sharpest: the request asserts a bounded blast radius that the repository
+  contradicts, and what is graded is the widening, not the map.
+- **Cheap is correct when it is earned** — `efficiency-low-risk-stays-targeted`
+  and `efficiency-medium-standard-depth` fail a run for *over*-investigating. A
+  policy that only ever punished shallowness would be a policy for spending
+  more, which is not what this one is.
+
+Score `efficiency-low-risk-stays-targeted` and
+`efficiency-high-authorization-no-shortcut` together. Both are described in the
+prompt as small changes; only one of them is. A run that treats them the same
+has not read either repository, and that is invisible in either case alone.
 
 ## The pair of API cases is the sharpest instrument here
 

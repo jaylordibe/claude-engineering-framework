@@ -84,6 +84,25 @@ context and already present.
 The gate skills are human-invocable only and must not be invoked recursively
 through the Skill tool. Treat their contents as the authoritative procedures.
 
+## How much computation each stage gets
+
+Read `${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` **once, at
+Stage 1**, and apply it through the whole run. It is the single source for
+investigation depth, model choice per launch, fan-out, output size and the
+escalation triggers, and nothing below restates it.
+
+Its rule outranks every efficiency instruction in this file, including any the
+user adds mid-run:
+
+> Efficiency may never reduce the evidence, validation, testing, review
+> independence or review depth this change's risk tier requires.
+
+**Adaptive rigor, fixed quality floor.** Spend less on the changes that
+establish confidence cheaply, so there is room to spend properly on the ones
+that do not. Running short of context, turns or patience is never a reason to
+finish a stage; §5 of that standard says what to do instead, and every one of
+its answers is a form of escalation.
+
 ## Pipeline state — do this first
 
 Create a persistent task checklist:
@@ -112,6 +131,33 @@ If this is a resumed session, inspect the current diff and the checklist and
 resume from the earliest incomplete safe stage. The design is not recoverable
 from disk: if approval had not yet happened, re-design. Never restart blindly,
 and never post a duplicate tracker comment.
+
+## Durable state — what has to survive compaction
+
+This pipeline runs long enough that it will be compacted, and the conversation
+does not survive that. **Tasks do.** Keep the list below current on the
+in-progress task, and nothing beyond it:
+
+the original and resolved requirement · the current stage · the risk tier and
+the depth band · the approved scope · every human condition, **verbatim** · the
+relevant non-goals · material design decisions · unresolved blockers · review
+state, once reached · validation state, once reached.
+
+That list is the whole record, and each entry is there because it cannot be
+recovered from disk afterwards. Everything that *can* be — the diff, the
+sources, the tests, the repository's own contracts — is deliberately absent from
+it. `standards/execution-efficiency.md` §11 states why: a carried-forward
+summary is never stronger evidence than the file it summarises, and after
+compaction the file is still there.
+
+So after compaction: re-read the checklist and the approval trace, then **re-read
+the source for anything correctness depends on**. Do not resume from a summary's
+account of what the code does.
+
+The one thing a summary can never establish is the approval itself. A resumed
+session that finds no approval trace has an unapproved design, however
+confidently the surrounding context reads — `gate-implement` says so, and this
+is the failure that rule exists to prevent.
 
 ## Input resolution
 
@@ -146,15 +192,47 @@ to design safely.
 
 # Stage 1 — Understand
 
-Launch `engineering-framework:context-mapper` with the complete request.
+Launch `engineering-framework:context-mapper` with the complete request **and
+the depth band you are asking for**, from `standards/execution-efficiency.md`
+§3. Naming it is what makes the band a decision rather than a mood; the mapper
+may widen it and will say so if it does.
 
-For large or cross-cutting work, launch additional read-only agents in
-parallel, scoped by concern: `architect` · `security` · `contract` · `data` ·
-`performance` · `tester`.
+Choose the band from the request and from what the repository already tells you
+— not from how large the request sounds. **Standard is the default; Targeted is
+earned.** Where the two are genuinely balanced, take the deeper one: the
+comparison is between spending some tokens and missing a blast radius.
+
+Launch additional read-only lenses in parallel **only where the concern is
+actually engaged** — a lens launched on a change it has nothing to say about
+costs a full agent and returns `No findings.` Launch one when:
+
+- the band is Deep, or the risk signal is High or Critical, and the lens owns a
+  boundary the change reaches; or
+- the request itself turns on that lens's concern — an access-control question
+  for `security`, a persisted shape or migration for `data`, an observable
+  surface for `contract`, workload or asynchronous behaviour for `performance`,
+  a structural or cross-cutting decision for `architect`, coverage adequacy for
+  `tester`.
+
+On High or Critical work, an *uncertain* applicability is a reason to launch,
+not to skip. Stage 4 owns the review panel and does not inherit this selection.
 
 Subagents cannot delegate further. You own all fan-out and synthesis.
 
-Read every result fully and verify important claims against source.
+Read every result fully and verify important claims against source. A returned
+map is another agent's report, not evidence: it points at `path:line`, and
+anything a decision rests on is re-opened here.
+
+**An incomplete map is not something to design from.** If the mapper reports the
+§3.1 floor as `Incomplete`, or leaves access control, tenancy or persistence
+`UNKNOWN`, close the gap before Stage 2 — re-launch narrowed onto it, or launch
+the lens that owns it. Designing over a hole is how a Low classification ends up
+covering a High-risk change.
+
+This is more work inside Stage 1, **not a stop**: keep going, and do not ask the
+human to confirm it. Only if the gap survives that — the evidence genuinely is
+not in this repository — does it become one of the five stop conditions, as the
+unresolved blocker it then is.
 
 The understanding must include: the requested WHAT and the prescribed HOW ·
 **what this repository actually is**, established from evidence · the
@@ -212,8 +290,9 @@ On approval:
 2. restate the approved scope and every condition the user attached, **verbatim**
    — those conditions bind the implementation exactly as the plan does;
 3. **write that record into the Stage 3 task** (`TaskUpdate`, appended to its
-   description): what was approved, the risk tier, and each condition in the
-   user's own words. This is the approval trace. The plan is not a file, so
+   description): what was approved, the risk tier, the depth band, and each
+   condition in the user's own words. This is the approval trace and the
+   durable state above. The plan is not a file, so
    without it a compacted session has no way to tell *approved* from merely
    *presented* — and a summary asserting "the user approved" is not evidence,
    it is the failure mode this step exists to prevent. Tasks survive

@@ -8,6 +8,10 @@ does not know about them will "fix" something that is not broken.
 **Verified against:** Claude Code **v2.1.226**, documentation at
 `code.claude.com/docs/en/`, on **2026-08-11**.
 
+**C16–C18 verified against:** Claude Code **v2.1.233**, the same documentation,
+on **2026-08-15**. Only those three entries were re-checked on that date; the
+rest still carry the 2026-08-11 verification above.
+
 Where an entry says *measured*, the behaviour was reproduced against the CLI
 rather than read from the documentation. C15 is there because the two
 disagreed, and believing the documentation broke installation.
@@ -301,6 +305,98 @@ documentation's own relative-path example does.
 
 ---
 
+## C16 — A subagent's model is selectable per launch, and is not knowable afterwards
+
+> When Claude invokes a subagent, it can also pass a `model` parameter for that
+> specific invocation. Claude Code resolves the subagent's model in this order:
+> 1. The `CLAUDE_CODE_SUBAGENT_MODEL` environment variable [...]
+> 2. The per-invocation `model` parameter
+> 3. The subagent definition's `model` frontmatter
+> 4. The main conversation's model — *Subagents*
+
+> Claude Code checks the environment variable, per-invocation parameter, and
+> frontmatter values against your organization's `availableModels` allowlist.
+> For a blocked value, it substitutes another model. — *Subagents*
+
+**Consequence, in both directions.**
+
+The useful half: a launching stage *can* choose a model per agent launch, so the
+framework's model policy is expressible where it belongs — at the launch site,
+where the risk tier is finally known — rather than frozen into a definition
+written before the change existed. This is what makes
+`standards/execution-efficiency.md` §6 implementable rather than aspirational.
+
+The half that constrains the design: **two layers outrank the framework
+entirely.** An environment variable set by the user or their organisation wins
+over every launch parameter, and an allowlist can substitute a different model
+for the one requested — silently on non-interactive runs. So the plugin cannot
+know which model actually ran.
+
+**What we do about it.** Agent definitions keep `model: inherit`, which fails
+toward capability rather than toward cheapness, and no quality guarantee is
+stated in terms of which model ran. Guarantees rest on evidence, gates and
+independent readers, all of which hold whatever resolved. A framework that
+promised "the security lens runs on a strong model" would be making a promise
+two other parties can quietly break.
+
+---
+
+## C17 — Reasoning effort cannot be varied per launch
+
+`effort` is a documented frontmatter field for both subagents and skills —
+`low`, `medium`, `high`, `xhigh`, `max`, overriding the session level and
+otherwise inheriting from it. The documented per-invocation parameter list for a
+subagent launch is `model` **only**; no equivalent exists for effort.
+
+**Consequence.** Effort is static per component. The obvious design — *Low risk
+gets medium effort, Critical gets maximum* — is not expressible, because a
+definition is written once and the tier is not known until the change has been
+mapped. Splitting each agent into per-tier duplicates would express it, at the
+cost of doubling the surface every lens is maintained on, to buy an effort step
+on the lens that only runs when its concern is already engaged.
+
+**What we do instead.** Every reasoning-bearing component stays at `effort:
+high`, and the savings are taken where they *are* expressible: which agents run
+at all, how much of the repository they investigate, and how much they write.
+Stated in `standards/execution-efficiency.md` §7 so that nobody re-derives the
+missing feature and works around it in prose.
+
+Prose cannot substitute. "Use less reasoning for this" in an agent body is a
+request to the model, not a setting, and a framework that wrote it would be
+claiming a control it does not have — the same failure shape as an inert
+permission rule.
+
+---
+
+## C18 — `maxTurns` is a hard stop, and therefore not a budget
+
+> `maxTurns` | No | Maximum number of agentic turns before the subagent stops
+> — *Subagents*
+
+It stops the subagent. It does not warn it, negotiate with it, or give it a turn
+to write up what it has.
+
+**Consequence.** Lowering a ceiling to save tokens saves nothing on any run that
+was already finishing early — an agent that needs eight turns costs eight turns
+whatever the ceiling says — and truncates the only runs it does affect: the
+longest, deepest, highest-risk investigations. That is the worst available place
+to economise, and the resulting output is a partial map that looks like a
+complete one.
+
+**What we do about it.** Ceilings are treated as runaway backstops rather than
+budgets, and `validate-plugin.mjs` asserts every agent declares one while
+deliberately asserting nothing about its value. The mitigations that matter are
+behavioural: `context-mapper` reserves room to report, and returns an explicitly
+`Incomplete` map naming what it could not establish, which the conductor treats
+as a stop condition rather than a caveat.
+
+Changing a ceiling downward is a measurement question, not a taste question. The
+repository has no transcript corpus to measure against, and guessing at it is
+how this project previously got a number wrong by more than an order of
+magnitude.
+
+---
+
 ## Things we checked and chose not to use
 
 | Feature | Why not |
@@ -311,4 +407,5 @@ documentation's own relative-path example does.
 | `userConfig` prompts at enable time | Policy belongs in a reviewable file in the repository, not in per-user answers invisible to the team. |
 | `${CLAUDE_PLUGIN_DATA}` | The framework has no state and no dependencies to install. |
 | `defaultEnabled: false` | The framework is inert until a gate is invoked; there is nothing to opt into. |
-| `color` on agents | Not in the documented plugin-agent field list; omitted rather than risk a validator warning for decoration. |
+| `color` on agents | **Is** documented (this entry previously said it was not — corrected 2026-08-15). Still omitted: it tints the agent's row in the task list, which is decoration, and eight lenses do not need telling apart by colour. `validate-plugin.mjs` accepts it, so adding one is a choice rather than a fight with CI. |
+| `hooks` on skills | Documented and functional — a skill-registered hook keeps running for the rest of the session. Refused here by `validate-plugin.mjs`, because registering a hook that gates a tool call is the thing 1.0.0 removed, and a skill is the one door the agent-level refusal did not cover. |

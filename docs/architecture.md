@@ -146,7 +146,7 @@ is a first-class design constraint.
 
 | Loaded | When | Cost |
 |---|---|---|
-| Session charter | Every session, via a `SessionStart` hook | ~65 lines, capped at 70 |
+| Session charter | Every session, via a `SessionStart` hook | ~75 lines, capped at 80 |
 | Skill listing entries | Always | Three model-invoked descriptions |
 | A gate `SKILL.md` | When the human invokes that gate | One file |
 | A standard | When a gate or agent cites it | One file |
@@ -156,6 +156,10 @@ is a first-class design constraint.
 The conductor deliberately does **not** front-load the gate skills. Five gates
 is over a thousand lines, four of which would be read long before they matter.
 Loading on demand is the entire reason the gates are separate files.
+
+The same principle governs the *repository*, and that is the larger cost by far.
+A gate skill is one file; a repository sweep is unbounded. See
+[Adaptive rigor, fixed quality floor](#adaptive-rigor-fixed-quality-floor).
 
 The `SessionStart` hook is used because a `CLAUDE.md` at a plugin root is not
 loaded as project context — plugins contribute context through skills, agents
@@ -209,6 +213,62 @@ severity credible to whoever reads it later.
 
 It is not run below that threshold: the cycle costs more than the precision it
 buys.
+
+## Adaptive rigor, fixed quality floor
+
+`standards/execution-efficiency.md` is the single source for how much
+computation a stage spends. It exists because the framework had exactly one
+answer to "how deeply should this be investigated?" — *comprehensively* — and
+paid it on a comment fix and a tenancy change alike.
+
+**This is not a cheap mode.** The floor does not move:
+
+> Efficiency may never reduce the evidence, validation, testing, review
+> independence or review depth required to establish correctness for the
+> classified risk level.
+
+What adapts is everything above that line. Mapping runs in one of three depth
+bands; review lenses are launched because the diff intersects their concern; a
+model may be chosen per launch. What is spent is the **minimum sufficient
+computation to establish production-grade confidence for the actual risk and
+scope** — which is a different number from the lowest token count, and only one
+of the two is safe to optimise for.
+
+### Risk now governs investigation, not only ceremony
+
+Before this, the risk tier decided what a change had to *produce* — a plan, a
+threat model, negative tests, a wider review panel. It now also decides what a
+change is investigated *with*. Both directions of that are deliberate: a Low
+change stops paying for a system-wide map, and a High change cannot buy its way
+out of one by having a small diff.
+
+### The three properties that keep it safe
+
+**Standard depth is the default; Targeted is earned.** A band is a conclusion
+from evidence, never an opening assumption. The dangerous failure here is not
+overspending — it is a change misclassified downward, which produces a shorter,
+tidier, more confident output than the correct run.
+
+**No band drops a category.** A Targeted map answers every question a Deep map
+answers, and is allowed to answer some of them cheaply — *this path performs no
+data access, this symbol has one caller* — rather than by a system-wide audit.
+It is never allowed to answer one by not looking, and an `UNKNOWN` on access
+control, tenancy or persistence forces the band wider.
+
+**Depth is iterative and moves one way.** Evidence widens a band and raises a
+tier; nothing lowers either afterwards, and neither the eventual size of the
+diff nor how far along the work is counts as evidence that it should be.
+
+### What is left on the table, and why
+
+Reasoning effort is fixed per component and cannot be varied per launch, so the
+obvious *effort scales with tier* design is not expressible — see
+[C17](constraints.md#c17--reasoning-effort-cannot-be-varied-per-launch). Turn
+ceilings are hard stops rather than budgets, so lowering them truncates the
+deepest investigation while saving nothing on the short ones —
+[C18](constraints.md#c18--maxturns-is-a-hard-stop-and-therefore-not-a-budget).
+Both limitations are recorded rather than papered over with prose that would
+claim a control the framework does not have.
 
 ## Extension model
 
