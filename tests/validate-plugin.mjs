@@ -791,16 +791,56 @@ function validateMarketplaceDeclaration(marketplace, manifest) {
     fail(declarationPath, `declares repo "${repo}" but the plugin manifest's repository is "${expectedRepo}". Installing repositories would be pointed at the wrong marketplace source.`);
   }
 
-  // `autoUpdate: true` is the deliberate default: a release should reach the
-  // team without anyone running an update command. It is asserted rather than
-  // merely allowed, because losing it is silent — every repository configured
-  // afterwards simply stops receiving releases, and nothing reports that.
+  // `autoUpdate: true` is deliberate, and asserted rather than merely allowed,
+  // because losing it is silent: a consuming repository records no framework
+  // version, so nothing in it would ever ask to be updated, and every
+  // repository configured afterwards would quietly run whatever version it
+  // first received. See docs/constraints.md C20 for what the key scopes to.
   //
   // The type check is not pedantry. `"true"` is truthy in the settings file and
   // would read as configured while Claude Code ignores it, which is the inert-
   // control failure this project treats as the worst available shape.
   if (declaration.entry?.autoUpdate !== true) {
-    fail(declarationPath, `the entry must carry \`"autoUpdate": true\` (found ${JSON.stringify(declaration.entry?.autoUpdate)}). It is written verbatim into every repository the installer configures, and without it a released version reaches nobody until each team runs two update commands by hand.`);
+    fail(declarationPath, `the entry must carry \`"autoUpdate": true\` (found ${JSON.stringify(declaration.entry?.autoUpdate)}). It is written verbatim into every repository the installer configures, and without it a consuming repository — which records no framework version — never receives a corrected standard at all.`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 7e. The installer's responsibility boundary, asserted against its source
+//
+// tests/validate-install-settings.mjs proves what the script DOES by running
+// it. This proves what it never even mentions, which is cheaper and catches a
+// different mistake: a well-meant edit that starts writing a global path or a
+// key that is not ours, in a branch no fixture happens to reach.
+//
+// Deliberately narrow. It scans for writes and mutations, not for the strings
+// appearing at all — the script legitimately READS `$HOME`-adjacent concepts in
+// comments and reports on `autoUpdate` without setting it.
+// ---------------------------------------------------------------------------
+
+function validateInstallerBoundary() {
+  const installerPath = join(pluginRoot, 'bin', 'ef-install-settings');
+  if (!existsSync(installerPath)) {
+    fail(installerPath, 'the installer is missing; framework-install has nothing to run at its settings step.');
+    return;
+  }
+
+  const lines = readFileSync(installerPath, 'utf8').split('\n');
+
+  const forbidden = [
+    { pattern: /frameworkVersion/, why: 'mentions `frameworkVersion`; consumer repositories carry no framework version' },
+    { pattern: /engineering-framework\.json/, why: 'references the repository policy file removed in 2.0.0' },
+    { pattern: /known_marketplaces|installed_plugins/, why: "names Claude Code's internal plugin state, which belongs to the host application" },
+    { pattern: /(>|>>|mkdir|rm|mv|cp|touch|tee)\s+["']?(\$HOME|~\/|\$\{HOME)/, why: 'writes into the home directory; the installer is project-scoped' },
+  ];
+
+  for (const [index, line] of lines.entries()) {
+    if (line.trimStart().startsWith('#')) continue; // comments explain the boundary
+    for (const { pattern, why } of forbidden) {
+      if (pattern.test(line)) {
+        fail(installerPath, `line ${index + 1} ${why}: ${line.trim()}`);
+      }
+    }
   }
 }
 
@@ -1096,6 +1136,7 @@ validateCrossReferences();
 validateComponentReferences(agentNames, skillNames);
 validateMarketplaceDeclaration(marketplace, manifest);
 validateNoLegacyPolicyFileReferences();
+validateInstallerBoundary();
 validateNormativeAnchors();
 validateSingleSourcePolicies();
 validateNoStackAssumptions();

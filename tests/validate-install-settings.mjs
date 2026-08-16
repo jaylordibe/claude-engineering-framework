@@ -162,10 +162,13 @@ runCase('fresh project — no .claude/settings.json at all', (name) => {
     !existsSync(join(repository, '.claude', 'engineering-framework.json')),
     'a fresh install created .claude/engineering-framework.json',
   );
+  // A consuming repository records no framework version, so nothing in it ever
+  // asks to be updated. Without this key a team runs on whatever version it
+  // first received, forever, and a corrected standard never reaches them.
   check(
     name,
     settings?.extraKnownMarketplaces?.[MARKETPLACE]?.autoUpdate === true,
-    'a new marketplace entry was written without "autoUpdate": true, so releases would not reach the team',
+    'a new marketplace entry was written without "autoUpdate": true, so a corrected standard would never reach this repository',
     written,
   );
 });
@@ -204,7 +207,7 @@ runCase('an entry that already says autoUpdate: false keeps saying it', (name) =
   check(
     name,
     readSettings(repository)?.extraKnownMarketplaces?.[MARKETPLACE]?.autoUpdate === false,
-    "a deliberate autoUpdate: false was flipped by the installer",
+    'a deliberate autoUpdate: false was flipped by the installer',
     after.bytes,
   );
   check(name, before.bytes === after.bytes, 'an already-correct file was rewritten', after.bytes);
@@ -212,7 +215,8 @@ runCase('an entry that already says autoUpdate: false keeps saying it', (name) =
 
 runCase('an entry with no opinion on autoUpdate gains one', (name) => {
   // The 1.x-era hand-written block had no autoUpdate. Nobody decided, so the
-  // installer completes the declaration rather than leaving it half-configured.
+  // installer completes the declaration rather than leaving a repository that
+  // silently never receives a correction.
   const repository = buildRepository({
     'CLAUDE.md': '# CLAUDE.md\n',
     '.claude/settings.json': {

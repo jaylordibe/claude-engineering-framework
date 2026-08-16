@@ -1,5 +1,5 @@
 {
-  "$comment": "The entry `ef-install-settings` merges into a consuming repository's .claude/settings.json, verbatim. This file exists because the marketplace NAME is not derivable from the plugin payload: .claude-plugin/marketplace.json lives at the marketplace repository root and is never copied into a consumer's plugin cache. tests/validate-plugin.mjs asserts every value here against marketplace.json and plugin.json, so the two cannot drift.",
+  "$comment": "The entry `ef-install-settings` merges into a consuming repository's .claude/settings.json, verbatim. This file exists because the marketplace NAME is not derivable from the plugin payload: .claude-plugin/marketplace.json lives at the marketplace repository root and is never copied into a consumer's plugin cache. tests/validate-plugin.mjs asserts every value here against marketplace.json and plugin.json, so the two cannot drift, and asserts autoUpdate stays true - losing it is silent, and every repository configured afterwards would quietly stop receiving releases. See docs/constraints.md C20 for what that key actually scopes to.",
   "marketplace": "jaylordibe",
   "plugin": "engineering-framework",
   "entry": {

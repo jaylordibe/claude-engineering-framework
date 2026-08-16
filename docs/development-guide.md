@@ -6,7 +6,8 @@ How to change, validate and release the framework itself.
 
 - Claude Code (development is done against the version in `docs/constraints.md`)
 - Node 22 or later — only to run the validators; the plugin has no dependencies
-- `jq` — `ef-doctor` reads the repository policy file with it
+- `jq` — `ef-doctor` reads a repository's settings with it, and
+  `ef-install-settings` merges with it
 - `shellcheck` — for the shell in `scripts/` and `bin/`
 
 ## Loading your working copy
@@ -34,7 +35,8 @@ that was never loaded.
 node tests/validate-plugin.mjs --strict     # structure, contracts, normative anchors
 node tests/validate-fixtures.mjs           # the fixture corpus stays disjoint and hostile
 node tests/validate-charter.mjs            # the always-on context stays within budget
-node tests/run-doctor-fixtures.mjs         # ef-doctor diagnoses 12 repository shapes
+node tests/run-doctor-fixtures.mjs         # ef-doctor diagnoses 15 repository shapes
+node tests/validate-install-settings.mjs   # the settings merge, across 22 repository shapes
 claude plugin validate ./plugins/engineering-framework --strict
 shellcheck plugins/engineering-framework/scripts/*.sh plugins/engineering-framework/bin/*
 ```
@@ -70,6 +72,13 @@ The official validator checks the manifests. This one checks what fails
   unwired or non-executable script still reads as active, and the charter
   failing to load is silent;
 - **the stack-term denylist** (below);
+- **the shipped marketplace declaration matches `marketplace.json` and
+  `plugin.json`**, and still carries `autoUpdate: true` — a rename or a dropped
+  key would point installing repositories at nothing, silently;
+- **the installer's source stays inside its boundary** — no write into `$HOME`,
+  no reference to Claude Code's internal plugin state, no framework version;
+- **no shipped file cites `.claude/engineering-framework.json`**, removed in
+  2.0.0; an instruction to read a file no repository has fails silently;
 - **the changelog has an entry for the current version.**
 
 ## The rule that governs every contribution
@@ -237,8 +246,10 @@ contain. The "must not" half is what keeps the graders meaningful.
 3. Add a `CHANGELOG.md` entry grouped by workflow impact. A MAJOR bump ships an
    upgrade note saying exactly what consuming repositories must do.
 4. Run every validator.
-5. Merge to `main`. Users receive it on their next `/plugin update` — and only
-   because the version changed.
+5. Merge to `main`. Because `framework-install` writes `"autoUpdate": true`,
+   installed machines pick it up in the background after their next session
+   starts — **not** when someone chooses to update. It reaches them only because
+   the version changed, and there is no staging population in between.
 6. Tag the release:
 
    ```bash

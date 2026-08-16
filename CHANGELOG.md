@@ -35,14 +35,12 @@ purpose: a migration subsystem for a file this size costs more than the move.
      longer record a framework version anywhere, and nothing compares one.
 2. **Run `/engineering-framework:framework-install` once** to add the dependency
    declaration to `.claude/settings.json`, then commit it. If you already added
-   `extraKnownMarketplaces` and `enabledPlugins` by hand, run it anyway: it
-   rewrites nothing that is already correct, and it fills in `autoUpdate` if
-   your hand-written entry never stated one.
-3. **Decide `autoUpdate` deliberately.** The installer turns it on. Releases
-   then arrive without anyone running an update command — and because project
-   settings outrank user settings, the committed value governs everyone who
-   works in the repository. Use `--no-auto-update` if you would rather adopt
-   releases by hand. An entry that already states it either way is left alone.
+   `extraKnownMarketplaces` and `enabledPlugins` by hand, running it again is
+   safe: it rewrites nothing that is already correct.
+3. **Nothing, if you want auto-update** — the installer turns it on, so your
+   team stops chasing plugin updates. Pass `--no-auto-update`, or set
+   `"autoUpdate": false` on the entry, if you would rather adopt releases by
+   hand. An entry that already states it either way is left alone.
 
 If you do neither, the framework keeps working: every gate falls back to reading
 your `CLAUDE.md`, the manifest and CI, exactly as it did before when no policy
@@ -69,19 +67,19 @@ file was present.
   set yourself.
 - **`framework-install` turns auto-update on, and this is the entry to read
   twice.** A new marketplace entry carries `"autoUpdate": true`, so a released
-  version of this framework arrives without anyone running an update command.
-  Two consequences, both deliberate: **the framework's version bump becomes the
-  only thing between a changed standard and your repository**, and because
-  project settings outrank user settings — a same-name `extraKnownMarketplaces`
-  entry replaces an earlier file's entry *whole* — the committed value governs
-  everyone who works there, not only whoever ran the installer.
+  version arrives without anyone running an update command. That is deliberate
+  and it follows directly from removing the version pin: a consuming repository
+  now records **no framework version**, so nothing in it would ever ask to be
+  updated, and a team would run on whatever version it first received while a
+  corrected standard never arrived.
 
-  `--no-auto-update` writes the entry without the key. **An entry that already
-  states `autoUpdate`, `true` or `false`, is never rewritten**: the installer
-  completes a declaration that has no opinion and does not reverse one that
-  does. `docs/versioning.md` and `docs/architecture.md` §4b carry the full
-  reasoning, including why `false` is tested for explicitly rather than by
-  truthiness.
+  The cost, stated plainly: the version bump becomes the only thing between a
+  changed standard and every repository that has this key, and Claude Code keeps
+  marketplace state *per user* — measured, not assumed — so the value reaches
+  each machine that opens the repository. `--no-auto-update` writes the entry
+  without it, and **an entry that already states `autoUpdate`, `true` or
+  `false`, is never rewritten**. Citations and the measurement are in
+  `docs/constraints.md` C20; the reasoning is `docs/architecture.md` §4b.
 - **`.claude/engineering-framework.json` is removed from the architecture**, and
   with it `reference/repo-config.schema.json` and the example config. See the
   upgrade note. `ef-doctor` reports a leftover file; it never reads, migrates or
@@ -98,9 +96,10 @@ file was present.
   22 asserted repository shapes including "writes nothing into `$HOME`".
 - `reference/marketplace-declaration.json` — the entry the installer writes,
   pinned in CI against `marketplace.json` and `plugin.json` so a rename cannot
-  point installing repositories at a marketplace that does not exist. CI also
-  asserts `autoUpdate` is exactly `true`: losing it is silent, and every
-  repository configured afterwards would quietly stop receiving releases.
+  point installing repositories at a marketplace that does not exist. CI asserts
+  `autoUpdate` stays exactly `true` — losing it is silent — and a second check
+  fails if the installer's source writes into `$HOME`, names Claude Code's
+  internal plugin state, or mentions a framework version.
 
 ### Unchanged, and worth saying
 

@@ -146,8 +146,37 @@ const CASES = [
     mustReport: [
       `PASS  Declares the ${MARKETPLACE} marketplace.`,
       `PASS  Enables ${PLUGIN_ID} for this project.`,
+      'PASS  Auto-update is on, so releases arrive without an update command.',
     ],
     mustNotReport: ['FAIL'],
+  },
+  {
+    // The quiet failure: fully declared, and silently never updated. Nothing
+    // else in the repository records a version that could look stale.
+    name: 'a declaration with no autoUpdate is warned about, not passed over',
+    build: {
+      'CLAUDE.md': HEALTHY_CLAUDE_MD,
+      '.claude/settings.json': {
+        extraKnownMarketplaces: { [MARKETPLACE]: { source: DECLARATION.entry.source } },
+        enabledPlugins: { [PLUGIN_ID]: true },
+      },
+    },
+    exit: 0,
+    mustReport: ['WARN  The marketplace entry does not state autoUpdate.'],
+    mustNotReport: ['FAIL'],
+  },
+  {
+    name: 'a deliberate autoUpdate: false is reported as a choice, not a problem',
+    build: {
+      'CLAUDE.md': HEALTHY_CLAUDE_MD,
+      '.claude/settings.json': {
+        extraKnownMarketplaces: { [MARKETPLACE]: { source: DECLARATION.entry.source, autoUpdate: false } },
+        enabledPlugins: { [PLUGIN_ID]: true },
+      },
+    },
+    exit: 0,
+    mustReport: ['PASS  Auto-update is off, as this project set it.'],
+    mustNotReport: ['FAIL', 'WARN  The marketplace entry does not state autoUpdate.'],
   },
   {
     // The declaration is optional, so this is a warning. What it must never be

@@ -121,40 +121,48 @@ is the whole justification for the exception, so it is asserted mechanically in
 `tests/validate-install-settings.mjs` — including a case proving a run writes
 nothing into `$HOME` — rather than promised in this document.
 
-### 4b. Auto-update, and the one place this design accepts a real cost
+### 4b. Why `autoUpdate` is part of the declaration
 
-A new marketplace entry is written with `"autoUpdate": true`. That is a
-deliberate default and it is the sharpest edge in this whole design, so it is
-recorded here rather than only in the README.
+A new marketplace entry is written with `"autoUpdate": true`. It is the sharpest
+edge in this design, so the reasoning is recorded here rather than only in the
+README, and [constraints C20](constraints.md) carries the citations.
 
-**What it buys.** A release reaches every configured repository without anyone
-running an update command. Without it, a corrected standard sits unread until
-each team happens to run two commands, and the framework's ability to fix its
-own mistakes decays with distance.
+**It follows from removing the version pin.** Before 2.0.0 a consuming
+repository declared `frameworkVersion`, and `ef-doctor` failed on a major gap —
+crude, but it meant a stale installation eventually announced itself. That is
+gone, and nothing replaced it: a repository now records **no framework version
+at all**. So if releases do not arrive on their own, they do not arrive. A team
+installs once, runs on that version indefinitely, and a corrected standard never
+reaches them — silently, which is this framework's characteristic failure.
 
-**What it costs.** Two things, and neither is hypothetical:
+**The alternative was worse for the people it affects.** The documented
+alternatives are a per-machine toggle in `/plugin` and an administrator setting
+in *managed* settings. Neither is available to a public marketplace distributing
+to strangers, and both amount to asking every developer to maintain a plugin they
+did not choose to think about. People adopt a framework to stop worrying about
+process, not to acquire a new chore.
 
-- **The version bump becomes the only brake.** A standard changed with a bump
-  reaches every auto-updating consumer at once, and neither outcome is
-  recoverable by editing this repository afterwards. `docs/versioning.md` already
-  told contributors to assume this; the default makes it true rather than likely.
-- **A project value governs a person's own choice.** Project settings outrank
-  user settings, and a same-name `extraKnownMarketplaces` entry replaces an
-  earlier file's entry *whole* — so a committed `autoUpdate` overrides the
-  toggle a developer set for themselves, in this repository. That is the same
-  shape as the pre-1.0.0 `permissions.defaultMode` problem, which is exactly why
-  it is written down instead of glossed.
+**What it costs, and where that cost is carried.** The version bump in
+`plugin.json` becomes the only brake between a changed standard and everyone who
+has this key. That is not a footnote — [versioning](versioning.md) is written
+around it, and it is why a standard change is a release decision here rather than
+a merge decision.
 
-**What keeps it honest.** Three things, and the third is the one that matters:
+**And it is not purely project-scoped**, which is measured rather than assumed:
+Claude Code keeps marketplace state *"once per user in
+`~/.claude/plugins/known_marketplaces.json`, not per project"*, and a committed
+project value reaches it. So the key is written **loudly** — the installer
+reports what it set and what that commits the team to, on every run, rather than
+slipping it into a diff.
 
-1. `--no-auto-update` writes the entry without the key.
-2. An entry that already *states* `autoUpdate`, `true` or `false`, is never
-   rewritten. The installer completes a declaration that has no opinion; it does
-   not reverse one that does. `has("autoUpdate")` rather than a truthiness test,
-   because `false` is a decision and a truthiness test cannot tell it from
-   absent.
-3. The installer says what it did and what that commits the team to, on every
-   run, rather than writing the key quietly.
+**What holds the line.** `--no-auto-update` opts out. An entry that already
+*states* `autoUpdate`, `true` or `false`, is never rewritten — the installer
+completes a declaration that has no opinion and does not reverse one that does,
+using `has("autoUpdate")` rather than a truthiness test, because `false` is a
+decision and a truthiness test cannot tell it from absent.
+`validate-plugin.mjs` fails if the shipped declaration loses the key;
+`validate-install-settings.mjs` fails if a fresh install omits it, if
+`--no-auto-update` writes it anyway, or if an existing `false` is flipped.
 
 The distinction from a permission rule still holds: this changes *when this
 plugin updates itself*, which is a property of the dependency the repository

@@ -12,6 +12,11 @@ does not know about them will "fix" something that is not broken.
 on **2026-08-15**. Only those three entries were re-checked on that date; the
 rest still carry the 2026-08-11 verification above.
 
+**C19–C20 verified against:** the same documentation on **2026-08-16**, plus the
+on-disk plugin state of an installed machine. C20 is *measured*: the documented
+sentences alone do not settle where a project-scoped `autoUpdate` ends up, and
+the answer shaped how loudly the installer writes it.
+
 Where an entry says *measured*, the behaviour was reproduced against the CLI
 rather than read from the documentation. C15 is there because the two
 disagreed, and believing the documentation broke installation.
@@ -438,8 +443,70 @@ identical third-party plugin needs both the marketplace entry and an explicit
 marketplace data **and updates installed plugins to their latest versions on
 disk**", after session start with a delay of up to ten minutes, taking effect on
 the next launch or after `/reload-plugins`. So [versioning](versioning.md)'s
-claim that a pinned consumer receives a release without typing an update command
-is correct as written.
+claim that an auto-updating consumer receives a release without typing an update
+command is correct as written.
+
+---
+
+## C20 — `autoUpdate` is written per project and takes effect per user — *measured*
+
+> Marketplace state is stored once per user in
+> `~/.claude/plugins/known_marketplaces.json`, **not per project**.
+> — *Create and distribute a plugin marketplace*
+
+> `autoUpdate` — Whether to automatically update this marketplace on Claude Code
+> startup. **Written automatically by Claude Code when you toggle auto-update
+> for a marketplace.** — *settings schema*
+
+> **Administrators** can also set `"autoUpdate": true` on each
+> `extraKnownMarketplaces` entry **in managed settings** to enable auto-update
+> for an organization marketplace without requiring each user to toggle it.
+> — *Discover and install plugins*
+
+**Measured on 2026-08-16**, on a machine whose only declaration of `autoUpdate`
+was in *this repository's committed project settings*:
+
+```text
+.claude/settings.json          (project) →  "autoUpdate": true
+~/.claude/settings.json        (user)    →  entry present, no autoUpdate
+~/.claude/plugins/known_marketplaces.json →  "autoUpdate": true   ← effective
+```
+
+**Two consequences, and they pull in opposite directions.**
+
+**It works.** A committed project entry does reach the state Claude Code acts
+on. So a repository *can* give its team auto-update without each person toggling
+it, which is the only lever a repository has: the documented alternatives are a
+per-machine toggle in `/plugin` and an administrator setting it in *managed*
+settings, and neither is available to a public marketplace distributing to
+strangers.
+
+**And it does not stay in the project.** The value lands in per-user machine
+state the documentation says is explicitly *not per project*, so it outlives the
+session and is not scoped to the repository that set it. Note also which two
+actors the documentation sanctions — Claude Code writing the key when a user
+toggles it, and an administrator in managed settings. A project file setting it
+for other developers is nowhere *described*, even though it demonstrably works.
+
+**How the design resolves it.** `ef-install-settings` writes
+`"autoUpdate": true` on a new entry, deliberately, because of what 2.0.0
+removed: a consuming repository records **no framework version**, so nothing in
+it ever asks to be updated. Without the key a team installs once and runs on that
+version indefinitely, and this framework's failures are the silent kind — a
+corrected standard would simply never arrive, and neither side could tell.
+Weighed against a preference that leaks one marketplace's update behaviour onto a
+machine, the silent-staleness risk is the larger one.
+
+What keeps it honest: `--no-auto-update` opts out; an entry that already states
+`autoUpdate` either way is never rewritten, because that is somebody's decision;
+and the installer *reports* what it set and what that commits the team to, on
+every run, rather than writing it quietly. The cost is recorded in
+[versioning](versioning.md): the version bump is then the only brake.
+
+**Mechanically checked**, in two places: `validate-plugin.mjs` fails if the
+shipped declaration loses the key or carries a non-boolean, and
+`validate-install-settings.mjs` fails if a fresh install omits it, if
+`--no-auto-update` writes it anyway, or if an existing `false` is flipped.
 
 ---
 
