@@ -87,15 +87,15 @@ Code refreshes the marketplace **and updates the installed plugin on disk** in
 the background after a session starts. A release arrives with nobody typing
 anything.
 
-That is deliberate: your repository records no framework version, so without the
-key a team runs on whatever version it first received, indefinitely, and a
-corrected standard never reaches it. The trade is that the version bump becomes
-the only thing standing between a changed standard and everyone who has it.
+That is deliberate: the framework is **development tooling, not an application
+runtime dependency**. A release changes how Claude approaches your next piece of
+engineering work; it does not modify deployed code, touch production, or bypass
+review, tests, CI or this framework's own gates. Teams should be shipping product
+value rather than tracking framework releases.
 
 `ef-install-settings --no-auto-update` writes the entry without the key, for a
-team that would rather adopt releases by hand. **An entry that already states
-`autoUpdate` is never rewritten**, either way — only an entry with no opinion
-gets one.
+team that needs controlled adoption. **An entry that already states `autoUpdate`
+is never rewritten**, either way — only an entry with no opinion gets one.
 
 ### Joining a repository someone else set up
 

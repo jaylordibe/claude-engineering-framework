@@ -142,26 +142,22 @@ then refreshes the marketplace *and updates the installed plugin on disk* in the
 background after a session starts; the new version loads on the next launch or
 after `/reload-plugins`. **Nobody runs an update command.**
 
-That is the default on purpose. Your repository records **no framework
-version** — so without this key, a team installs once and runs on whatever
-version it first received, indefinitely. This framework's failures are the quiet
-kind: a corrected standard would simply never arrive, and neither side could
-tell. Chasing plugin updates is not your team's job; shipping their code is.
+**Why this is the default:** the framework is *development tooling, not an
+application runtime dependency*. A release changes how Claude approaches your
+next piece of engineering work — it does not modify deployed code, update your
+dependencies, touch production, or bypass review, tests or CI. So your team
+should be shipping product value, not tracking framework releases. The full
+reasoning, including what auto-update explicitly does **not** relax, is
+[in the architecture](docs/architecture.md).
 
-The trade, stated plainly: the version bump in `plugin.json` becomes
+**Opting out**, if a team needs controlled adoption: run the installer with
+`--no-auto-update`, or set `"autoUpdate": false` on the entry. The cost is two
+commands per release. **An entry that already states `autoUpdate`, either way,
+is never rewritten** — that is your decision, and a re-run does not reverse it.
+
+The trade this accepts: the version bump in `plugin.json` becomes
 [the only brake](docs/versioning.md) between a changed standard and everyone who
-has this key. The framework's release discipline is built around exactly that.
-
-**Opting out**, if a team would rather adopt releases deliberately: run the
-installer with `--no-auto-update`, or set `"autoUpdate": false` on the entry.
-The cost is two commands per release. **An entry that already states
-`autoUpdate`, either way, is never rewritten** — that is somebody's decision,
-and a re-run does not reverse it.
-
-(Third-party marketplaces default to **off** when nothing says otherwise, which
-is why the key is written explicitly. Claude Code also keeps marketplace state
-per user, so this reaches each machine that opens the repository — see
-[constraints C20](docs/constraints.md).)
+has this key, which is why release discipline here is strict.
 
 ---
 
