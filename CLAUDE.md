@@ -190,9 +190,10 @@ A change to a standard, an agent, a gate or the charter reaches every one of
 them on their next `/plugin update`, and only when `version` in `plugin.json`
 changes.
 
-A consuming repository that pins the marketplace with `autoUpdate` in its own
-settings receives that release without anyone typing an update command, and
-which ones do is not visible from here. Assume all of them. **The version bump
-is then the only brake there is** — a standard changed without one reaches
-nobody, and a standard changed with one reaches every such repository at once.
-Neither outcome is recoverable by editing this repository afterwards.
+**From 2.0.0 `framework-install` writes `"autoUpdate": true`, so this is the
+default rather than an opt-in.** A configured repository receives that release
+without anyone typing an update command, on its next session. A team can opt out
+and which ones did is not visible from here, so assume none of them did. **The
+version bump is then the only brake there is** — a standard changed without one
+reaches nobody, and a standard changed with one reaches every such repository at
+once. Neither outcome is recoverable by editing this repository afterwards.

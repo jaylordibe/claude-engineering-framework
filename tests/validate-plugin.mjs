@@ -791,8 +791,16 @@ function validateMarketplaceDeclaration(marketplace, manifest) {
     fail(declarationPath, `declares repo "${repo}" but the plugin manifest's repository is "${expectedRepo}". Installing repositories would be pointed at the wrong marketplace source.`);
   }
 
-  if (Object.prototype.hasOwnProperty.call(declaration.entry ?? {}, 'autoUpdate')) {
-    fail(declarationPath, 'the entry carries `autoUpdate`. The installer writes this entry verbatim into every consuming repository, so shipping the key here decides, on the human\'s behalf and in the framework\'s own favour, whether unreviewed releases are accepted. It is a per-user toggle in /plugin, or an administrator key in managed settings.');
+  // `autoUpdate: true` is the deliberate default: a release should reach the
+  // team without anyone running an update command. It is asserted rather than
+  // merely allowed, because losing it is silent — every repository configured
+  // afterwards simply stops receiving releases, and nothing reports that.
+  //
+  // The type check is not pedantry. `"true"` is truthy in the settings file and
+  // would read as configured while Claude Code ignores it, which is the inert-
+  // control failure this project treats as the worst available shape.
+  if (declaration.entry?.autoUpdate !== true) {
+    fail(declarationPath, `the entry must carry \`"autoUpdate": true\` (found ${JSON.stringify(declaration.entry?.autoUpdate)}). It is written verbatim into every repository the installer configures, and without it a released version reaches nobody until each team runs two update commands by hand.`);
   }
 }
 

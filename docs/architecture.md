@@ -112,7 +112,7 @@ The boundary is narrow on purpose, and it is the same boundary 1.0.0 drew:
 | `extraKnownMarketplaces.<marketplace>` | `permissions`, in any scope |
 | `enabledPlugins["<plugin>@<marketplace>"]` | `hooks`, `env`, or any other key |
 | — in the project's own settings only | `~/.claude/settings.json`, or anything under `~/.claude/plugins/` |
-| — when a human runs the installer | `autoUpdate`, in either direction |
+| `autoUpdate: true`, on a new entry only | an existing entry's stated `autoUpdate` |
 
 **Declaring a dependency is not the same act as rewriting a permission
 posture.** The first is what a package manifest does; the second is what the
@@ -121,11 +121,44 @@ is the whole justification for the exception, so it is asserted mechanically in
 `tests/validate-install-settings.mjs` — including a case proving a run writes
 nothing into `$HOME` — rather than promised in this document.
 
-`autoUpdate` is excluded deliberately even though the schema allows it. It
-decides whether unreviewed releases of *this framework* are accepted; the
-charter names accepting operational risk on the human's behalf as human-owned,
-and doing it in our own favour is not a close call. Claude Code exposes it as a
-per-user toggle, which is where it belongs.
+### 4b. Auto-update, and the one place this design accepts a real cost
+
+A new marketplace entry is written with `"autoUpdate": true`. That is a
+deliberate default and it is the sharpest edge in this whole design, so it is
+recorded here rather than only in the README.
+
+**What it buys.** A release reaches every configured repository without anyone
+running an update command. Without it, a corrected standard sits unread until
+each team happens to run two commands, and the framework's ability to fix its
+own mistakes decays with distance.
+
+**What it costs.** Two things, and neither is hypothetical:
+
+- **The version bump becomes the only brake.** A standard changed with a bump
+  reaches every auto-updating consumer at once, and neither outcome is
+  recoverable by editing this repository afterwards. `docs/versioning.md` already
+  told contributors to assume this; the default makes it true rather than likely.
+- **A project value governs a person's own choice.** Project settings outrank
+  user settings, and a same-name `extraKnownMarketplaces` entry replaces an
+  earlier file's entry *whole* — so a committed `autoUpdate` overrides the
+  toggle a developer set for themselves, in this repository. That is the same
+  shape as the pre-1.0.0 `permissions.defaultMode` problem, which is exactly why
+  it is written down instead of glossed.
+
+**What keeps it honest.** Three things, and the third is the one that matters:
+
+1. `--no-auto-update` writes the entry without the key.
+2. An entry that already *states* `autoUpdate`, `true` or `false`, is never
+   rewritten. The installer completes a declaration that has no opinion; it does
+   not reverse one that does. `has("autoUpdate")` rather than a truthiness test,
+   because `false` is a decision and a truthiness test cannot tell it from
+   absent.
+3. The installer says what it did and what that commits the team to, on every
+   run, rather than writing the key quietly.
+
+The distinction from a permission rule still holds: this changes *when this
+plugin updates itself*, which is a property of the dependency the repository
+declared. It grants no tool access and blocks no operation.
 
 ### 5. A vocabulary that can say "this repository does not have that"
 

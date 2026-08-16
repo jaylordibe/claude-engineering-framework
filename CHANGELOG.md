@@ -34,9 +34,15 @@ purpose: a migration subsystem for a file this size costs more than the move.
    - `frameworkVersion` → **nothing.** Delete it. Consuming repositories no
      longer record a framework version anywhere, and nothing compares one.
 2. **Run `/engineering-framework:framework-install` once** to add the dependency
-   declaration to `.claude/settings.json`, then commit it. Skip this if you
-   already added `extraKnownMarketplaces` and `enabledPlugins` by hand — the
-   installer detects a correct declaration and rewrites nothing.
+   declaration to `.claude/settings.json`, then commit it. If you already added
+   `extraKnownMarketplaces` and `enabledPlugins` by hand, run it anyway: it
+   rewrites nothing that is already correct, and it fills in `autoUpdate` if
+   your hand-written entry never stated one.
+3. **Decide `autoUpdate` deliberately.** The installer turns it on. Releases
+   then arrive without anyone running an update command — and because project
+   settings outrank user settings, the committed value governs everyone who
+   works in the repository. Use `--no-auto-update` if you would rather adopt
+   releases by hand. An entry that already states it either way is left alone.
 
 If you do neither, the framework keeps working: every gate falls back to reading
 your `CLAUDE.md`, the manifest and CI, exactly as it did before when no policy
@@ -61,6 +67,21 @@ file was present.
 - **Running it twice changes nothing the second time.** A correct declaration is
   left alone, including its formatting, and including an `autoUpdate` value you
   set yourself.
+- **`framework-install` turns auto-update on, and this is the entry to read
+  twice.** A new marketplace entry carries `"autoUpdate": true`, so a released
+  version of this framework arrives without anyone running an update command.
+  Two consequences, both deliberate: **the framework's version bump becomes the
+  only thing between a changed standard and your repository**, and because
+  project settings outrank user settings — a same-name `extraKnownMarketplaces`
+  entry replaces an earlier file's entry *whole* — the committed value governs
+  everyone who works there, not only whoever ran the installer.
+
+  `--no-auto-update` writes the entry without the key. **An entry that already
+  states `autoUpdate`, `true` or `false`, is never rewritten**: the installer
+  completes a declaration that has no opinion and does not reverse one that
+  does. `docs/versioning.md` and `docs/architecture.md` §4b carry the full
+  reasoning, including why `false` is tested for explicitly rather than by
+  truthiness.
 - **`.claude/engineering-framework.json` is removed from the architecture**, and
   with it `reference/repo-config.schema.json` and the example config. See the
   upgrade note. `ef-doctor` reports a leftover file; it never reads, migrates or
@@ -74,21 +95,17 @@ file was present.
 ### Changed for the framework itself
 
 - `bin/ef-install-settings` — the deterministic, idempotent settings merge, with
-  17 asserted repository shapes including "writes nothing into `$HOME`".
-- `reference/marketplace-declaration.json` — the identifiers the installer
-  writes, pinned in CI against `marketplace.json` and `plugin.json` so a rename
-  cannot point installing repositories at a marketplace that does not exist. It
-  deliberately carries no `autoUpdate`, and CI fails if one is added.
+  22 asserted repository shapes including "writes nothing into `$HOME`".
+- `reference/marketplace-declaration.json` — the entry the installer writes,
+  pinned in CI against `marketplace.json` and `plugin.json` so a rename cannot
+  point installing repositories at a marketplace that does not exist. CI also
+  asserts `autoUpdate` is exactly `true`: losing it is silent, and every
+  repository configured afterwards would quietly stop receiving releases.
 
 ### Unchanged, and worth saying
 
 - **Nothing global is written.** Not `~/.claude/settings.json`, not
   `~/.claude/plugins/known_marketplaces.json`, not the plugin cache.
-- **Auto-update stays where Claude Code puts it** — a per-user toggle in
-  `/plugin` (third-party marketplaces default to off), or an administrator key
-  in managed settings. The installer will not write it, because accepting
-  unreviewed changes to this framework is not a decision this framework should
-  make in its own favour.
 - **A colleague who clones still runs one command.** As of Claude Code
   v2.1.195, a plugin that only project settings enable, and that comes from an
   external source, does not load until that person installs it. The declaration
