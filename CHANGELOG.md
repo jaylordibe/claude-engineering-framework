@@ -65,21 +65,26 @@ file was present.
 - **Running it twice changes nothing the second time.** A correct declaration is
   left alone, including its formatting, and including an `autoUpdate` value you
   set yourself.
-- **`framework-install` turns auto-update on, and this is the entry to read
-  twice.** A new marketplace entry carries `"autoUpdate": true`, so a released
-  version arrives without anyone running an update command. That is deliberate
-  and it follows directly from removing the version pin: a consuming repository
-  now records **no framework version**, so nothing in it would ever ask to be
-  updated, and a team would run on whatever version it first received while a
-  corrected standard never arrived.
+- **`framework-install` turns auto-update on.** A new marketplace entry carries
+  `"autoUpdate": true`, so a released version arrives without anyone running an
+  update command. The framework is **development tooling, not an application
+  runtime dependency**: a release changes how Claude approaches future
+  engineering work, and does not modify deployed code, update your dependencies,
+  touch production, or bypass review, tests, CI or this framework's own gates.
+  Teams should be shipping product value rather than tracking framework
+  releases. It also follows from removing the version pin — a repository now
+  records no framework version, so nothing in it would ever ask to be updated.
 
-  The cost, stated plainly: the version bump becomes the only thing between a
-  changed standard and every repository that has this key, and Claude Code keeps
-  marketplace state *per user* — measured, not assumed — so the value reaches
-  each machine that opens the repository. `--no-auto-update` writes the entry
-  without it, and **an entry that already states `autoUpdate`, `true` or
-  `false`, is never rewritten**. Citations and the measurement are in
-  `docs/constraints.md` C20; the reasoning is `docs/architecture.md` §4b.
+  **Auto-update relaxes nothing.** The pipeline, the risk tiers, the evidence
+  language and the human-owned operations are unchanged by how the plugin
+  arrived on disk.
+
+  **Controlled adoption is preserved.** `--no-auto-update` writes the entry
+  without the key, and **an entry that already states `autoUpdate`, `true` or
+  `false`, is never rewritten.** The cost accepted: the version bump becomes the
+  only thing between a changed standard and every repository that has this key.
+  Reasoning in `docs/architecture.md` §4b; platform citations and the
+  measurement in `docs/constraints.md` C20.
 - **`.claude/engineering-framework.json` is removed from the architecture**, and
   with it `reference/repo-config.schema.json` and the example config. See the
   upgrade note. `ef-doctor` reports a leftover file; it never reads, migrates or

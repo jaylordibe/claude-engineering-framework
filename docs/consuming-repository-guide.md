@@ -121,15 +121,16 @@ version arrives without anyone running an update command. Third-party
 marketplaces default to **off**, which is why the installer writes the key
 explicitly.
 
-It is on by default for a specific reason: your repository records **no
-framework version**, so nothing in it would ever ask to be updated. Without the
-key, your team installs once and runs on that version indefinitely — and a
-corrected standard would never arrive, silently.
+**Why it is on by default:** the framework is development tooling, not an
+application runtime dependency. A release changes how Claude approaches your next
+piece of engineering work — not your deployed code, your dependencies, your
+production runtime, or your review, test and CI gates. Your team should be
+shipping product value rather than tracking framework releases. Full reasoning in
+[the architecture](architecture.md); platform detail in
+[constraints C20](constraints.md).
 
-The trade, so you can decide it rather than inherit it: the framework's version
-bump becomes the only thing between a changed standard and this repository, and
-Claude Code keeps marketplace state per user, so the value reaches each machine
-that opens the repository. See [constraints C20](constraints.md).
+The trade, so you decide it rather than inherit it: the framework's version bump
+becomes the only thing between a changed standard and this repository.
 
 **To adopt releases deliberately instead**, run the installer with
 `--no-auto-update`, or set `"autoUpdate": false` on the entry. The cost is

@@ -123,24 +123,45 @@ nothing into `$HOME` — rather than promised in this document.
 
 ### 4b. Why `autoUpdate` is part of the declaration
 
-A new marketplace entry is written with `"autoUpdate": true`. It is the sharpest
-edge in this design, so the reasoning is recorded here rather than only in the
-README, and [constraints C20](constraints.md) carries the citations.
+A new marketplace entry is written with `"autoUpdate": true`. This is the
+authoritative explanation; everywhere else refers here rather than restating it,
+and [constraints C20](constraints.md) carries the platform citations.
 
-**It follows from removing the version pin.** Before 2.0.0 a consuming
+**The principle: this is development tooling, not an application runtime
+dependency.** A framework release changes the instructions, skills, review
+discipline, validation behaviour and efficiency policy Claude brings to *future*
+engineering work. It does not modify deployed application code, update
+application dependencies, change a production runtime, deploy anything, or
+bypass repository review, tests or CI. The blast radius of a bad framework
+release is "the next change is designed or reviewed differently", not "production
+moved" — and that is a categorically smaller risk than the one people are
+imagining when they reach for a version pin.
+
+Auto-update is therefore on by default, so developers spend their attention on
+shipping product value rather than tracking framework releases. Teams that need
+controlled adoption opt out; see *What holds the line* below.
+
+**It also follows from removing the version pin.** Before 2.0.0 a consuming
 repository declared `frameworkVersion`, and `ef-doctor` failed on a major gap —
-crude, but it meant a stale installation eventually announced itself. That is
-gone, and nothing replaced it: a repository now records **no framework version
-at all**. So if releases do not arrive on their own, they do not arrive. A team
-installs once, runs on that version indefinitely, and a corrected standard never
-reaches them — silently, which is this framework's characteristic failure.
+crude, but a stale installation eventually announced itself. Nothing replaced
+it: a repository now records **no framework version at all**. So if releases do
+not arrive on their own, they do not arrive. A team installs once, runs on that
+version indefinitely, and a corrected standard never reaches them — silently,
+which is this framework's characteristic failure.
 
-**The alternative was worse for the people it affects.** The documented
+**The alternatives were worse for the people they affect.** The documented
 alternatives are a per-machine toggle in `/plugin` and an administrator setting
 in *managed* settings. Neither is available to a public marketplace distributing
 to strangers, and both amount to asking every developer to maintain a plugin they
-did not choose to think about. People adopt a framework to stop worrying about
-process, not to acquire a new chore.
+did not choose to think about.
+
+**What it explicitly does not relax.** An updated framework still runs the same
+pipeline at the same floor: mapping, design, human approval, implementation,
+review, validation, presentation, scaled by risk and scope. *Adaptive rigor,
+fixed quality floor* is unchanged by how the plugin arrived on disk, and no part
+of auto-update touches the gates, the evidence language, or the human-owned
+operations. Receiving a release never means the next change gets less scrutiny —
+only that the scrutiny is current.
 
 **What it costs, and where that cost is carried.** The version bump in
 `plugin.json` becomes the only brake between a changed standard and everyone who
