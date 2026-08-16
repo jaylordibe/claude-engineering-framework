@@ -180,8 +180,13 @@ ceremony it produces.** Nothing a risk tier required before is optional now.
   and nothing here could withdraw a marketplace entry later; and `autoUpdate` is
   a decision to accept unreviewed changes to this framework, which this
   framework should not be making in its own favour.
+
+  > **Superseded by 2.0.0.** `framework-install` now writes the declaration
+  > itself, with `autoUpdate: true` by default. This bullet records what 1.1.0
+  > did; it is not current guidance.
 - The plugin's bundled `README.md` carries the exact settings block, so the
-  payload states it once and the installer can cite it.
+  payload states it once and the installer can cite it. **Superseded by 2.0.0:**
+  the installer merges it rather than asking anyone to copy it.
 - **`standards/execution-efficiency.md`** — the single source for investigation
   depth, model choice per launch, fan-out, output size, escalation triggers and
   anti-patterns. Skills and agents cite it; none of them restate it.
@@ -316,6 +321,9 @@ blocking a command.
   now, but the bug was real and blocked work for as long as it shipped.
 - `ef-doctor` is 461 lines shorter and reports only the repository contract.
 - `framework-install` no longer writes to `.claude/settings.json` at all.
+  **Superseded by 2.0.0:** it now merges the two declaration keys —
+  `extraKnownMarketplaces` and `enabledPlugins` — and still never writes
+  `permissions`, `hooks` or `env`.
 
 ---
 
