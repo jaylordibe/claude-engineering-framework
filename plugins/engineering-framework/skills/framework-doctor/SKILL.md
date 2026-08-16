@@ -65,10 +65,9 @@ that does not exist here.
 
 ## 3. Check the canonical commands actually work
 
-For each command the repository declares — in
-`.claude/engineering-framework.json` or in its `CLAUDE.md` — confirm the target
-exists: the script is defined in the manifest, the binary is on `PATH`, the
-configuration file it names is present.
+For each command the repository declares in its `CLAUDE.md` canonical-commands
+table, confirm the target exists: the script is defined in the manifest, the
+binary is on `PATH`, the configuration file it names is present.
 
 **Do not run build, test or install commands to check this.** Establish it
 statically. A command that is declared but undefined is a `BLOCKED` validation
@@ -79,10 +78,14 @@ gate waiting to happen, and finding it now costs nothing.
 ```text
 Repository contract audit
   Mandatory:   <status of CLAUDE.md>
+  Dependency:  <whether .claude/settings.json declares the marketplace and
+                enables the plugin, and that each colleague still installs it>
   Drift:       <stale or incorrect documentation claims, with path:line>
   Commands:    <declared vs. actually resolvable>
   Risk paths:  <declared high-risk paths, and that they shape ceremony only>
-  Leftovers:   <pre-plugin .claude/ directories still overriding the plugin>
+  Leftovers:   <pre-plugin .claude/ directories still overriding the plugin,
+                and any policy file left over from before 2.0.0 that ef-doctor
+                names — report what it says; do not read the file yourself>
 ```
 
 Everything this reports is **advisory**. The framework ships no permission

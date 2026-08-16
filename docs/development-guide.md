@@ -169,8 +169,15 @@ rule.
 
 **You cannot add one, and this is the 1.0.0 constraint that most often catches
 a contributor out.** The framework ships no permission rules and no hooks that
-gate a tool call. Nothing here may create or edit a `.claude/settings.json`, and
-nothing may register a `PreToolUse` hook.
+gate a tool call. Nothing here may write `permissions` or `hooks` into anyone's
+settings, and nothing may register a `PreToolUse` hook.
+
+`ef-install-settings` is not a counter-example, and the difference is worth
+holding onto: it writes `extraKnownMarketplaces` and `enabledPlugins` into the
+*project's* settings, when a human runs the installer, and nothing else. A
+dependency declaration is not an enforcement mechanism. Widening it past those
+two keys — or to a global file — is the change this section exists to stop, and
+`tests/validate-install-settings.mjs` fails before the review does.
 
 If a change genuinely needs an operation stopped rather than reserved, the
 options in order of preference are:

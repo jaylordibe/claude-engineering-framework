@@ -744,47 +744,87 @@ function validateComponentReferences(agentNames, skillNames) {
 }
 
 // ---------------------------------------------------------------------------
-// 7c. Every repository-policy key is actually consumed
+// 7c. The marketplace declaration matches the marketplace
 //
-// `risk.highRiskPaths` was documented in the schema, shown in the example
-// config, and read by nothing at all. A repository could declare its
-// authentication and billing paths high-risk, see the key accepted, and get no
-// escalation whatsoever.
+// `ef-install-settings` writes these identifiers into a consuming repository's
+// own settings, and it has to ship them: the marketplace NAME is not derivable
+// from the plugin payload, because `.claude-plugin/marketplace.json` lives at
+// the marketplace repository root and is never copied into a plugin cache.
 //
-// That is the same failure shape as an inert `Write()` permission rule, which
-// this project already calls the worst available: the control reads as present
-// while doing nothing. A key in the schema is a promise, so this asserts each
-// one is kept somewhere.
+// A shipped copy is a copy that can drift, and this one drifts into the worst
+// available failure: a repository that ran the installer gets a marketplace
+// entry pointing at a name or a repository that does not serve this plugin.
+// Nothing at install time catches it — the entry is syntactically perfect, and
+// the plugin simply never resolves. So the copy is pinned to its sources here.
+//
+// It is also where the deliberate ABSENCE of `autoUpdate` is asserted. Whether
+// to accept unreviewed changes to this framework belongs to the person running
+// it; a default written by the framework, in its own favour, is exactly the
+// risk acceptance the charter calls human-owned.
 // ---------------------------------------------------------------------------
 
-function validateConfigKeysAreConsumed() {
-  const schemaPath = join(pluginRoot, 'reference', 'repo-config.schema.json');
-  if (!existsSync(schemaPath)) return;
+function validateMarketplaceDeclaration(marketplace, manifest) {
+  const declarationPath = join(pluginRoot, 'reference', 'marketplace-declaration.json');
 
-  const schema = readJson(schemaPath);
-  if (!schema?.properties) return;
-
-  // Where a key may legitimately be consumed: the guards and their library
-  // read policy at runtime; ef-doctor audits it; the skills act on it.
-  const consumerFiles = [
-    ...listFilesRecursively(join(pluginRoot, 'scripts')),
-    ...listFilesRecursively(join(pluginRoot, 'bin')),
-    ...listFilesRecursively(join(pluginRoot, 'skills'), (path) => path.endsWith('.md')),
-  ];
-  const consumerText = consumerFiles.map((path) => readFileSync(path, 'utf8')).join('\n');
-
-  const keys = [];
-  for (const [key, definition] of Object.entries(schema.properties)) {
-    if (key === '$schema') continue;
-    keys.push(key);
-    for (const nestedKey of Object.keys(definition.properties ?? {})) {
-      keys.push(nestedKey);
-    }
+  if (!existsSync(declarationPath)) {
+    fail(declarationPath, 'the marketplace declaration is missing; ef-install-settings cannot configure a repository without it, and framework-install fails at step 2.');
+    return;
   }
 
-  const unconsumed = keys.filter((key) => !consumerText.includes(key));
-  if (unconsumed.length > 0) {
-    fail(schemaPath, `these keys are offered to repositories but read by nothing in scripts/, bin/ or skills/: ${unconsumed.join(', ')}. A repository that sets one gets silence, and the schema entry reads as a control it can rely on. Consume the key or remove it.`);
+  const declaration = readJson(declarationPath);
+  if (!declaration) return;
+
+  if (declaration.marketplace !== marketplace?.name) {
+    fail(declarationPath, `declares marketplace "${declaration.marketplace}" but the catalogue calls itself "${marketplace?.name}". Every repository the installer configures would name a marketplace that does not exist, and the plugin would never resolve.`);
+  }
+
+  if (declaration.plugin !== manifest?.name) {
+    fail(declarationPath, `declares plugin "${declaration.plugin}" but this plugin is named "${manifest?.name}". The enabledPlugins key written into consuming repositories would enable nothing.`);
+  }
+
+  const repo = declaration.entry?.source?.repo;
+  const expectedRepo = (manifest?.repository ?? '').replace(/^https:\/\/github\.com\//, '').replace(/\.git$/, '');
+  if (declaration.entry?.source?.source !== 'github') {
+    fail(declarationPath, 'the declared source type is not "github"; the installer writes this verbatim into a consuming repository, and only the shapes Claude Code documents may be written there.');
+  }
+  if (expectedRepo && repo !== expectedRepo) {
+    fail(declarationPath, `declares repo "${repo}" but the plugin manifest's repository is "${expectedRepo}". Installing repositories would be pointed at the wrong marketplace source.`);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(declaration.entry ?? {}, 'autoUpdate')) {
+    fail(declarationPath, 'the entry carries `autoUpdate`. The installer writes this entry verbatim into every consuming repository, so shipping the key here decides, on the human\'s behalf and in the framework\'s own favour, whether unreviewed releases are accepted. It is a per-user toggle in /plugin, or an administrator key in managed settings.');
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 7d. The removed repository policy file stays removed
+//
+// `.claude/engineering-framework.json` was deleted in 2.0.0: `frameworkVersion`
+// was a version pin the consuming repository had no business carrying,
+// `commands` duplicated the CLAUDE.md canonical-commands table, and
+// `risk.highRiskPaths` moved into CLAUDE.md.
+//
+// The risk is not that someone recreates the file deliberately. It is that a
+// gate keeps CITING it — costing nothing to write, failing silently forever,
+// and sending every agent to read a file that no repository has any more.
+// ---------------------------------------------------------------------------
+
+function validateNoLegacyPolicyFileReferences() {
+  const shipped = [
+    ...listFilesRecursively(join(pluginRoot, 'skills'), (path) => path.endsWith('.md')),
+    ...listFilesRecursively(join(pluginRoot, 'agents'), (path) => path.endsWith('.md')),
+    ...listFilesRecursively(join(pluginRoot, 'standards'), (path) => path.endsWith('.md')),
+    ...listFilesRecursively(join(pluginRoot, 'templates'), (path) => path.endsWith('.md')),
+    ...listFilesRecursively(join(pluginRoot, 'reference')),
+  ];
+
+  for (const filePath of shipped) {
+    const text = readFileSync(filePath, 'utf8');
+    for (const [index, line] of text.split('\n').entries()) {
+      if (line.includes('engineering-framework.json') || /\brisk\.highRiskPaths\b/.test(line) || /\bframeworkVersion\b/.test(line)) {
+        fail(filePath, `line ${index + 1} references the repository policy file removed in 2.0.0. Canonical commands and high-risk paths live in the repository's CLAUDE.md now; an instruction to read a file no repository has fails silently, and the gate simply gets no answer.`);
+      }
+    }
   }
 }
 
@@ -1046,7 +1086,8 @@ const skillNames = validateSkills();
 validateHooksAndScripts();
 validateCrossReferences();
 validateComponentReferences(agentNames, skillNames);
-validateConfigKeysAreConsumed();
+validateMarketplaceDeclaration(marketplace, manifest);
+validateNoLegacyPolicyFileReferences();
 validateNormativeAnchors();
 validateSingleSourcePolicies();
 validateNoStackAssumptions();

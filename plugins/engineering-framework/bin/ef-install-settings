@@ -1,0 +1,349 @@
+#!/usr/bin/env bash
+#
+# ef-install-settings — declare this repository's dependency on the engineering
+# framework, in the repository's own project settings.
+#
+# A repository says "this project uses engineering-framework" the way it says
+# "this project uses a test runner": one declaration, committed, in the file the
+# host application already reads. Claude Code owns everything after that — trust,
+# installation, the installed version, the cache and the update lifecycle. This
+# script does not duplicate any of it.
+#
+# WHAT IT WRITES, AND THE LINE IT DOES NOT CROSS
+# ----------------------------------------------
+# Exactly two keys of <repository>/.claude/settings.json:
+#
+#   extraKnownMarketplaces.<marketplace>   so the marketplace resolves
+#   enabledPlugins["<plugin>@<marketplace>"]   so the plugin is active here
+#
+# It never writes `permissions`, never writes `hooks`, never writes a global
+# ~/.claude/settings.json, and never touches Claude Code's own plugin state
+# under ~/.claude/plugins/. The 1.0.0 line was that a plugin must not rewrite
+# the permission rules a developer chose; that line is unchanged. Declaring a
+# dependency is not the same act as changing someone's permission posture, and
+# this script is written so the difference is mechanical rather than promised.
+#
+# It also never writes `autoUpdate`. Accepting unreviewed changes to this
+# framework is a decision for the person running it, not for the framework
+# itself, and Claude Code exposes it as a per-user toggle in `/plugin` (or an
+# administrator key in managed settings). See docs/architecture.md.
+#
+# WHY A SCRIPT AND NOT SKILL PROSE
+# --------------------------------
+# A structural JSON merge that must be idempotent, must refuse to overwrite a
+# conflicting declaration, and must never destroy an unparseable file is a
+# deterministic operation. Prose asking an agent to do it carefully is not
+# testable; this is - see tests/validate-install-settings.mjs.
+#
+# Exit codes: 0 configuration is correct (written now, or already correct),
+# 1 nothing was written and a human has to decide, 2 usage error.
+#
+# Bash 3.2 compatible: no associative arrays, no ${var,,}.
+
+set -uo pipefail
+
+project_directory=${CLAUDE_PROJECT_DIR:-$PWD}
+# Claude Code sets CLAUDE_PLUGIN_ROOT; a human running bin/ef-install-settings
+# from a checkout does not. Same fallback as ef-doctor, for the same reason: a
+# missing declaration must fail loudly rather than silently write nothing.
+plugin_root=${CLAUDE_PLUGIN_ROOT:-}
+if [ -z "$plugin_root" ]; then
+  plugin_root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+fi
+check_only=false
+enable_disabled=false
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --path)
+      shift
+      [ "$#" -gt 0 ] || {
+        printf 'ef-install-settings: --path needs a directory\n' >&2
+        exit 2
+      }
+      project_directory=$1
+      ;;
+    --check) check_only=true ;;
+    --enable-disabled) enable_disabled=true ;;
+    -h | --help)
+      cat <<'USAGE'
+Usage: ef-install-settings [--path <repository>] [--check] [--enable-disabled]
+
+Declares the engineering-framework marketplace and enables the plugin in a
+repository's own .claude/settings.json, preserving everything else in the file.
+
+  --path <dir>        Repository to configure (default: $CLAUDE_PROJECT_DIR, else $PWD)
+  --check             Report what would change; write nothing
+  --enable-disabled   Re-enable the plugin when the project explicitly disabled it
+
+Writes nothing outside <repository>/.claude/settings.json.
+USAGE
+      exit 0
+      ;;
+    *)
+      printf 'ef-install-settings: unknown argument %s\n' "$1" >&2
+      exit 2
+      ;;
+  esac
+  shift
+done
+
+pass() { printf 'PASS  %s\n' "$1"; }
+todo() { printf 'TODO  %s\n' "$1"; }
+fail() { printf 'FAIL  %s\n' "$1"; }
+note() { printf '      %s\n' "$1"; }
+
+declaration="${plugin_root}/reference/marketplace-declaration.json"
+
+# ---------------------------------------------------------------------------
+# Preconditions
+# ---------------------------------------------------------------------------
+
+if [ ! -d "$project_directory" ]; then
+  fail "no such directory: $project_directory"
+  exit 1
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+  fail 'jq is not on PATH, so this file cannot be merged safely.'
+  note 'Editing settings by hand is the fallback, and it is a real one: the'
+  note 'block to add is printed below. Nothing was written.'
+  if [ -r "$declaration" ]; then
+    printf '\n'
+    cat "$declaration"
+  fi
+  exit 1
+fi
+
+if [ ! -r "$declaration" ]; then
+  fail "the framework's marketplace declaration is missing: $declaration"
+  note 'This is a broken installation rather than a repository problem. The'
+  note 'plugin cache is incomplete; reinstall the plugin.'
+  exit 1
+fi
+
+marketplace=$(jq -r '.marketplace' "$declaration")
+plugin=$(jq -r '.plugin' "$declaration")
+plugin_id="${plugin}@${marketplace}"
+
+settings_directory="${project_directory}/.claude"
+settings="${settings_directory}/settings.json"
+
+printf 'Engineering framework — project dependency declaration\n'
+printf 'Repository: %s\n' "$project_directory"
+printf 'Settings:   %s\n\n' "$settings"
+
+# The exact block a human would paste if they had to. Printed on every refusal,
+# because a refusal that does not say what it wanted is a dead end.
+intended_block() {
+  jq -n \
+    --arg marketplace "$marketplace" \
+    --arg plugin_id "$plugin_id" \
+    --argjson entry "$(jq -c '.entry' "$declaration")" \
+    '{extraKnownMarketplaces: {($marketplace): $entry}, enabledPlugins: {($plugin_id): true}}'
+}
+
+# ---------------------------------------------------------------------------
+# Read the current file, refusing rather than repairing
+# ---------------------------------------------------------------------------
+
+current='{}'
+settings_exists=false
+
+if [ -e "$settings" ]; then
+  settings_exists=true
+
+  if [ ! -r "$settings" ]; then
+    fail '.claude/settings.json exists but cannot be read.'
+    note 'Nothing was written. Fix the file permissions and re-run.'
+    exit 1
+  fi
+
+  parse_error=$(jq -e '.' "$settings" 2>&1 >/dev/null)
+  parse_status=$?
+  if [ "$parse_status" -ne 0 ]; then
+    fail '.claude/settings.json is not valid JSON. It was left exactly as it is.'
+    note 'The parser reported:'
+    note "  ${parse_error}"
+    note 'Destroying a settings file to complete an install is never the right'
+    note 'trade: it may hold permission rules, hooks and environment this'
+    note 'repository depends on. Repair the JSON, then re-run. The framework'
+    note 'intended to merge:'
+    printf '\n'
+    intended_block
+    exit 1
+  fi
+
+  if ! jq -e 'type == "object"' "$settings" >/dev/null 2>&1; then
+    fail '.claude/settings.json is valid JSON but is not an object.'
+    note 'Claude Code reads this file as an object of settings keys, so the'
+    note 'current contents are not settings at all. Nothing was written.'
+    note 'The framework intended to merge:'
+    printf '\n'
+    intended_block
+    exit 1
+  fi
+
+  current=$(cat "$settings")
+
+  # The two keys this script merges into must themselves be objects. Without
+  # this, a `"enabledPlugins": "yes"` reaches jq's indexing and the run ends in
+  # raw parser noise and a generic refusal - safe, but undiagnosable. Valid
+  # JSON of the wrong shape is a failure this project has met before, and the
+  # lesson was that the shape has to be checked where the value is read.
+  for owned_key in extraKnownMarketplaces enabledPlugins; do
+    # The parentheses are load-bearing: `|` binds looser than `or` in jq, so
+    # `has($key) | not or (...)` pipes a boolean into `.[$key]` and errors.
+    if ! printf '%s' "$current" | jq -e --arg key "$owned_key" '
+      (has($key) | not) or (.[$key] | type == "object")' >/dev/null 2>&1; then
+      fail ".claude/settings.json has a \`${owned_key}\` that is not an object."
+      note 'Claude Code reads it as a map, so whatever is there configures'
+      note 'nothing today. Merging into it would need a guess about what was'
+      note 'meant. Nothing was written. The framework intended to merge:'
+      printf '\n'
+      intended_block
+      exit 1
+    fi
+  done
+fi
+
+# ---------------------------------------------------------------------------
+# Material conflicts — reported, never resolved on the human's behalf
+# ---------------------------------------------------------------------------
+
+existing_source=$(printf '%s' "$current" |
+  jq -c --arg marketplace "$marketplace" '.extraKnownMarketplaces[$marketplace].source // empty')
+declared_source=$(jq -c '.entry.source' "$declaration")
+
+marketplace_declared=false
+if [ -n "$existing_source" ]; then
+  if [ "$(printf '%s' "$existing_source" | jq -S -c '.')" = "$(printf '%s' "$declared_source" | jq -S -c '.')" ]; then
+    marketplace_declared=true
+  else
+    fail "Marketplace \"${marketplace}\" is already declared here with a different source."
+    note "  declared in this repository: ${existing_source}"
+    note "  this framework's source:     ${declared_source}"
+    note 'A marketplace name maps to exactly one source, so one of these is'
+    note 'wrong and only you know which. Silently replacing it would repoint'
+    note 'every plugin the other source serves. Nothing was written.'
+    exit 1
+  fi
+fi
+
+# `false` is an explicit decision by someone, and the same file may be shared
+# with a whole team. Running the installer is strong evidence of the opposite
+# intent - which is why this stops and says so rather than either ignoring the
+# request or flipping a committed decision without a word.
+#
+# Read with a plain index, NOT with `// empty`: jq's alternative operator treats
+# `false` as absent, so `.enabledPlugins[$id] // empty` returns nothing for the
+# one value this check exists to catch. An absent key reads as `null` here.
+plugin_state=$(printf '%s' "$current" | jq -c --arg id "$plugin_id" '.enabledPlugins[$id]')
+plugin_enabled=false
+
+if [ "$plugin_state" = 'false' ]; then
+  if [ "$enable_disabled" = false ]; then
+    fail "${plugin_id} is explicitly disabled in this project's settings."
+    note 'Someone set this to false deliberately, and this file is committed,'
+    note 'so the decision may belong to the whole team. Installing implies you'
+    note 'want the opposite. Re-run with --enable-disabled to flip it, which'
+    note 'reports the change explicitly. Nothing was written.'
+    exit 1
+  fi
+elif [ -n "$plugin_state" ] && [ "$plugin_state" != 'null' ]; then
+  plugin_enabled=true
+fi
+
+# ---------------------------------------------------------------------------
+# Merge — add only what is missing, and touch nothing else
+# ---------------------------------------------------------------------------
+#
+# An existing marketplace entry whose source already matches is left byte for
+# byte alone. Claude Code writes `autoUpdate`, `lastUpdated` and
+# `installLocation` into that entry itself; rewriting it would discard the
+# user's own auto-update choice on every install.
+
+merged=$(printf '%s' "$current" | jq \
+  --arg marketplace "$marketplace" \
+  --arg plugin_id "$plugin_id" \
+  --argjson entry "$(jq -c '.entry' "$declaration")" '
+  if (.extraKnownMarketplaces[$marketplace] | not)
+    then .extraKnownMarketplaces[$marketplace] = $entry
+    else .
+  end
+  | if (.enabledPlugins[$plugin_id] == null or .enabledPlugins[$plugin_id] == false)
+      then .enabledPlugins[$plugin_id] = true
+      else .
+    end
+')
+
+if [ -z "$merged" ]; then
+  fail 'the merge produced no output; nothing was written.'
+  exit 1
+fi
+
+# Semantic comparison, so a file that is already correct but formatted
+# differently is not rewritten. Formatting churn in a shared settings file is a
+# diff every collaborator has to read and nobody asked for.
+if [ "$(printf '%s' "$current" | jq -S -c '.')" = "$(printf '%s' "$merged" | jq -S -c '.')" ]; then
+  pass "Marketplace \"${marketplace}\" is declared."
+  pass "${plugin_id} is enabled for this project."
+  note 'Already correct. The file was not rewritten.'
+  exit 0
+fi
+
+if [ "$marketplace_declared" = true ]; then
+  pass "Marketplace \"${marketplace}\" is declared."
+else
+  todo "Declare marketplace \"${marketplace}\" -> $(printf '%s' "$declared_source" | jq -r '"\(.source):\(.repo)"')"
+fi
+
+if [ "$plugin_enabled" = true ]; then
+  pass "${plugin_id} is enabled for this project."
+elif [ "$plugin_state" = 'false' ]; then
+  todo "Re-enable ${plugin_id}, which this project had set to false."
+else
+  todo "Enable ${plugin_id} for this project."
+fi
+
+if [ "$check_only" = true ]; then
+  note 'Nothing was written (--check).'
+  exit 0
+fi
+
+if [ "$settings_exists" = false ]; then
+  mkdir -p "$settings_directory" || {
+    fail "could not create ${settings_directory}"
+    exit 1
+  }
+fi
+
+# Write through a temporary file in the same directory, so an interrupted write
+# cannot leave a partial settings file where a complete one used to be.
+temporary="${settings}.ef-install.$$"
+if ! printf '%s\n' "$merged" | jq --indent 2 '.' >"$temporary" 2>/dev/null; then
+  rm -f "$temporary"
+  fail 'could not render the merged settings; the original file is untouched.'
+  exit 1
+fi
+
+if ! mv -f "$temporary" "$settings"; then
+  rm -f "$temporary"
+  fail "could not write ${settings}; the original file is untouched."
+  exit 1
+fi
+
+if [ "$settings_exists" = true ]; then
+  note 'Wrote .claude/settings.json. Everything already in the file was kept.'
+else
+  note 'Created .claude/settings.json.'
+fi
+
+printf '\n'
+printf 'Commit this file. A collaborator who clones the repository and trusts\n'
+printf 'the folder gets the marketplace registered with no further prompt, then\n'
+printf 'runs one command themselves:\n\n'
+printf '  claude plugin install %s\n\n' "$plugin_id"
+printf 'That install is per developer and cannot be committed away.\n'
+
+exit 0

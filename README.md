@@ -28,7 +28,7 @@ setup problem:
 | | What it is | Where it lives | How it gets there |
 |---|---|---|---|
 | **The plugin** | The methodology: gates, agents, standards, charter | `~/.claude/` on **your machine** | You install it. `git pull` never brings it. |
-| **The repository contract** | `CLAUDE.md` and `.claude/engineering-framework.json` — what *your* system is | Committed in the **repository** | `git pull`. Someone ran `framework-install` once; nobody else has to. |
+| **The repository's declaration** | `.claude/settings.json` says this project uses the framework; `CLAUDE.md` says what *your* system is | Committed in the **repository** | `git pull`. Someone ran `framework-install` once; nobody else has to. |
 
 Now pick your row:
 
@@ -78,16 +78,13 @@ is committed, so no teammate ever repeats this step.
 /engineering-framework:framework-install
 ```
 
-It scaffolds the two things a plugin cannot ship, showing you every change
-before writing it and never overwriting existing content:
+It writes the two things a plugin cannot ship, showing you every change before
+writing it and never overwriting existing content:
 
 | File | Required? | What it does |
 |---|---|---|
-| `CLAUDE.md` | **Yes** | States what your system actually is — stack, canonical commands, consumers. Without it every agent infers your architecture, which is the failure this framework exists to prevent. |
-| `.claude/engineering-framework.json` | Optional | Names your canonical commands, so `gate-validate` runs them rather than guessing, and your high-risk paths, so `gate-review` raises the ceremony for a change that touches one. |
-
-**It writes no permission rules and never touches your `.claude/settings.json`.**
-See [What this framework does not do](#what-this-framework-does-not-do).
+| `.claude/settings.json` | **Yes** | Declares that this project uses the framework — the marketplace under `extraKnownMarketplaces`, the plugin under `enabledPlugins`. Merged in; everything already in the file is kept. |
+| `CLAUDE.md` | **Yes** | States what your system actually is — stack, canonical commands, high-risk paths, consumers. Without it every agent infers your architecture, which is the failure this framework exists to prevent. |
 
 Commit both files. Then verify:
 
@@ -95,28 +92,28 @@ Commit both files. Then verify:
 /engineering-framework:framework-doctor
 ```
 
-### Take one command off your team's setup
+### What the installer writes, and what it will not
 
-`framework-install` deliberately does not edit `.claude/settings.json`. If you
-want teammates to skip registering the marketplace by hand, add this to the
-repository's committed `.claude/settings.json` **yourself**:
+It merges **exactly two keys**. It never writes `permissions`, `hooks` or `env`;
+it ships no permission rules; and it writes nothing outside your repository — not
+your `~/.claude/settings.json`, not Claude Code's plugin state under
+`~/.claude/plugins/`. See
+[What this framework does not do](#what-this-framework-does-not-do).
 
-```jsonc
-// .claude/settings.json — committed
-{
-  "extraKnownMarketplaces": {
-    "jaylordibe": {
-      "source": { "source": "github", "repo": "jaylordibe/claude-engineering-framework" },
-      "autoUpdate": true
-    }
-  },
-  "enabledPlugins": { "engineering-framework@jaylordibe": true }
-}
-```
+A repository that already declares a *different* source under the same
+marketplace name, or that deliberately set this plugin to `false`, or whose
+settings file will not parse, stops the installer with a report. It resolves
+none of those for you — each is a decision, and two of them are decisions
+somebody committed on purpose.
 
-**This removes one of two setup commands, not both.** Once a teammate trusts the
-repository folder, Claude Code registers the marketplace without a prompt, so
-they never run `/plugin marketplace add`.
+Running it again changes nothing. A correct declaration is left alone, down to
+its formatting.
+
+### What your team gets from it
+
+**One setup command less, not zero.** Once a teammate trusts the repository
+folder, Claude Code registers the marketplace without a prompt, so they never
+run `/plugin marketplace add`.
 
 **They still install the plugin themselves.** From Claude Code v2.1.195, a
 plugin that only a project's `.claude/settings.json` enables, and that comes
@@ -124,7 +121,7 @@ from an external source such as a git repository, does not load until that
 person installs it — Claude Code reports it as not installed and prints the
 command. `enabledPlugins` makes the plugin *active for this repository* once
 installed; `extraKnownMarketplaces` makes the install resolvable. Neither
-performs the install.
+performs the install, and no configuration can make them.
 
 ```text
 before:  /plugin marketplace add jaylordibe/claude-engineering-framework
@@ -132,57 +129,56 @@ before:  /plugin marketplace add jaylordibe/claude-engineering-framework
 after:   /plugin install engineering-framework@jaylordibe
 ```
 
-**`autoUpdate` is a real trade, and it is worth a minute.** On, Claude Code
-refreshes the marketplace *and updates the installed plugin* in the background
-after a session starts — the new version loads on the next launch or after
-`/reload-plugins` — so a release arrives with nobody typing anything, and the
-framework's version bump becomes
-[the only thing standing](docs/versioning.md) between a changed standard and
-everyone on your team. Off, you adopt releases deliberately, at the cost of
-`/plugin marketplace update jaylordibe` **and** `/plugin update
-engineering-framework@jaylordibe` each time. Both are defensible; this file is
-committed, so whichever you pick applies to everyone who pulls.
-
-(Third-party marketplaces default to auto-update **off**, which is why the key
-is written explicitly above. Anthropic's official marketplace defaults to on —
-that is why plugins installed from it appear to keep themselves current with no
-configuration anywhere.)
-
 This pins the framework in a commit, which is reviewable, rather than in eleven
 developers' heads.
 
-Nothing in the plugin writes this block. `framework-install` names it and stops,
-for the same reason it ships no permission rules: settings belong to the
-repository and the person who owns it, and `autoUpdate` is a decision to accept
-unreviewed changes to this framework — which is not a decision this framework
-should be making in its own favour.
+### Auto-update is a per-user preference, and the installer will not set it
+
+On, Claude Code refreshes the marketplace *and updates the installed plugin* in
+the background after a session starts — the new version loads on the next launch
+or after `/reload-plugins` — so a release arrives with nobody typing anything,
+and the framework's version bump becomes
+[the only thing standing](docs/versioning.md) between a changed standard and
+everyone who has it on. Off, you adopt releases deliberately, at the cost of
+`/plugin marketplace update jaylordibe` **and** `/plugin update
+engineering-framework@jaylordibe` each time.
+
+Third-party marketplaces default to **off**. Turn it on per marketplace in
+`/plugin` → **Marketplaces** → **Enable auto-update**, or set it for an
+organisation in managed settings. (Anthropic's official marketplace defaults to
+on — that is why plugins installed from it appear to keep themselves current
+with no configuration anywhere.)
+
+**Nothing in the plugin writes it.** Accepting unreviewed changes to this
+framework is a risk acceptance, the charter names those as human-owned, and this
+framework making one in its own favour is not a close call.
 
 ---
 
 ## 3. Joining a repository someone else set up
 
-You pulled a repository that already contains `CLAUDE.md` and
-`.claude/engineering-framework.json`. **Do not run `framework-install`** — the
-repository contract is already there, in the commit you just pulled. Running it
-again only prints "already correct" and skips.
+You pulled a repository that already contains `.claude/settings.json` and
+`CLAUDE.md`. **Do not run `framework-install`** — the declaration is already
+there, in the commit you just pulled. Running it again only prints "already
+correct" and skips.
 
 What you actually need is the plugin on your machine:
 
-- **If the repository pins the marketplace** (both keys above, committed):
-  nothing. Open the repository, accept the trust prompt for the marketplace,
-  restart. Done.
+- **If the repository declares the marketplace** (the usual case, once someone
+  has run the installer): open the repository, accept the trust prompt for the
+  folder, and the marketplace registers itself with no further prompt. Then run
+  the one install command Claude Code shows you, and restart.
 - **If it does not**: run the two commands from
   [Install the plugin](#1-install-the-plugin) once.
 
-Then confirm the repository and your installed version agree:
+Then confirm everything is wired:
 
 ```text
 /engineering-framework:framework-doctor
 ```
 
-If your installed major version differs from the `frameworkVersion` declared in
-`.claude/engineering-framework.json`, the doctor **fails on purpose** and names
-both versions. That is the signal to update, not a broken repository.
+There is no version to reconcile. The repository records no framework version,
+so nothing here can disagree with what you have installed.
 
 ---
 
@@ -222,13 +218,14 @@ claude plugin update engineering-framework@jaylordibe
 - **Not a re-install.** `update` is the operation; `install` is for a machine
   that has never had it.
 - **Nothing from teammates who have not pulled yet.** The plugin version and the
-  repository contract are independent until `framework-doctor` compares them.
+  repository's declaration are wholly independent; the repository records no
+  framework version, so there is nothing to keep in step.
 
-### If a repository bumped `frameworkVersion` before you updated
+### On a major bump
 
-Read the [CHANGELOG](CHANGELOG.md) entry for that version first if the **major**
-number changed — a major bump means the workflow contract changed and may ask
-something of you. Minor and patch bumps never do.
+Read the [CHANGELOG](CHANGELOG.md) entry for that version first — a major bump
+means the workflow contract changed and may ask something of you, and the entry
+says exactly what. Minor and patch bumps never do.
 
 ---
 
@@ -236,8 +233,8 @@ something of you. Minor and patch bumps never do.
 
 | Command | How often | Required? |
 |---|---|---|
-| `/plugin marketplace add jaylordibe/claude-engineering-framework` | Once per machine | **Required**, unless the repository pins `extraKnownMarketplaces` |
-| `/plugin install engineering-framework@jaylordibe` | Once per machine | **Always required, per developer.** Pinning `enabledPlugins` does not install it — from Claude Code v2.1.195 a plugin enabled only by project settings, and sourced from a git repository, does not load until that person installs it |
+| `/plugin marketplace add jaylordibe/claude-engineering-framework` | Once per machine | **Required**, unless the repository declares `extraKnownMarketplaces` — which `framework-install` does for it |
+| `/plugin install engineering-framework@jaylordibe` | Once per machine | **Always required, per developer.** Declaring `enabledPlugins` does not install it — from Claude Code v2.1.195 a plugin enabled only by project settings, and sourced from a git repository, does not load until that person installs it |
 | `/engineering-framework:framework-install` | Once per repository, by one person | **Required** for the person introducing it. **Never** for anyone who pulls afterwards |
 | `/plugin marketplace update jaylordibe` | Per release | Required to receive a release, unless `autoUpdate` is set |
 | `/plugin update engineering-framework@jaylordibe` | Per release | Required to receive a release, unless `autoUpdate` is set — with it, Claude Code updates installed plugins in the background after a session starts, and the new version loads on the next launch or after `/reload-plugins` |
@@ -339,12 +336,11 @@ always-on context cost, and it gates nothing.
 
 ## What this framework does not do
 
-**It ships no permission rules, and it never edits your `.claude/settings.json`.**
+**It ships no permission rules.**
 
-Until 1.0.0 it did both: a 172-rule permissions floor merged into your
-settings, plus two hooks that inspected every Bash and Edit call. That was
-roughly a third of the code and half the test burden, and it was removed
-deliberately.
+Until 1.0.0 it did: a 172-rule permissions floor merged into your settings, plus
+two hooks that inspected every Bash and Edit call. That was roughly a third of
+the code and half the test burden, and it was removed deliberately.
 
 Two reasons. The first is that **a text parser cannot out-guess a shell** — a
 multi-lens review of the last attempt to extend it found two Critical and ten
@@ -356,6 +352,20 @@ The second matters more: **a plugin that rewrites your permission rules is
 confusing.** If you turn on a permission mode, you should get that mode — not
 one a plugin quietly changed underneath you. Permissions belong to the
 repository and the person who owns it.
+
+### The one thing it does write, and how narrow that is
+
+From 2.0.0, when *you* run `framework-install`, it merges two keys into your
+project's `.claude/settings.json`: `extraKnownMarketplaces` and
+`enabledPlugins`. That is the whole of it. It never writes `permissions`,
+`hooks` or `env`; never writes a file outside your repository; and never touches
+Claude Code's own plugin state.
+
+**Declaring a dependency and rewriting a permission posture are different
+acts.** The first is what `package.json` does. The second is what the pre-1.0.0
+floor did, and it is what stays banned. The line between them is asserted in
+CI — including that a run writes nothing into your home directory — rather than
+promised in this paragraph.
 
 The methodology is unchanged. The charter states which operations are
 human-owned, the gates stop and hand off rather than blocking, and the review
@@ -376,11 +386,14 @@ nothing in the framework reads it any more. Two things to do by hand:
 - **Keep or delete the `allow`, `ask` and `deny` rules as you see fit.** They are
   yours now. The framework has no opinion and no longer reads them.
 
-The `.claude/engineering-framework.json` keys `protectedCommands`,
-`protectedPaths`, `useDefaultCommandRules`, `useDefaultProtectedPaths` and the
-`policy` switches configured the removed guards and now do nothing;
-`framework-doctor` names them if they are still present. `commands` and `risk`
-are still read by the gates.
+### Upgrading from a version before 2.0.0
+
+`.claude/engineering-framework.json` is gone. Move `commands` into your
+`CLAUDE.md` canonical-commands table and `risk.highRiskPaths` into a
+`High-risk paths` section there, delete `frameworkVersion` outright, then delete
+the file. `framework-doctor` names a leftover; nothing reads, migrates or
+deletes one for you. The full upgrade note is the 2.0.0 entry in the
+[CHANGELOG](CHANGELOG.md).
 
 ---
 
@@ -399,8 +412,9 @@ Uniform ceremony is ceremony that gets skipped — and a skipped step reads
 exactly like a completed one. Refusing to write a plan for a copy fix is what
 keeps the plan meaningful for a schema change.
 
-The tier is raised automatically when a change touches a path listed in
-`risk.highRiskPaths`. That declaration shapes review; it blocks nothing.
+The tier is raised automatically when a change touches a path your `CLAUDE.md`
+lists under **High-risk paths**. That declaration shapes review; it blocks
+nothing.
 
 ### Adaptive rigor, fixed quality floor
 
@@ -445,12 +459,17 @@ framework people route around.
 
 ## What the repository has to provide
 
-Exactly one file is mandatory: **`CLAUDE.md`**, describing what your system is
-and how to verify it. Without it there is no statement of truth, and every
-agent is left inferring your stack — the failure this framework exists to
-prevent.
+Two files, both written by `framework-install` and both committed:
 
-Everything else is optional and has a working default. See the
+- **`CLAUDE.md`** — what your system is and how to verify it. Without it there
+  is no statement of truth, and every agent is left inferring your stack, which
+  is the failure this framework exists to prevent.
+- **`.claude/settings.json`** — the declaration that this project uses the
+  framework. Strictly optional in the sense that everything still works without
+  it; without it, every colleague registers the marketplace by hand.
+
+Nothing else. No `tasks/` directory, no plan files, no decision records, no
+framework version anywhere in your repository. See the
 [Consuming repository guide](docs/consuming-repository-guide.md).
 
 ---
@@ -481,10 +500,13 @@ works on mine.** The repository contract travels with `git pull`; the plugin
 does not. They need [the install](#1-install-the-plugin), not
 `framework-install`.
 
-**`framework-doctor` reports a major version mismatch.** Your installed plugin
-and the repository's declared `frameworkVersion` disagree on the major number.
-[Update](#4-updating-to-a-new-version), then read the
-[CHANGELOG](CHANGELOG.md) entry for that major.
+**`framework-doctor` says the repository does not declare the framework.** Nobody
+has run `framework-install` here, or the declaration was not committed. Run it,
+then commit `.claude/settings.json`.
+
+**`framework-doctor` names a leftover `.claude/engineering-framework.json`.**
+That file was removed in 2.0.0 and nothing reads it. See
+[Upgrading from a version before 2.0.0](#upgrading-from-a-version-before-200).
 
 **An update does not seem to have taken effect.** Restart. A plugin update does
 not apply to a running session, and hooks in particular keep using the previous

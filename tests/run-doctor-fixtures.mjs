@@ -27,19 +27,28 @@
 //
 // No dependencies. Run with `node tests/run-doctor-fixtures.mjs`.
 
-import { existsSync, mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const doctor = join(repositoryRoot, 'plugins', 'engineering-framework', 'bin', 'ef-doctor');
+const pluginRoot = join(repositoryRoot, 'plugins', 'engineering-framework');
+const doctor = join(pluginRoot, 'bin', 'ef-doctor');
+const declarationPath = join(pluginRoot, 'reference', 'marketplace-declaration.json');
 
 if (!existsSync(doctor)) {
   console.error(`FAIL  ef-doctor not found at ${doctor}`);
   process.exit(1);
 }
+
+// Read the identifiers rather than hardcoding them: a test that hardcodes the
+// marketplace name passes after a rename while every consuming repository is
+// pointed at a name that no longer exists.
+const DECLARATION = JSON.parse(readFileSync(declarationPath, 'utf8'));
+const MARKETPLACE = DECLARATION.marketplace;
+const PLUGIN_ID = `${DECLARATION.plugin}@${DECLARATION.marketplace}`;
 
 // From 1.0.0 ef-doctor audits the repository contract and nothing else: the
 // framework ships no permission rules and no hooks that gate a command, so
@@ -116,31 +125,72 @@ const CASES = [
 
   // ── Synthetic: the configurations that fail dangerously ─────────────────
   {
-    name: 'policy file is valid JSON of the wrong shape',
+    name: 'project settings are valid JSON of the wrong shape',
     build: {
       'CLAUDE.md': HEALTHY_CLAUDE_MD,
-      '.claude/engineering-framework.json': '["not", "an", "object"]',
+      '.claude/settings.json': '["not", "an", "object"]',
     },
     exit: 1,
-    mustReport: ['FAIL', 'not an object'],
+    mustReport: ['FAIL  .claude/settings.json is not a JSON object.'],
   },
   {
-    name: 'declared high-risk paths are reported back so they can be trusted',
+    name: 'a repository that declares the dependency is reported as declaring it',
     build: {
       'CLAUDE.md': HEALTHY_CLAUDE_MD,
-      '.claude/engineering-framework.json': { risk: { highRiskPaths: ['*/src/auth/*', '*/src/billing/*'] } },
+      '.claude/settings.json': {
+        extraKnownMarketplaces: { [MARKETPLACE]: DECLARATION.entry },
+        enabledPlugins: { [PLUGIN_ID]: true },
+      },
     },
     exit: 0,
-    mustReport: ['PASS  risk.highRiskPaths declares 2 path pattern(s).'],
+    mustReport: [
+      `PASS  Declares the ${MARKETPLACE} marketplace.`,
+      `PASS  Enables ${PLUGIN_ID} for this project.`,
+    ],
+    mustNotReport: ['FAIL'],
   },
   {
-    name: 'declared canonical commands are reported back',
+    // The declaration is optional, so this is a warning. What it must never be
+    // is silence: a repository nobody ever ran the installer in looks exactly
+    // like a configured one otherwise.
+    name: 'a repository with no declaration at all is warned, not failed',
+    build: { 'CLAUDE.md': HEALTHY_CLAUDE_MD },
+    exit: 0,
+    mustReport: ['WARN  This repository does not declare the engineering framework.'],
+    mustNotReport: ['FAIL'],
+  },
+  {
+    name: 'settings that declare nothing of ours leave the other keys alone in the report',
     build: {
       'CLAUDE.md': HEALTHY_CLAUDE_MD,
-      '.claude/engineering-framework.json': { commands: { test: 'make test', lint: 'make lint' } },
+      '.claude/settings.json': { permissions: { allow: ['Bash(npm test)'] } },
     },
     exit: 0,
-    mustReport: ['PASS  commands declares: lint, test'],
+    mustReport: [
+      `WARN  Does not declare the ${MARKETPLACE} marketplace.`,
+      `WARN  Does not enable ${PLUGIN_ID} for this project.`,
+    ],
+    mustNotReport: ['FAIL'],
+  },
+  {
+    // Removed in 2.0.0. A repository that still has one is declaring commands
+    // and risk paths that nothing reads, and nothing else would ever say so.
+    name: 'a leftover policy file from before 2.0.0 is named, not parsed',
+    build: {
+      'CLAUDE.md': HEALTHY_CLAUDE_MD,
+      '.claude/engineering-framework.json': { commands: { test: 'make test' } },
+    },
+    exit: 0,
+    mustReport: ['WARN  .claude/engineering-framework.json is no longer read by anything.'],
+    mustNotReport: ['FAIL'],
+  },
+  {
+    name: 'declared high-risk paths in CLAUDE.md are reported back so they can be trusted',
+    build: {
+      'CLAUDE.md': `${HEALTHY_CLAUDE_MD}\n## High-risk paths\n\n| Path | Why |\n|---|---|\n| \`src/auth/*\` | Authentication |\n`,
+    },
+    exit: 0,
+    mustReport: ['PASS  CLAUDE.md declares high-risk paths.'],
   },
   {
     name: 'an unfilled template placeholder in a non-Consumers section',
@@ -163,7 +213,11 @@ const CASES = [
     name: 'a healthy repository reports no failures at all',
     build: {
       'CLAUDE.md': HEALTHY_CLAUDE_MD,
-      '.claude/engineering-framework.json': { commands: { test: 'make test' } },
+      '.claude/settings.json': {
+        permissions: { allow: ['Bash(make test)'] },
+        extraKnownMarketplaces: { [MARKETPLACE]: DECLARATION.entry },
+        enabledPlugins: { [PLUGIN_ID]: true },
+      },
     },
     exit: 0,
     mustNotReport: ['FAIL'],

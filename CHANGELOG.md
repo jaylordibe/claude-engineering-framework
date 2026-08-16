@@ -12,6 +12,88 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 2.0.0 — 2026-08-16
+
+**A repository now declares that it uses this framework, the way it declares any
+other dependency, and Claude Code owns everything after that.** The framework
+stopped keeping its own copy of state the host application already owns.
+
+### Upgrade note — what a consuming repository must do
+
+Two things, both manual and both small. Nothing migrates automatically, on
+purpose: a migration subsystem for a file this size costs more than the move.
+
+1. **Move anything still worth keeping out of
+   `.claude/engineering-framework.json`, then delete the file.** It is no longer
+   read by anything. `framework-doctor` names it if it is still there.
+   - `commands` → the **Canonical commands** table in your `CLAUDE.md`, if it is
+     not already there. The validation gate reads that table now.
+   - `risk.highRiskPaths` → a **High-risk paths** section in your `CLAUDE.md`.
+     The design and review gates read that section now. It is still advisory: it
+     raises the risk tier and widens the review panel, and it blocks nothing.
+   - `frameworkVersion` → **nothing.** Delete it. Consuming repositories no
+     longer record a framework version anywhere, and nothing compares one.
+2. **Run `/engineering-framework:framework-install` once** to add the dependency
+   declaration to `.claude/settings.json`, then commit it. Skip this if you
+   already added `extraKnownMarketplaces` and `enabledPlugins` by hand — the
+   installer detects a correct declaration and rewrites nothing.
+
+If you do neither, the framework keeps working: every gate falls back to reading
+your `CLAUDE.md`, the manifest and CI, exactly as it did before when no policy
+file was present.
+
+### Changed workflow
+
+- **`framework-install` now configures `.claude/settings.json` for you.** It
+  merges exactly two keys — `extraKnownMarketplaces` and `enabledPlugins` — so a
+  colleague who clones the repository does not reconstruct the configuration
+  from a README. Previously it named the block and told you to paste it.
+  **It still writes no permission rules**, and it never writes `permissions`,
+  `hooks` or `env`. The 1.0.0 line was that a plugin must not rewrite the
+  permission posture a developer chose; declaring a dependency is a different
+  act, and `tests/validate-install-settings.mjs` asserts the difference rather
+  than promising it.
+- **The merge refuses rather than guesses.** Unparseable settings are reported
+  and left byte for byte alone; a marketplace name already pointing at a
+  different source is a conflict you resolve, not one it resolves for you; a
+  plugin someone explicitly set to `false` needs `--enable-disabled` before it
+  is flipped. Nothing is written in any of those cases.
+- **Running it twice changes nothing the second time.** A correct declaration is
+  left alone, including its formatting, and including an `autoUpdate` value you
+  set yourself.
+- **`.claude/engineering-framework.json` is removed from the architecture**, and
+  with it `reference/repo-config.schema.json` and the example config. See the
+  upgrade note. `ef-doctor` reports a leftover file; it never reads, migrates or
+  deletes one.
+- **Consuming repositories carry no framework version.** `frameworkVersion` and
+  the major-version-gap check that compared it against the installed plugin are
+  both gone. That check existed to make an upgrade note get read, and it cost a
+  number in every repository that went stale in silence. Read this file on a
+  major bump instead.
+
+### Changed for the framework itself
+
+- `bin/ef-install-settings` — the deterministic, idempotent settings merge, with
+  17 asserted repository shapes including "writes nothing into `$HOME`".
+- `reference/marketplace-declaration.json` — the identifiers the installer
+  writes, pinned in CI against `marketplace.json` and `plugin.json` so a rename
+  cannot point installing repositories at a marketplace that does not exist. It
+  deliberately carries no `autoUpdate`, and CI fails if one is added.
+
+### Unchanged, and worth saying
+
+- **Nothing global is written.** Not `~/.claude/settings.json`, not
+  `~/.claude/plugins/known_marketplaces.json`, not the plugin cache.
+- **Auto-update stays where Claude Code puts it** — a per-user toggle in
+  `/plugin` (third-party marketplaces default to off), or an administrator key
+  in managed settings. The installer will not write it, because accepting
+  unreviewed changes to this framework is not a decision this framework should
+  make in its own favour.
+- **A colleague who clones still runs one command.** As of Claude Code
+  v2.1.195, a plugin that only project settings enable, and that comes from an
+  external source, does not load until that person installs it. The declaration
+  takes team setup from two commands to one, not to zero.
+
 ## 1.1.0 — 2026-08-15
 
 **Risk now decides how much investigation a change gets, not only how much

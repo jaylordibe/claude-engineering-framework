@@ -47,37 +47,47 @@ Either way, then work:
 | Artefact | Required | What it buys you |
 |---|---|---|
 | `CLAUDE.md` | **Yes** | Everything. Without it, every agent infers your stack. |
-| `.claude/engineering-framework.json` | Optional | Canonical commands the validation gate runs, and high-risk paths that raise the review tier |
+| A canonical-commands table in `CLAUDE.md` | Recommended | The validation gate runs your commands rather than inferring them |
+| A `High-risk paths` section in `CLAUDE.md` | Optional | Changes touching those paths get the higher review tier and a deeper map |
 | A `Consumers` table in `CLAUDE.md` | Recommended | Contract changes that name who breaks |
+| `.claude/settings.json` | Recommended | Declares the marketplace and enables the plugin, so colleagues do not configure it by hand. Written by `framework-install` |
 | `.claude/skills/` playbooks | Optional | Where your stack-specific knowledge lives |
 
 Nothing else. No `tasks/` directory, no plan files, no decision-record
-directory, no mandated test framework or language.
+directory, no mandated test framework or language, and **no framework version
+anywhere in your repository** — Claude Code owns the installed version.
 
-**And nothing in `.claude/settings.json`.** From 1.0.0 the framework ships no
-permission rules and never edits your settings — permissions belong to you.
-Earlier versions installed a permissions floor; if you have one, it is still
-there because a merge only ever adds, and nothing here reads it any more. See
-the 1.0.0 entry in `CHANGELOG.md` for what is worth deleting.
+**The framework still ships no permission rules.** `framework-install` merges
+`extraKnownMarketplaces` and `enabledPlugins` into `.claude/settings.json` and
+nothing else; it never writes `permissions`, `hooks` or `env`, and never writes
+outside your repository. Versions before 1.0.0 installed a permissions floor; if
+you have one, it is still there because a merge only ever adds, and nothing here
+reads it any more. See the 1.0.0 entry in `CHANGELOG.md` for what is worth
+deleting.
 
-### Taking one command off your team's setup
+### What the declaration looks like
 
-`framework-install` will not write this, because settings are yours. If you want
-colleagues to skip registering the marketplace by hand, add it yourself and
-commit it:
+`framework-install` writes this for you. It is shown here so you can review what
+lands in the commit:
 
 ```jsonc
 // .claude/settings.json — committed
 {
   "extraKnownMarketplaces": {
     "jaylordibe": {
-      "source": { "source": "github", "repo": "jaylordibe/claude-engineering-framework" },
-      "autoUpdate": true
+      "source": { "source": "github", "repo": "jaylordibe/claude-engineering-framework" }
     }
   },
   "enabledPlugins": { "engineering-framework@jaylordibe": true }
 }
 ```
+
+Anything already in the file is preserved — permissions, hooks, environment,
+other marketplaces, other plugins. The installer refuses to write at all if the
+file will not parse, if the marketplace name already points somewhere else, or
+if someone deliberately set this plugin to `false`.
+
+Note the absence of `autoUpdate`. The installer will not write it; see below.
 
 **This removes one of two setup commands, not both.** Once a colleague trusts
 the repository folder, Claude Code registers the marketplace without a further
@@ -92,13 +102,20 @@ once installed; `extraKnownMarketplaces` makes that install resolvable. Neither
 performs the install, so onboarding goes from two commands to one rather than to
 none.
 
+### Auto-update, and why the installer leaves it to you
+
 `autoUpdate` refreshes the marketplace catalogue **and updates the installed
 plugin on disk**, in the background after a session starts, so a released
 version arrives without anyone running an update command. That is a real trade:
-it makes
-**the framework's version bump the only thing standing between a changed
-standard and everyone on your team.** Leave it off if you would rather adopt
-releases deliberately.
+it makes **the framework's version bump the only thing standing between a
+changed standard and everyone who has it on.**
+
+Claude Code treats it as a per-user preference: toggle it per marketplace in
+`/plugin` → **Marketplaces**, where third-party marketplaces default to **off**,
+or set it for a whole organisation in managed settings. `framework-install` will
+not write it, in either direction — accepting unreviewed changes to this
+framework is a risk acceptance the charter names as human-owned, and one the
+framework should least of all be making in its own favour.
 
 ---
 
@@ -171,29 +188,31 @@ later reader, and `ef-doctor` fails while the placeholder is still there.
 
 ---
 
-## 2. Repository policy (optional)
+## 2. High-risk paths (optional, and in `CLAUDE.md`)
 
-`.claude/engineering-framework.json`, validated against
-`${CLAUDE_PLUGIN_ROOT}/reference/repo-config.schema.json`.
+A section in your `CLAUDE.md`, not a separate file:
 
-```jsonc
-{
-  "frameworkVersion": "1.0.0",
+```markdown
+## High-risk paths
 
-  "commands": {
-    "build": "make build",
-    "lint": "make lint",
-    "test": "make test"
-  },
-
-  "risk": {
-    "highRiskPaths": ["*/src/pricing/*", "*/src/auth/*"]
-  }
-}
+| Path pattern | Why a change here is High risk |
+|---|---|
+| `src/auth/*` | Session issuance; a mistake here is silent until it is exploited |
+| `src/pricing/*` | Money, and no staging environment that reproduces real plans |
 ```
 
-**Keep it short.** An absent key and a key set to its default behave
-identically, and the shorter file is the one people keep accurate.
+A change touching one of these is classified **at least High** whatever the diff
+looks like — a full plan, a threat model, negative tests, a wider review panel,
+and a deeper repository map before any of it. It is advisory guidance to an
+agent: it shapes ceremony, and it blocks no edit and stops no command.
+
+**Keep it short, or delete it.** A list naming half the repository raises the
+tier for everything, which is the same as raising it for nothing. Most
+repositories are classified correctly from the diff alone.
+
+Add a paragraph after the table for anything that makes the system risky in a
+way a reader could not infer from the code — a shared store whose isolation
+lives in query builders, a migration tool that keys by filename.
 
 ## 3. Repository-specific playbooks (optional)
 
@@ -247,14 +266,15 @@ bumped. If the bump is **major**, read that entry in `CHANGELOG.md` before
 updating — a major bump is defined as one where a consuming repository may have
 to act. Minor and patch bumps never ask anything of you.
 
-`frameworkVersion` in your policy file records which version this repository was
-written against. `framework-doctor` compares it with what is installed and fails
-on a **major** gap, so the upgrade note gets read rather than discovered.
+**Your repository records no framework version.** There is nothing to keep in
+sync, and nothing that can go stale. Claude Code owns the installed version, the
+cache and the update lifecycle; on a major bump, the CHANGELOG entry says
+exactly what to do.
 
 ## When to run `framework-doctor`
 
 - after `framework-install`;
-- after any change to `CLAUDE.md` or the policy file;
+- after any change to `CLAUDE.md`, especially its commands or high-risk paths;
 - after a framework major version bump;
 - when a review says something about your architecture that surprises you —
   the doctor verifies documentation claims against source, and a stale

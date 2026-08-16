@@ -1,13 +1,13 @@
 ---
 name: framework-install
-description: Sets up the repository side of the engineering framework contract — a repository policy file declaring canonical commands and high-risk paths, and a CLAUDE.md scaffold — showing every change before writing it and never overwriting existing content. Writes no permission rules.
-argument-hint: "[policy | claude-md | all]"
+description: Configures the current repository to use the engineering framework — declares the marketplace and enables the plugin in the project's own .claude/settings.json, and scaffolds the CLAUDE.md that states what this system is. Preserves every existing setting, writes no permission rules, and touches nothing global.
+argument-hint: "[settings | claude-md | all]"
 disable-model-invocation: true
 model: inherit
 effort: medium
 ---
 
-# Install the repository contract
+# Configure this repository to use the framework
 
 Scope requested:
 
@@ -17,41 +17,49 @@ $ARGUMENTS
 
 Empty argument means `all`.
 
-## Why this skill exists
+## What this skill is for
 
-The framework ships methodology. Two things it **cannot** ship, and this skill
-puts them in the repository:
+Running it means one thing: **configure THIS repository to use the engineering
+framework.** It is the `npm install` of this framework — the project gains a
+declaration that it depends on the framework, and nothing else.
 
-1. **Repository policy.** What this repository's canonical commands are, so the
-   validation gate runs them rather than inferring, and which paths are
-   high-risk, so the design and review gates raise the ceremony for a change
-   touching one.
-2. **Repository truth.** `CLAUDE.md` — what this system actually is. The
-   framework cannot write this for you, only scaffold it.
+Two things go in the repository, and both are committed:
 
-## What this skill will not do
+1. **The dependency declaration.** `.claude/settings.json` gains the framework's
+   marketplace and enables the plugin for this project, so a colleague who
+   clones the repository does not reconstruct that configuration from a README.
+2. **Repository truth.** `CLAUDE.md` — what this system actually is, how it is
+   verified, and which of its paths deserve more ceremony. The framework cannot
+   write this for you, only scaffold it.
 
-**It writes no permission rules, and it never edits `.claude/settings.json`.**
+## What this skill does not do
 
-Until 1.0.0 it installed a permissions floor and the plugin shipped hooks that
-gated commands. Both are gone. Permissions belong to the repository and the
-person who owns it: someone who turns on a permission mode is entitled to get
-that mode, not a mode a plugin quietly rewrote underneath them. A framework
-that edits a developer's own rules to enforce its methodology has confused
-advice with authority.
+**It writes no permission rules.** It merges exactly two keys —
+`extraKnownMarketplaces` and `enabledPlugins` — and never `permissions`, never
+`hooks`, never `env`. The 1.0.0 line holds: a developer who turns on a
+permission mode is entitled to get that mode, not one a plugin rewrote
+underneath them. Declaring a dependency and rewriting someone's permission
+posture are different acts, and `bin/ef-install-settings` is written so the
+difference is mechanical rather than promised.
 
-The methodology is unchanged and is carried where it belongs — the session
-charter states the human-owned operations, and the gates enforce them by
-stopping and handing off. If this repository wants an operation blocked rather
-than merely reserved, that is a rule its owner adds to their own settings, and
-this skill will explain which rule without writing it.
+**It writes nothing global and nothing of Claude Code's.** Not
+`~/.claude/settings.json`, not `~/.claude/plugins/known_marketplaces.json`, not
+the plugin cache. Trust, installation, the installed version, the cache and the
+update lifecycle belong to Claude Code. A repository declares a dependency; it
+does not manage the host application's state.
+
+**It creates no version file and no install marker.** The consuming repository
+records nowhere which framework version it was set up against. Claude Code owns
+the installed version; a second copy in the repository is a second thing to
+forget, and it goes stale silently.
 
 ## Rules for this skill
 
-- **Show every change before making it.** Print the diff or the file, then ask.
-- **Never overwrite existing content.** Merge into it, or write a `.new` file
-  beside it and tell the user to merge. A settings file may contain rules the
-  user depends on.
+- **Show every change before making it.** The settings merge has a `--check`
+  mode; use it, show the result, then apply.
+- **Never overwrite existing content.** For settings this is enforced by the
+  script. For `CLAUDE.md`, merge into it or write a `.new` file beside it and
+  say so.
 - **Never write a secret**, and never write anything into `.env` or a
   credential file.
 - **Do not commit.** The user owns the commit, as always.
@@ -61,102 +69,90 @@ this skill will explain which rule without writing it.
 
 ## 1. Survey first
 
-Run `ef-doctor` and read its output. It is on `PATH` while the plugin is
-enabled.
-
 ```bash
 ef-doctor
 ```
 
-Report what already exists before proposing anything. An install that
-overwrites a working configuration is worse than no install.
+It is on `PATH` while the plugin is enabled. Report what already exists before
+proposing anything. An install that overwrites a working configuration is worse
+than no install.
 
-## 2. Repository policy
+## 2. The dependency declaration
 
-Read `${CLAUDE_PLUGIN_ROOT}/reference/repo-config.schema.json` and
-`${CLAUDE_PLUGIN_ROOT}/reference/engineering-framework.example.json`.
+Show what would change, then apply it:
 
-If `.claude/engineering-framework.json` does not exist, propose a **minimal**
-one — not the full example. Include only:
+```bash
+ef-install-settings --check
+ef-install-settings
+```
 
-- `frameworkVersion`, set to the installed plugin version;
-- `commands`, **discovered from this repository** (its manifest scripts, its CI
-  workflow, its `CLAUDE.md`). Omit any key whose command you could not
-  establish. Do not guess a command.
+The script merges structurally: it adds only what is missing, leaves an
+existing correct declaration byte for byte alone, and rewrites nothing when the
+configuration is already right. Report its output rather than paraphrasing it.
 
-Leave `policy` out entirely when the defaults are right — an absent key and a
-key set to its default behave identically, and the shorter file is the one
-people keep accurate.
+It stops without writing in four cases, and each one is a decision for the
+user, not for you:
 
-Add `protectedPaths` entries only for paths this repository has a real reason
-to protect, each with a reason that names the precondition rather than
-restating that the path is protected.
+| It reports | What it means | What you do |
+|---|---|---|
+| not valid JSON | The file cannot be parsed, so a merge would have to guess | Show the parse error. Ask the user to repair it. **Never rewrite the file to complete the install** — it may hold permission rules and hooks this repository depends on |
+| is not an object | Valid JSON of a shape Claude Code cannot read as settings | Report it. The repository's settings are already inert; that is the finding |
+| declared with a different source | This marketplace name already points somewhere else | Report both sources. Replacing it would repoint every plugin the other source serves. The user decides |
+| explicitly disabled | Someone set this plugin to `false` deliberately, in a committed file | Say so, say the decision may be the whole team's, and ask before re-running with `--enable-disabled` |
+
+Do not work around any of these. Do not edit `.claude/settings.json` by hand to
+get past one — a merge the script refused is a merge that needed a human.
+
+**Then say plainly what a colleague still has to do**, because it is one
+command and pretending otherwise is the failure mode this section exists to
+prevent: once they trust the repository folder, the marketplace registers
+itself, and **they still install the plugin on their own machine.** Project
+settings enable a plugin; they never install one.
+
+**Say nothing about `autoUpdate`, and do not write it.** Whether to accept
+unreviewed changes to this framework is the user's call, made in `/plugin` or
+by an administrator in managed settings — and it is not a call this framework
+should be making in its own favour.
 
 ## 3. CLAUDE.md
 
 If `CLAUDE.md` exists, do not touch it. Instead, report which sections of the
-contract it is missing — Project, canonical commands, architecture,
-cross-cutting conventions, non-obvious invariants, consumers — and offer to
-draft the missing ones **from repository evidence** for the user to review.
+contract it is missing — Project, canonical commands, high-risk paths,
+architecture, cross-cutting conventions, non-obvious invariants, consumers —
+and offer to draft the missing ones **from repository evidence** for the user
+to review.
 
 If it does not exist, copy `${CLAUDE_PLUGIN_ROOT}/reference/CLAUDE.md.template`
 and then fill in what you can establish from evidence, marking anything you
 could not establish as a question for the user rather than inventing it.
 
+Two sections are the ones the gates read directly, so spend the effort there:
+
+- **Canonical commands** — discovered from this repository's manifest scripts,
+  its CI workflow, its existing documentation. The validation gate runs these
+  before it infers anything. **Omit a row whose command you could not
+  establish.** Do not guess a command: one that happens to exit zero reads as a
+  pass and is worse than no evidence.
+- **High-risk paths** — optional, and only for paths this repository has a real
+  reason to treat as High risk, each with the reason. Delete the section if the
+  diff alone classifies changes correctly. A list naming half the repository
+  raises the tier for everything, which is the same as raising it for nothing.
+
 **Never invent a fact about the repository to fill a template section.** An
 unfilled section is honest; a wrong one is load-bearing misinformation that
 every later agent will trust.
 
-## 4. Name the marketplace pin — do not write it
-
-A repository can commit two `.claude/settings.json` keys —
-`extraKnownMarketplaces` and `enabledPlugins` — so a colleague who clones it
-skips registering the marketplace by hand. It is genuinely useful, and it is
-**not yours to add.**
-
-Say what it does and does not do, because the difference is easy to oversell:
-once they trust the folder the marketplace registers itself, but **they still
-run the install command**. A plugin enabled only by a project's settings, and
-sourced from a git repository, does not load until that person installs it —
-Claude Code reports it as not installed and prints the command. Two setup
-commands become one, not none.
-
-Read the file if it exists. If both keys are already there, say so in one line
-and move on.
-
-If they are not, tell the user the option exists, point them at
-`${CLAUDE_PLUGIN_ROOT}/README.md` for the exact block, and state the one
-decision it contains: `autoUpdate` on means a framework release reaches everyone
-who pulls without anyone running an update command, and off means they adopt
-releases deliberately at the cost of one update command each time. Say that the
-file is committed, so whichever they pick applies to the whole team.
-
-**Then stop.** Do not write it, do not offer to write it, and do not write it if
-asked to during this skill — direct them to the block and let them paste it.
-
-Three reasons, and the third is the one that decides it:
-
-- Settings belong to the repository and its owner. A project settings file
-  outranks each developer's own, which is exactly how the pre-1.0.0 permissions
-  floor came to cancel the permission mode people had chosen.
-- **A merge only ever adds.** Nothing here can withdraw a marketplace entry
-  later, and a marketplace name cannot be renamed the way a plugin can. A
-  pointer written today outlives any ability of ours to correct it.
-- `autoUpdate` is a decision to accept unreviewed changes to this framework, and
-  **this framework is the thing proposing it.** Accepting operational risk on
-  the human's behalf is human-owned; doing it in our own favour is not a close
-  call.
-
-## 5. Verify and hand off
+## 4. Verify and hand off
 
 Re-run `ef-doctor` and show the result.
 
 Then state plainly:
 
-- what changed on disk;
+- what changed on disk, naming `.claude/settings.json` explicitly;
+- that nothing outside this repository was touched;
 - what remains for the user to fill in, in priority order;
-- that nothing was committed;
-- the one-line summary of what is now enforced and what is only advisory.
+- that nothing was committed, and that both files are meant to be;
+- the one command each colleague still runs on their own machine.
 
 Suggested next step: run `/engineering-framework:framework-doctor` after
 filling in `CLAUDE.md`, then start real work with
