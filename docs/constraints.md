@@ -491,11 +491,12 @@ for other developers is nowhere *described*, even though it demonstrably works.
 **How the design resolves it.** `ef-install-settings` writes
 `"autoUpdate": true` on a new entry, deliberately, because of what 2.0.0
 removed: a consuming repository records **no framework version**, so nothing in
-it ever asks to be updated. Without the key a team installs once and runs on that
-version indefinitely, and this framework's failures are the silent kind — a
-corrected standard would simply never arrive, and neither side could tell.
-Weighed against a preference that leaks one marketplace's update behaviour onto a
-machine, the silent-staleness risk is the larger one.
+it ever asks to be updated. Without the key a team installs once and stays on
+that version until someone deliberately updates the plugin — always possible,
+but never prompted — and this framework's failures are the silent kind, so
+neither side can tell how far behind the installed copy is. Weighed against a
+preference that leaks one marketplace's update behaviour onto a machine, the
+silent-staleness risk is the larger one.
 
 What keeps it honest: `--no-auto-update` opts out; an entry that already states
 `autoUpdate` either way is never rewritten, because that is somebody's decision;
