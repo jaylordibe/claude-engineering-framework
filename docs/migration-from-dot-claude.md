@@ -39,11 +39,16 @@ mis-sorted in both directions.
 
 Those two `/plugin` commands are a **per-machine** step, and every colleague who
 works in this repository will need them too — the plugin is not something
-`git pull` can deliver. Once installed, later releases arrive via
-`/plugin update engineering-framework@jaylordibe`; see the
+`git pull` can deliver. Once installed, later releases arrive on their own: `framework-install` writes
+`"autoUpdate": true` on the marketplace entry, so Claude Code refreshes and
+updates the installed plugin in the background after a session starts. See the
 [consuming repository guide](consuming-repository-guide.md#updating-the-framework).
-If you want colleagues to skip the manual install entirely, pin the marketplace
-in your committed settings — that guide shows the two keys required.
+
+**Colleagues still run the install once on their own machine.** The committed
+declaration registers the marketplace for them, so they skip
+`/plugin marketplace add` — but a plugin enabled only by project settings, from
+an external source, does not load until that person installs it. Two commands
+become one, not none.
 
 The doctor reports your existing `.claude/agents/`, `.claude/standards/` and
 `.claude/templates/` as leftovers. Do not act on that yet — read it as an

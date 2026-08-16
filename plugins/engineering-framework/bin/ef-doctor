@@ -198,6 +198,27 @@ if command -v jq >/dev/null 2>&1 && [ -r "$declaration" ]; then
     else
       warn "Does not enable ${plugin_identifier} for this project."
     fi
+
+    # A declaration with no auto-update is the quiet failure: everything reads
+    # as configured, and the repository never receives a corrected standard,
+    # because nothing here records a framework version that could look stale.
+    case "$(jq -r --arg name "$marketplace_name" \
+      '.extraKnownMarketplaces[$name].autoUpdate' "$project_settings")" in
+      true) pass 'Auto-update is on, so releases arrive without an update command.' ;;
+      false)
+        pass 'Auto-update is off, as this project set it.'
+        note 'Releases are adopted here with /plugin marketplace update, then'
+        note '/plugin update. Nothing reports when a new one exists.'
+        ;;
+      *)
+        warn 'The marketplace entry does not state autoUpdate.'
+        note 'Third-party marketplaces default to off, so this repository will'
+        note 'not receive a corrected standard until someone runs both update'
+        note 'commands by hand — and nothing records a framework version here'
+        note 'that could look stale. Re-run framework-install to set it, or'
+        note 'set it deliberately to false.'
+        ;;
+    esac
   fi
 fi
 

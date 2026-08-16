@@ -27,12 +27,20 @@ Commit what `framework-install` writes. That is the last time anyone in this
 repository runs it.
 
 **Joining a repository a colleague already set up** — you need the plugin only.
-The two `/plugin` commands above, then restart. **Do not run
-`framework-install`**: the contract is already in the commit you pulled, and
-re-running it only reports that everything is already correct. If the repository
-pins the marketplace (see [Making it one step for your
-team](#making-it-one-step-for-your-team)), even those two commands are
-unnecessary — accept the trust prompt and restart.
+**Do not run `framework-install`**: the declaration is already in the commit you
+pulled, and re-running it only reports that everything is already correct.
+
+Because the repository declares the marketplace (see [what the declaration looks
+like](#what-the-declaration-looks-like)), trusting the folder registers it with
+no further prompt, so you skip `/plugin marketplace add`. **You still run the
+install yourself:**
+
+```text
+/plugin install engineering-framework@jaylordibe
+```
+
+Two commands become one, not none — a project declaration enables a plugin, it
+never installs one.
 
 Either way, then work:
 
@@ -83,13 +91,14 @@ lands in the commit:
 }
 ```
 
+That is the whole declaration: **which marketplace, that the plugin is enabled
+here, and that releases arrive on their own.** No framework version — that is
+Claude Code's to track, not yours.
+
 Anything already in the file is preserved — permissions, hooks, environment,
 other marketplaces, other plugins. The installer refuses to write at all if the
 file will not parse, if the marketplace name already points somewhere else, or
 if someone deliberately set this plugin to `false`.
-
-`autoUpdate` is on by default. Read the section below before committing it — it
-is the one line here with a consequence for the whole team.
 
 **This removes one of two setup commands, not both.** Once a colleague trusts
 the repository folder, Claude Code registers the marketplace without a further
@@ -104,31 +113,31 @@ once installed; `extraKnownMarketplaces` makes that install resolvable. Neither
 performs the install, so onboarding goes from two commands to one rather than to
 none.
 
-### Auto-update: on by default, and worth one minute of your attention
+### Auto-update: on, so nobody on your team chases plugin updates
 
 `autoUpdate` refreshes the marketplace catalogue **and updates the installed
 plugin on disk**, in the background after a session starts, so a released
-version arrives without anyone running an update command. The installer turns it
-on.
+version arrives without anyone running an update command. Third-party
+marketplaces default to **off**, which is why the installer writes the key
+explicitly.
 
-Two things that follow, and both are worth deciding rather than inheriting:
+It is on by default for a specific reason: your repository records **no
+framework version**, so nothing in it would ever ask to be updated. Without the
+key, your team installs once and runs on that version indefinitely — and a
+corrected standard would never arrive, silently.
 
-- **The framework's version bump becomes the only thing standing between a
-  changed standard and this repository.** You receive corrections quickly; you
-  also receive changes nobody here reviewed.
-- **It applies to your whole team.** Project settings outrank user settings, and
-  a same-name `extraKnownMarketplaces` entry replaces an earlier file's entry
-  *whole* — so this committed value overrides a colleague's own auto-update
-  toggle for this marketplace while they work in this repository.
+The trade, so you can decide it rather than inherit it: the framework's version
+bump becomes the only thing between a changed standard and this repository, and
+Claude Code keeps marketplace state per user, so the value reaches each machine
+that opens the repository. See [constraints C20](constraints.md).
 
-To adopt releases deliberately instead, run the installer with
+**To adopt releases deliberately instead**, run the installer with
 `--no-auto-update`, or set `"autoUpdate": false` on the entry. The cost is
 `/plugin marketplace update jaylordibe` **and**
 `/plugin update engineering-framework@jaylordibe` per release.
 
 **Whatever you decide stays decided.** An entry that states `autoUpdate` either
-way is never rewritten by a later install; the installer only fills in an entry
-that has no opinion.
+way is never rewritten by a later install.
 
 ---
 
@@ -264,8 +273,8 @@ in your working tree and nothing committed. Both are the design.
 Then restart — an update does not apply to a running session, and hooks in
 particular keep using the previous version's path until `/reload-plugins`.
 
-With `autoUpdate` set on the marketplace entry, **both commands are done for
-you**: Claude Code refreshes the catalogue and updates the installed plugin in
+With `autoUpdate` on the marketplace entry, which is what the installer writes,
+**both commands are done for you**: Claude Code refreshes the catalogue and updates the installed plugin in
 the background after a session starts, up to about ten minutes in. The new
 version loads on your next launch, or after `/reload-plugins`. So the only thing
 left is the restart.

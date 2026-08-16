@@ -15,7 +15,8 @@ Scope requested:
 $ARGUMENTS
 ```
 
-Empty argument means `all`.
+Empty argument means `all`. `settings` runs §1–2 and §4; `claude-md` runs §1,
+§3 and §4.
 
 ## What this skill is for
 
@@ -34,7 +35,7 @@ Two things go in the repository, and both are committed:
 
 ## What this skill does not do
 
-**It writes no permission rules.** It merges exactly two keys —
+**It writes no permission rules.** It merges exactly two top-level keys —
 `extraKnownMarketplaces` and `enabledPlugins` — and never `permissions`, never
 `hooks`, never `env`. The 1.0.0 line holds: a developer who turns on a
 permission mode is entitled to get that mode, not one a plugin rewrote
@@ -109,20 +110,21 @@ prevent: once they trust the repository folder, the marketplace registers
 itself, and **they still install the plugin on their own machine.** Project
 settings enable a plugin; they never install one.
 
-**Say what `autoUpdate` commits them to, because the installer turns it on.** A
-new marketplace entry is written with `"autoUpdate": true`, so releases of this
-framework arrive without anyone running an update command. State both
-consequences plainly rather than only the convenience:
+**Say what auto-update buys and what it costs, because the installer turns it
+on.** A new marketplace entry is written with `"autoUpdate": true`, so releases
+of this framework arrive without anyone running an update command. Give both
+halves rather than only the convenience:
 
-- the framework's version bump becomes the only thing between a changed standard
-  and this repository;
-- the file is committed and project settings outrank user settings, so the value
-  governs everyone who works here, not only the person who ran the installer.
+- the repository records no framework version, so without this key the team runs
+  on whatever version it first received and a corrected standard never arrives;
+- the framework's version bump then becomes the only thing between a changed
+  standard and this repository, and Claude Code keeps marketplace state per user,
+  so it reaches each machine that opens it.
 
 Then name the alternative in one line: `ef-install-settings --no-auto-update`
-writes the entry without the key, and releases are adopted deliberately with the
-two update commands. An entry that already states `autoUpdate` either way is
-left alone, and you should not offer to change it.
+writes the entry without the key, and releases are adopted with the two update
+commands. An entry that already states `autoUpdate` either way is left alone,
+and you should not offer to change it.
 
 ## 3. CLAUDE.md
 

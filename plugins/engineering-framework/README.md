@@ -49,7 +49,8 @@ It writes two things and shows you each before writing it:
 
 Commit both.
 
-**It writes no permission rules.** It merges exactly two keys and never touches
+**It writes no permission rules.** It merges exactly two top-level keys —
+`extraKnownMarketplaces` and `enabledPlugins` — and never touches
 `permissions`, `hooks` or `env`. It writes nothing global — not your
 `~/.claude/settings.json`, not Claude Code's plugin state. Trust, installation,
 the installed version, the cache and updates are Claude Code's; the repository
@@ -79,24 +80,22 @@ command. `enabledPlugins` makes the plugin *active* for this repository once
 installed; `extraKnownMarketplaces` makes that install resolvable. Neither
 performs it.
 
-### Auto-update is on by default
+### Auto-update is on, so nobody chases plugin updates
 
 The installer writes `"autoUpdate": true` on the marketplace entry, so Claude
 Code refreshes the marketplace **and updates the installed plugin on disk** in
 the background after a session starts. A release arrives with nobody typing
 anything.
 
-The trade is real in both directions: the framework's version bump becomes the
-only thing standing between a changed standard and everyone configured this way,
-and because project settings outrank user settings, the committed value governs
-the whole team rather than just whoever ran the installer.
+That is deliberate: your repository records no framework version, so without the
+key a team runs on whatever version it first received, indefinitely, and a
+corrected standard never reaches it. The trade is that the version bump becomes
+the only thing standing between a changed standard and everyone who has it.
 
-Run `ef-install-settings --no-auto-update` — or `framework-install` and then
-edit the entry — to adopt releases deliberately instead, at the cost of both
-update commands per release.
-
-**An entry that already states `autoUpdate` is never rewritten**, either way.
-Only an entry with no opinion gets one.
+`ef-install-settings --no-auto-update` writes the entry without the key, for a
+team that would rather adopt releases by hand. **An entry that already states
+`autoUpdate` is never rewritten**, either way — only an entry with no opinion
+gets one.
 
 ### Joining a repository someone else set up
 
@@ -115,10 +114,15 @@ add the marketplace first — both commands are at the top of this file.
 /plugin update engineering-framework@jaylordibe
 ```
 
-Then restart — an update does not apply to a running session. You receive a new
-version only when `version` in `plugin.json` is bumped; commits pushed without a
-bump change nothing for anyone. An update never requires re-running
-`framework-install`, and never requires re-adding the marketplace.
+Then restart, or run `/reload-plugins` — an update does not apply to a running
+session. With auto-update on, which is what the installer declares, Claude Code
+runs both commands for you in the background after a session starts, and only
+the reload is left.
+
+You receive a new version only when `version` in `plugin.json` is bumped;
+commits pushed without a bump change nothing for anyone. An update never
+requires re-running `framework-install`, and never requires re-adding the
+marketplace.
 
 Your repository records no framework version, so there is nothing to keep in
 sync and nothing that can drift out of it. On a **major** bump, read that entry

@@ -23,24 +23,28 @@
 # dependency is not the same act as changing someone's permission posture, and
 # this script is written so the difference is mechanical rather than promised.
 #
-# AUTO-UPDATE IS ON BY DEFAULT, AND WHAT THAT COMMITS YOU TO
-# -----------------------------------------------------------
-# A new entry is written with `"autoUpdate": true`, so a released version of the
-# framework reaches the team without anyone running an update command. That is a
-# deliberate default and it has two consequences worth knowing before it is
-# changed:
+# AUTO-UPDATE IS ON, AND WHY THAT IS THE RIGHT DEFAULT HERE
+# ---------------------------------------------------------
+# A new entry is written with `"autoUpdate": true`. The reason is specific to
+# what 2.0.0 removed: a consuming repository records NO framework version, so
+# nothing in it ever asks to be updated. Without auto-update a team installs
+# once and then runs on whatever version they happened to get, indefinitely -
+# and the failures this framework has are silent ones. A standard corrected here
+# would never reach them, and neither they nor we would be able to tell.
 #
-#   1. The framework's version bump becomes the ONLY brake between a changed
-#      standard and every repository configured this way.
-#   2. Project settings outrank user settings, and a same-name
-#      `extraKnownMarketplaces` entry replaces an earlier file's entry WHOLE. So
-#      this committed value governs everyone who works in the repository, not
-#      just the person who ran the installer.
+# The cost is real and is accepted deliberately: the version bump in plugin.json
+# becomes the only brake between a changed standard and everyone who has this
+# key. `docs/versioning.md` is written on that assumption.
 #
-# `--no-auto-update` writes the entry without the key. And an entry that already
-# states `autoUpdate` either way is never rewritten: somebody decided that, and
-# a committed decision is not ours to reverse. Only an entry that has no opinion
-# at all gains one here.
+# The key is NOT purely project-scoped, and that is measured rather than assumed
+# - Claude Code keeps marketplace state per user in known_marketplaces.json, and
+# a committed project value reaches it. So this is written loudly rather than
+# quietly: the run says what it set and what that commits the team to.
+# `--no-auto-update` writes the entry without it.
+#
+# An entry that ALREADY states `autoUpdate`, either way, is never rewritten:
+# that is somebody's decision. Only an entry with no opinion gains one. See
+# docs/constraints.md C20 for the citations and the measurement.
 #
 # WHY A SCRIPT AND NOT SKILL PROSE
 # --------------------------------
@@ -95,8 +99,9 @@ repository's own .claude/settings.json, preserving everything else in the file.
   --no-auto-update    Write the marketplace entry without "autoUpdate": true,
                       so releases are adopted deliberately instead of arriving
 
-A new marketplace entry is written with "autoUpdate": true. An entry that
-already states autoUpdate, either way, is left exactly as it is.
+A new entry is written with "autoUpdate": true, because a consuming repository
+records no framework version and would otherwise never receive a correction. An
+entry that already states autoUpdate, either way, is left exactly as it is.
 
 Writes nothing outside <repository>/.claude/settings.json.
 USAGE
@@ -293,7 +298,10 @@ fi
 # `autoUpdate` at all. Claude Code writes `autoUpdate`, `lastUpdated` and
 # `installLocation` into that entry itself, so a wholesale rewrite would discard
 # a user's own auto-update choice and a field the host maintains. An entry with
-# no opinion on auto-update is the only one nobody has decided.
+# whatever it says, except that an entry with NO opinion on auto-update gains
+# one. Claude Code writes `autoUpdate`, `lastUpdated` and `installLocation` into
+# that entry itself, so a wholesale rewrite would discard a user's own choice
+# and a field the host maintains.
 #
 # `has("autoUpdate")` rather than a truthiness test, deliberately: `false` is a
 # decision, and a test that cannot tell `false` from absent would reverse it on
@@ -327,9 +335,14 @@ fi
 existing_auto=$(printf '%s' "$current" |
   jq -c --arg marketplace "$marketplace" '.extraKnownMarketplaces[$marketplace].autoUpdate')
 
+# Always reported, never quietly applied: this is the one value here with an
+# effect beyond the repository, so a run that sets it has to say so.
 report_auto_update() {
   case "$existing_auto" in
-    true) pass 'Auto-update is on for this marketplace.' ;;
+    true)
+      pass 'Auto-update is on for this marketplace.'
+      note 'Already set here. Left untouched.'
+      ;;
     false)
       pass 'Auto-update is off for this marketplace, as this project set it.'
       note 'Left as it is. Releases are adopted deliberately here.'
@@ -341,8 +354,10 @@ report_auto_update() {
       else
         pass 'Auto-update is on for this marketplace.'
         note 'A released version arrives without anyone running an update'
-        note 'command. This file is committed, and a project entry replaces a'
-        note 'user entry whole, so this governs everyone who works here.'
+        note 'command, which is the point: this repository records no framework'
+        note 'version, so nothing else would ever ask for a correction. Claude'
+        note 'Code keeps marketplace state per user, so this reaches each'
+        note 'machine that opens the repository. --no-auto-update opts out.'
       fi
       ;;
   esac

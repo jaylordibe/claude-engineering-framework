@@ -32,6 +32,7 @@ node tests/validate-plugin.mjs --strict
 node tests/validate-fixtures.mjs
 node tests/validate-charter.mjs
 node tests/run-doctor-fixtures.mjs
+node tests/validate-install-settings.mjs
 claude plugin validate ./plugins/engineering-framework --strict
 shellcheck plugins/engineering-framework/scripts/*.sh plugins/engineering-framework/bin/*
 ```

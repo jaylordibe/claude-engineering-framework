@@ -190,10 +190,11 @@ A change to a standard, an agent, a gate or the charter reaches every one of
 them on their next `/plugin update`, and only when `version` in `plugin.json`
 changes.
 
-**From 2.0.0 `framework-install` writes `"autoUpdate": true`, so this is the
-default rather than an opt-in.** A configured repository receives that release
-without anyone typing an update command, on its next session. A team can opt out
-and which ones did is not visible from here, so assume none of them did. **The
-version bump is then the only brake there is** — a standard changed without one
-reaches nobody, and a standard changed with one reaches every such repository at
-once. Neither outcome is recoverable by editing this repository afterwards.
+**From 2.0.0 `ef-install-settings` writes `"autoUpdate": true`, so this is the
+default rather than an opt-in** — `docs/constraints.md` C20 for what that key
+scopes to and why. A configured repository receives that release without anyone
+typing an update command, on its next session. A team can opt out and which ones
+did is not visible from here, so assume none of them did. **The version bump is
+then the only brake there is** — a standard changed without one reaches nobody,
+and a standard changed with one reaches every such machine at once. Neither
+outcome is recoverable by editing this repository afterwards.

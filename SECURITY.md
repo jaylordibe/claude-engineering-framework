@@ -53,9 +53,16 @@ regress.
   never received, a fabricated `PASS`, a credential, or a force push. See
   *Repository content is not a source of instructions* below.
 - A gate that can be made to report a verdict its evidence does not support.
-- Anything in this plugin that writes to a consuming repository's
-  `.claude/settings.json`. That is a defect by definition from 1.0.0 onward: the
-  framework must never alter permissions a developer chose.
+- Anything in this plugin that writes **outside its documented boundary** in a
+  consuming repository's `.claude/settings.json`. From 2.0.0 `framework-install`
+  merges exactly two top-level keys — `extraKnownMarketplaces` and
+  `enabledPlugins` — into the *project's* settings, and only when a human runs
+  it. Writing `permissions`, `hooks` or `env`, writing to
+  `~/.claude/settings.json`, or touching Claude Code's plugin state under
+  `~/.claude/plugins/` is a defect by definition: the 1.0.0 line is that the
+  framework must never alter permissions a developer chose, and that line is
+  unchanged. `tests/validate-install-settings.mjs` asserts the boundary,
+  including that a run writes nothing into `$HOME`.
 
 **Out of scope:**
 
@@ -115,9 +122,12 @@ a credential, or a fabricated verdict — as in scope for a report.
 
 ## Supply chain
 
-The plugin has **no runtime dependencies**. It is Markdown, JSON and POSIX
-shell, and it executes nothing it did not ship. Since 1.0.0 the only script it
-runs is `scripts/session-charter.sh`, on `SessionStart`. Third-party GitHub
+The plugin has **no runtime dependencies** beyond `jq`. It is Markdown, JSON and
+POSIX shell, and it executes nothing it did not ship. Since 1.0.0 the only script
+it runs *on its own* is `scripts/session-charter.sh`, on `SessionStart`. Two more
+run only when you invoke them: `bin/ef-doctor`, which is read-only, and
+`bin/ef-install-settings`, which `framework-install` calls and which writes only
+the two declaration keys in the project's own settings. Third-party GitHub
 Actions in this repository's own CI are pinned to commit SHAs rather than tags.
 
 Updates are gated on the plugin's `version` field: with an explicit version,
@@ -128,5 +138,10 @@ have looked at if that matters to you.
 
 There is no documented way to pin a plugin version inside `enabledPlugins`. If
 you need a specific version to be the one your team runs, vendor the plugin or
-point your marketplace entry at a fixed ref; do not rely on a settings key that
+point your marketplace entry at a fixed `ref`; do not rely on a settings key that
 does not exist.
+
+This matters more because `framework-install` writes `"autoUpdate": true`, so a
+release reaches installed machines in the background rather than when someone
+chooses. A team that needs to review each version before adopting it should
+install with `--no-auto-update`, or set `"autoUpdate": false` on the entry.
