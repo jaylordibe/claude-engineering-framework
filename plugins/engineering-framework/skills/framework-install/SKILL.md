@@ -115,8 +115,9 @@ on.** A new marketplace entry is written with `"autoUpdate": true`, so releases
 of this framework arrive without anyone running an update command. Give both
 halves rather than only the convenience:
 
-- the repository records no framework version, so without this key the team runs
-  on whatever version it first received and a corrected standard never arrives;
+- the repository records no framework version, so without this key the team
+  stays on whatever version it first received until someone deliberately runs
+  the two update commands, and nothing prompts them to;
 - the framework's version bump then becomes the only thing between a changed
   standard and this repository, and Claude Code keeps marketplace state per user,
   so it reaches each machine that opens it.

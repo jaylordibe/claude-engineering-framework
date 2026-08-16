@@ -477,7 +477,7 @@ Two files, both written by `framework-install` and both committed:
 - **`.claude/settings.json`** — the declaration that this project uses the
   framework. Recommended rather than required: everything still works without
   it, but every colleague then registers the marketplace by hand, and releases
-  do not arrive on their own.
+  only arrive when someone deliberately updates the plugin.
 
 Nothing else. No `tasks/` directory, no plan files, no decision records, no
 framework version anywhere in your repository. See the

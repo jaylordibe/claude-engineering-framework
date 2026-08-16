@@ -144,10 +144,12 @@ controlled adoption opt out; see *What holds the line* below.
 **It also follows from removing the version pin.** Before 2.0.0 a consuming
 repository declared `frameworkVersion`, and `ef-doctor` failed on a major gap —
 crude, but a stale installation eventually announced itself. Nothing replaced
-it: a repository now records **no framework version at all**. So if releases do
-not arrive on their own, they do not arrive. A team installs once, runs on that
-version indefinitely, and a corrected standard never reaches them — silently,
-which is this framework's characteristic failure.
+it: a repository now records **no framework version at all**. Updating is still
+entirely possible — `/plugin marketplace update` then `/plugin update`, any
+time — but nothing asks for it and nothing reports that a newer version exists.
+So a team installs once and stays on that version until somebody deliberately
+decides otherwise, and a corrected standard reaches them only then. The gap is
+silent from both ends, which is this framework's characteristic failure.
 
 **The alternatives were worse for the people they affect.** The documented
 alternatives are a per-machine toggle in `/plugin` and an administrator setting
