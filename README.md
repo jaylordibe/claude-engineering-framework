@@ -132,26 +132,38 @@ after:   /plugin install engineering-framework@jaylordibe
 This pins the framework in a commit, which is reviewable, rather than in eleven
 developers' heads.
 
-### Auto-update is a per-user preference, and the installer will not set it
+### Auto-update is on by default, and that is a real commitment
 
-On, Claude Code refreshes the marketplace *and updates the installed plugin* in
-the background after a session starts — the new version loads on the next launch
-or after `/reload-plugins` — so a release arrives with nobody typing anything,
-and the framework's version bump becomes
-[the only thing standing](docs/versioning.md) between a changed standard and
-everyone who has it on. Off, you adopt releases deliberately, at the cost of
-`/plugin marketplace update jaylordibe` **and** `/plugin update
-engineering-framework@jaylordibe` each time.
+The installer writes `"autoUpdate": true` on the marketplace entry. Claude Code
+then refreshes the marketplace *and updates the installed plugin* in the
+background after a session starts — the new version loads on the next launch or
+after `/reload-plugins` — so a release arrives with nobody typing anything.
 
-Third-party marketplaces default to **off**. Turn it on per marketplace in
-`/plugin` → **Marketplaces** → **Enable auto-update**, or set it for an
-organisation in managed settings. (Anthropic's official marketplace defaults to
-on — that is why plugins installed from it appear to keep themselves current
-with no configuration anywhere.)
+Two consequences, both worth knowing before you commit the file:
 
-**Nothing in the plugin writes it.** Accepting unreviewed changes to this
-framework is a risk acceptance, the charter names those as human-owned, and this
-framework making one in its own favour is not a close call.
+- **The framework's version bump becomes
+  [the only brake](docs/versioning.md)** between a changed standard and everyone
+  configured this way. That is the trade: releases arrive promptly, and they
+  arrive unreviewed by you.
+- **It governs the whole team, not just whoever ran the installer.** Project
+  settings outrank user settings, and a same-name `extraKnownMarketplaces` entry
+  replaces an earlier file's entry *whole* — so this committed value overrides a
+  colleague's own toggle for this marketplace while they work in this
+  repository.
+
+Prefer to adopt releases deliberately? Run the installer with
+`--no-auto-update`, or set `"autoUpdate": false` on the entry yourself. The cost
+is `/plugin marketplace update jaylordibe` **and** `/plugin update
+engineering-framework@jaylordibe` per release.
+
+**An entry that already states `autoUpdate`, either way, is never rewritten.**
+The installer only fills in an entry that has no opinion — a committed decision
+is not something a re-run should reverse.
+
+(Third-party marketplaces default to **off** when nothing states otherwise,
+which is exactly why the key is written explicitly. Anthropic's official
+marketplace defaults to on — that is why plugins installed from it appear to
+keep themselves current with no configuration anywhere.)
 
 ---
 
@@ -198,9 +210,9 @@ Then **restart Claude Code** — an update does not apply to a running session.
 Confirm with `claude plugin list`.
 
 The first command refreshes the cached copy of the marketplace catalogue; the
-second pulls the new plugin version. If the repository sets `"autoUpdate": true`
-on the marketplace entry, **both are done for you** in the background after a
-session starts — the new version loads on your next launch or after
+second pulls the new plugin version. Because the installer sets
+`"autoUpdate": true` on the marketplace entry, **both are done for you** in the
+background after a session starts — the new version loads on your next launch or after
 `/reload-plugins`, so the restart is all that is left.
 
 Equivalent commands outside a session:
@@ -236,8 +248,8 @@ says exactly what. Minor and patch bumps never do.
 | `/plugin marketplace add jaylordibe/claude-engineering-framework` | Once per machine | **Required**, unless the repository declares `extraKnownMarketplaces` — which `framework-install` does for it |
 | `/plugin install engineering-framework@jaylordibe` | Once per machine | **Always required, per developer.** Declaring `enabledPlugins` does not install it — from Claude Code v2.1.195 a plugin enabled only by project settings, and sourced from a git repository, does not load until that person installs it |
 | `/engineering-framework:framework-install` | Once per repository, by one person | **Required** for the person introducing it. **Never** for anyone who pulls afterwards |
-| `/plugin marketplace update jaylordibe` | Per release | Required to receive a release, unless `autoUpdate` is set |
-| `/plugin update engineering-framework@jaylordibe` | Per release | Required to receive a release, unless `autoUpdate` is set — with it, Claude Code updates installed plugins in the background after a session starts, and the new version loads on the next launch or after `/reload-plugins` |
+| `/plugin marketplace update jaylordibe` | Per release | **Not needed** where the repository's declaration keeps `autoUpdate` on, which is the installer's default. Required if you turned it off |
+| `/plugin update engineering-framework@jaylordibe` | Per release | **Not needed** with `autoUpdate` on — Claude Code updates installed plugins in the background after a session starts, and the new version loads on the next launch or after `/reload-plugins`. Required if you turned it off |
 | `/engineering-framework:framework-doctor` | Any time | Optional, and the fastest way to prove everything is wired |
 | `/engineering-framework:work-item <requirement>` | Per change | The everyday command |
 | `/engineering-framework:gate-*` | Per stage | Optional alternative to `work-item` — same pipeline, you drive it |

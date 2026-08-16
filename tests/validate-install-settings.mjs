@@ -164,9 +164,70 @@ runCase('fresh project — no .claude/settings.json at all', (name) => {
   );
   check(
     name,
-    !written.includes('autoUpdate'),
-    'the installer wrote autoUpdate; that preference belongs to the user, not to a project declaration',
+    settings?.extraKnownMarketplaces?.[MARKETPLACE]?.autoUpdate === true,
+    'a new marketplace entry was written without "autoUpdate": true, so releases would not reach the team',
     written,
+  );
+});
+
+runCase('--no-auto-update writes the entry without the key', (name) => {
+  const repository = buildRepository({ 'CLAUDE.md': '# CLAUDE.md\n' });
+  const run = runInstaller(repository, ['--no-auto-update']);
+
+  check(name, run.exit === 0, `expected exit 0, got ${run.exit}`, run.output);
+
+  const entry = readSettings(repository)?.extraKnownMarketplaces?.[MARKETPLACE];
+  check(
+    name,
+    entry !== undefined && !Object.prototype.hasOwnProperty.call(entry, 'autoUpdate'),
+    '--no-auto-update still wrote an autoUpdate key',
+    JSON.stringify(entry, null, 2),
+  );
+  check(name, entry?.source?.repo === declaration.entry.source.repo, 'the source was lost with the key', JSON.stringify(entry, null, 2));
+});
+
+runCase('an entry that already says autoUpdate: false keeps saying it', (name) => {
+  // `false` is a decision, and this file is committed, so it may be a team's.
+  // A check that cannot tell `false` from absent would reverse it on every run.
+  const repository = buildRepository({
+    'CLAUDE.md': '# CLAUDE.md\n',
+    '.claude/settings.json': {
+      extraKnownMarketplaces: { [MARKETPLACE]: { source: declaration.entry.source, autoUpdate: false } },
+      enabledPlugins: { [PLUGIN_ID]: true },
+    },
+  });
+  const before = snapshot(repository);
+  const run = runInstaller(repository);
+  const after = snapshot(repository);
+
+  check(name, run.exit === 0, `expected exit 0, got ${run.exit}`, run.output);
+  check(
+    name,
+    readSettings(repository)?.extraKnownMarketplaces?.[MARKETPLACE]?.autoUpdate === false,
+    "a deliberate autoUpdate: false was flipped by the installer",
+    after.bytes,
+  );
+  check(name, before.bytes === after.bytes, 'an already-correct file was rewritten', after.bytes);
+});
+
+runCase('an entry with no opinion on autoUpdate gains one', (name) => {
+  // The 1.x-era hand-written block had no autoUpdate. Nobody decided, so the
+  // installer completes the declaration rather than leaving it half-configured.
+  const repository = buildRepository({
+    'CLAUDE.md': '# CLAUDE.md\n',
+    '.claude/settings.json': {
+      extraKnownMarketplaces: { [MARKETPLACE]: { source: declaration.entry.source } },
+      enabledPlugins: { [PLUGIN_ID]: true },
+    },
+  });
+  const run = runInstaller(repository);
+
+  check(name, run.exit === 0, `expected exit 0, got ${run.exit}`, run.output);
+  check(
+    name,
+    readSettings(repository)?.extraKnownMarketplaces?.[MARKETPLACE]?.autoUpdate === true,
+    'an entry with no autoUpdate did not gain one',
+    JSON.stringify(readSettings(repository), null, 2),
   );
 });
 

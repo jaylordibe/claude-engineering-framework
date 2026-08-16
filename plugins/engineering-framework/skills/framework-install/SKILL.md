@@ -109,10 +109,20 @@ prevent: once they trust the repository folder, the marketplace registers
 itself, and **they still install the plugin on their own machine.** Project
 settings enable a plugin; they never install one.
 
-**Say nothing about `autoUpdate`, and do not write it.** Whether to accept
-unreviewed changes to this framework is the user's call, made in `/plugin` or
-by an administrator in managed settings — and it is not a call this framework
-should be making in its own favour.
+**Say what `autoUpdate` commits them to, because the installer turns it on.** A
+new marketplace entry is written with `"autoUpdate": true`, so releases of this
+framework arrive without anyone running an update command. State both
+consequences plainly rather than only the convenience:
+
+- the framework's version bump becomes the only thing between a changed standard
+  and this repository;
+- the file is committed and project settings outrank user settings, so the value
+  governs everyone who works here, not only the person who ran the installer.
+
+Then name the alternative in one line: `ef-install-settings --no-auto-update`
+writes the entry without the key, and releases are adopted deliberately with the
+two update commands. An entry that already states `autoUpdate` either way is
+left alone, and you should not offer to change it.
 
 ## 3. CLAUDE.md
 

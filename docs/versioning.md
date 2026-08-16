@@ -101,15 +101,26 @@ From here the semver contract is the ordinary one: MAJOR may ask a consuming
 repository to act, MINOR and PATCH never do. The `0.x` caveat that a MINOR bump
 might break you no longer applies.
 
-**Assume consumers auto-update.** A repository that pins the marketplace with
-`autoUpdate` in its own settings receives a release without anyone typing an
-update command — Claude Code refreshes the catalogue *and* updates the installed
-plugin on disk, in the background after a session starts. You cannot see which
-ones do, so assume all of them: the version bump is not a notification, it is the
-only brake. A standard changed without a bump reaches nobody; a standard changed
-with one reaches every such repository at once, and neither outcome is
+**Consumers auto-update. This is no longer an assumption.** From 2.0.0
+`framework-install` writes `"autoUpdate": true` on the marketplace entry, so
+every repository configured by the installer receives a release without anyone
+typing an update command — Claude Code refreshes the catalogue *and* updates the
+installed plugin on disk, in the background after a session starts.
+
+Until 2.0.0 this section asked you to *assume* that, as the conservative reading
+of a setting some teams had opted into. The default made it true. Nothing else
+in this document changes, but everything in it now binds harder:
+
+**The version bump is not a notification. It is the only brake.** A standard
+changed without a bump reaches nobody; a standard changed with one reaches every
+installed repository at once, on their next session, and neither outcome is
 recoverable by editing this repository afterwards. Decide the bump before
-merging, not after.
+merging, not after — and decide the *change* on the understanding that there is
+no staging population between you and everyone.
+
+A team can still opt out (`--no-auto-update`, or `"autoUpdate": false` on the
+entry), and you cannot see which ones did. That asymmetry only ever runs one
+way: assume none of them.
 
 ## A release cut minutes ago can still absorb changes
 

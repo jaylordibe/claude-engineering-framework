@@ -79,18 +79,24 @@ command. `enabledPlugins` makes the plugin *active* for this repository once
 installed; `extraKnownMarketplaces` makes that install resolvable. Neither
 performs it.
 
-### Auto-update is yours, and the installer will not touch it
+### Auto-update is on by default
 
-Claude Code can refresh the marketplace **and update the installed plugin on
-disk** in the background after a session starts. Third-party marketplaces
-default to **off**. Turn it on per marketplace in `/plugin` → **Marketplaces** →
-**Enable auto-update**, or, for an organisation, in managed settings.
+The installer writes `"autoUpdate": true` on the marketplace entry, so Claude
+Code refreshes the marketplace **and updates the installed plugin on disk** in
+the background after a session starts. A release arrives with nobody typing
+anything.
 
-**This plugin will not set it for you.** With it on, a release arrives with
-nobody typing anything, and the framework's version bump becomes the only thing
-standing between a changed standard and everyone on your team. That is a real
-trade, it is yours to make, and it is not one this framework should be making in
-its own favour.
+The trade is real in both directions: the framework's version bump becomes the
+only thing standing between a changed standard and everyone configured this way,
+and because project settings outrank user settings, the committed value governs
+the whole team rather than just whoever ran the installer.
+
+Run `ef-install-settings --no-auto-update` — or `framework-install` and then
+edit the entry — to adopt releases deliberately instead, at the cost of both
+update commands per release.
+
+**An entry that already states `autoUpdate` is never rewritten**, either way.
+Only an entry with no opinion gets one.
 
 ### Joining a repository someone else set up
 

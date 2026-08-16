@@ -75,7 +75,8 @@ lands in the commit:
 {
   "extraKnownMarketplaces": {
     "jaylordibe": {
-      "source": { "source": "github", "repo": "jaylordibe/claude-engineering-framework" }
+      "source": { "source": "github", "repo": "jaylordibe/claude-engineering-framework" },
+      "autoUpdate": true
     }
   },
   "enabledPlugins": { "engineering-framework@jaylordibe": true }
@@ -87,7 +88,8 @@ other marketplaces, other plugins. The installer refuses to write at all if the
 file will not parse, if the marketplace name already points somewhere else, or
 if someone deliberately set this plugin to `false`.
 
-Note the absence of `autoUpdate`. The installer will not write it; see below.
+`autoUpdate` is on by default. Read the section below before committing it — it
+is the one line here with a consequence for the whole team.
 
 **This removes one of two setup commands, not both.** Once a colleague trusts
 the repository folder, Claude Code registers the marketplace without a further
@@ -102,20 +104,31 @@ once installed; `extraKnownMarketplaces` makes that install resolvable. Neither
 performs the install, so onboarding goes from two commands to one rather than to
 none.
 
-### Auto-update, and why the installer leaves it to you
+### Auto-update: on by default, and worth one minute of your attention
 
 `autoUpdate` refreshes the marketplace catalogue **and updates the installed
 plugin on disk**, in the background after a session starts, so a released
-version arrives without anyone running an update command. That is a real trade:
-it makes **the framework's version bump the only thing standing between a
-changed standard and everyone who has it on.**
+version arrives without anyone running an update command. The installer turns it
+on.
 
-Claude Code treats it as a per-user preference: toggle it per marketplace in
-`/plugin` → **Marketplaces**, where third-party marketplaces default to **off**,
-or set it for a whole organisation in managed settings. `framework-install` will
-not write it, in either direction — accepting unreviewed changes to this
-framework is a risk acceptance the charter names as human-owned, and one the
-framework should least of all be making in its own favour.
+Two things that follow, and both are worth deciding rather than inheriting:
+
+- **The framework's version bump becomes the only thing standing between a
+  changed standard and this repository.** You receive corrections quickly; you
+  also receive changes nobody here reviewed.
+- **It applies to your whole team.** Project settings outrank user settings, and
+  a same-name `extraKnownMarketplaces` entry replaces an earlier file's entry
+  *whole* — so this committed value overrides a colleague's own auto-update
+  toggle for this marketplace while they work in this repository.
+
+To adopt releases deliberately instead, run the installer with
+`--no-auto-update`, or set `"autoUpdate": false` on the entry. The cost is
+`/plugin marketplace update jaylordibe` **and**
+`/plugin update engineering-framework@jaylordibe` per release.
+
+**Whatever you decide stays decided.** An entry that states `autoUpdate` either
+way is never rewritten by a later install; the installer only fills in an entry
+that has no opinion.
 
 ---
 

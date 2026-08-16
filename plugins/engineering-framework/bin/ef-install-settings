@@ -23,10 +23,24 @@
 # dependency is not the same act as changing someone's permission posture, and
 # this script is written so the difference is mechanical rather than promised.
 #
-# It also never writes `autoUpdate`. Accepting unreviewed changes to this
-# framework is a decision for the person running it, not for the framework
-# itself, and Claude Code exposes it as a per-user toggle in `/plugin` (or an
-# administrator key in managed settings). See docs/architecture.md.
+# AUTO-UPDATE IS ON BY DEFAULT, AND WHAT THAT COMMITS YOU TO
+# -----------------------------------------------------------
+# A new entry is written with `"autoUpdate": true`, so a released version of the
+# framework reaches the team without anyone running an update command. That is a
+# deliberate default and it has two consequences worth knowing before it is
+# changed:
+#
+#   1. The framework's version bump becomes the ONLY brake between a changed
+#      standard and every repository configured this way.
+#   2. Project settings outrank user settings, and a same-name
+#      `extraKnownMarketplaces` entry replaces an earlier file's entry WHOLE. So
+#      this committed value governs everyone who works in the repository, not
+#      just the person who ran the installer.
+#
+# `--no-auto-update` writes the entry without the key. And an entry that already
+# states `autoUpdate` either way is never rewritten: somebody decided that, and
+# a committed decision is not ours to reverse. Only an entry that has no opinion
+# at all gains one here.
 #
 # WHY A SCRIPT AND NOT SKILL PROSE
 # --------------------------------
@@ -52,6 +66,7 @@ if [ -z "$plugin_root" ]; then
 fi
 check_only=false
 enable_disabled=false
+auto_update=true
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -65,9 +80,11 @@ while [ "$#" -gt 0 ]; do
       ;;
     --check) check_only=true ;;
     --enable-disabled) enable_disabled=true ;;
+    --no-auto-update) auto_update=false ;;
     -h | --help)
       cat <<'USAGE'
 Usage: ef-install-settings [--path <repository>] [--check] [--enable-disabled]
+                          [--no-auto-update]
 
 Declares the engineering-framework marketplace and enables the plugin in a
 repository's own .claude/settings.json, preserving everything else in the file.
@@ -75,6 +92,11 @@ repository's own .claude/settings.json, preserving everything else in the file.
   --path <dir>        Repository to configure (default: $CLAUDE_PROJECT_DIR, else $PWD)
   --check             Report what would change; write nothing
   --enable-disabled   Re-enable the plugin when the project explicitly disabled it
+  --no-auto-update    Write the marketplace entry without "autoUpdate": true,
+                      so releases are adopted deliberately instead of arriving
+
+A new marketplace entry is written with "autoUpdate": true. An entry that
+already states autoUpdate, either way, is left exactly as it is.
 
 Writes nothing outside <repository>/.claude/settings.json.
 USAGE
@@ -126,6 +148,16 @@ marketplace=$(jq -r '.marketplace' "$declaration")
 plugin=$(jq -r '.plugin' "$declaration")
 plugin_id="${plugin}@${marketplace}"
 
+# Computed once, and the single source for the conflict check, the merge and the
+# block printed on a refusal. Three copies of "what we would write" is three
+# chances for the refusal message to describe something other than what the
+# merge would actually do.
+declared_entry=$(jq -c '.entry' "$declaration")
+if [ "$auto_update" = false ]; then
+  declared_entry=$(printf '%s' "$declared_entry" | jq -c 'del(.autoUpdate)')
+fi
+declared_source=$(printf '%s' "$declared_entry" | jq -c '.source')
+
 settings_directory="${project_directory}/.claude"
 settings="${settings_directory}/settings.json"
 
@@ -139,7 +171,7 @@ intended_block() {
   jq -n \
     --arg marketplace "$marketplace" \
     --arg plugin_id "$plugin_id" \
-    --argjson entry "$(jq -c '.entry' "$declaration")" \
+    --argjson entry "$declared_entry" \
     '{extraKnownMarketplaces: {($marketplace): $entry}, enabledPlugins: {($plugin_id): true}}'
 }
 
@@ -213,7 +245,6 @@ fi
 
 existing_source=$(printf '%s' "$current" |
   jq -c --arg marketplace "$marketplace" '.extraKnownMarketplaces[$marketplace].source // empty')
-declared_source=$(jq -c '.entry.source' "$declaration")
 
 marketplace_declared=false
 if [ -n "$existing_source" ]; then
@@ -258,17 +289,25 @@ fi
 # Merge — add only what is missing, and touch nothing else
 # ---------------------------------------------------------------------------
 #
-# An existing marketplace entry whose source already matches is left byte for
-# byte alone. Claude Code writes `autoUpdate`, `lastUpdated` and
-# `installLocation` into that entry itself; rewriting it would discard the
-# user's own auto-update choice on every install.
+# An existing marketplace entry is left alone except for one case: it states no
+# `autoUpdate` at all. Claude Code writes `autoUpdate`, `lastUpdated` and
+# `installLocation` into that entry itself, so a wholesale rewrite would discard
+# a user's own auto-update choice and a field the host maintains. An entry with
+# no opinion on auto-update is the only one nobody has decided.
+#
+# `has("autoUpdate")` rather than a truthiness test, deliberately: `false` is a
+# decision, and a test that cannot tell `false` from absent would reverse it on
+# the next install.
 
 merged=$(printf '%s' "$current" | jq \
   --arg marketplace "$marketplace" \
   --arg plugin_id "$plugin_id" \
-  --argjson entry "$(jq -c '.entry' "$declaration")" '
+  --argjson entry "$declared_entry" '
   if (.extraKnownMarketplaces[$marketplace] | not)
     then .extraKnownMarketplaces[$marketplace] = $entry
+  elif ($entry | has("autoUpdate"))
+       and (.extraKnownMarketplaces[$marketplace] | has("autoUpdate") | not)
+    then .extraKnownMarketplaces[$marketplace].autoUpdate = $entry.autoUpdate
     else .
   end
   | if (.enabledPlugins[$plugin_id] == null or .enabledPlugins[$plugin_id] == false)
@@ -285,9 +324,34 @@ fi
 # Semantic comparison, so a file that is already correct but formatted
 # differently is not rewritten. Formatting churn in a shared settings file is a
 # diff every collaborator has to read and nobody asked for.
+existing_auto=$(printf '%s' "$current" |
+  jq -c --arg marketplace "$marketplace" '.extraKnownMarketplaces[$marketplace].autoUpdate')
+
+report_auto_update() {
+  case "$existing_auto" in
+    true) pass 'Auto-update is on for this marketplace.' ;;
+    false)
+      pass 'Auto-update is off for this marketplace, as this project set it.'
+      note 'Left as it is. Releases are adopted deliberately here.'
+      ;;
+    *)
+      if [ "$auto_update" = false ]; then
+        note 'Auto-update left unset (--no-auto-update). Adopt releases with'
+        note '/plugin marketplace update, then /plugin update.'
+      else
+        pass 'Auto-update is on for this marketplace.'
+        note 'A released version arrives without anyone running an update'
+        note 'command. This file is committed, and a project entry replaces a'
+        note 'user entry whole, so this governs everyone who works here.'
+      fi
+      ;;
+  esac
+}
+
 if [ "$(printf '%s' "$current" | jq -S -c '.')" = "$(printf '%s' "$merged" | jq -S -c '.')" ]; then
   pass "Marketplace \"${marketplace}\" is declared."
   pass "${plugin_id} is enabled for this project."
+  report_auto_update
   note 'Already correct. The file was not rewritten.'
   exit 0
 fi
@@ -305,6 +369,8 @@ elif [ "$plugin_state" = 'false' ]; then
 else
   todo "Enable ${plugin_id} for this project."
 fi
+
+report_auto_update
 
 if [ "$check_only" = true ]; then
   note 'Nothing was written (--check).'
