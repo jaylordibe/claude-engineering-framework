@@ -38,9 +38,11 @@ jobs:
           node-version: '22'
 
       - name: Install jq
-        # ef-doctor reads the repository policy file with jq. Without it the
-        # audit reports that it could not inspect, and the doctor fixtures
-        # would assert against that rather than against real findings.
+        # Both shipped scripts require jq: ef-doctor reads the repository's
+        # settings with it, and ef-install-settings merges with it. Without jq
+        # the doctor reports that it could not inspect and the installer
+        # refuses to write, so every case below would assert against a refusal
+        # rather than against real behaviour.
         run: |
           sudo apt-get update
           sudo apt-get install --yes jq
@@ -83,6 +85,13 @@ jobs:
         # none of it. A doctor that only works on a healthy repository is not a
         # doctor — and one whose exit code nobody asserts is not a check.
         run: node tests/run-doctor-fixtures.mjs
+
+      - name: Project settings merge
+        # ef-install-settings is the only component that writes to a file a
+        # consuming repository owns. Every failure mode it has is silent from
+        # here and expensive there: a dropped permission rule, a destroyed
+        # unparseable file, a silently repointed marketplace.
+        run: node tests/validate-install-settings.mjs
 
   official-validator:
     name: claude plugin validate

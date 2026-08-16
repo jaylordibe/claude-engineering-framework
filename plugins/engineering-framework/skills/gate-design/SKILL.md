@@ -128,12 +128,12 @@ plan document at all.**
 | **High** | Authentication, authorization, tenancy, personal data, money or pricing, uploads, webhooks, external integrations, migrations, public contracts, concurrency | Full plan, explicit threat model, at least two credible alternatives, migration and rollback analysis. |
 | **Critical** | Identity infrastructure, cryptography, broad privileged access, destructive data work, production repair, release infrastructure | Everything High requires, plus the plan states plainly that automated review is not sufficient and names the human review still owed. |
 
-Also take the higher tier when the change touches any path matching a glob in
-`.claude/engineering-framework.json` → `risk.highRiskPaths`. **Read that key
-before classifying**, and say whether it exists: it is the one place a
-repository can tell you something about its own risk that the code cannot, and
-a tier assigned without reading it is a tier assigned from the diff alone.
-`risk.notes` carries the reasoning and is worth reading alongside it.
+Also take the higher tier when the change touches any path the repository's
+`CLAUDE.md` lists under **High-risk paths**. **Read that section before
+classifying**, and say whether it exists: it is the one place a repository can
+tell you something about its own risk that the code cannot, and a tier assigned
+without reading it is a tier assigned from the diff alone. Any paragraph
+alongside it carries the reasoning and is worth reading with it.
 
 **On a boundary between two tiers, you are in the higher one.**
 
@@ -239,9 +239,8 @@ cover each.
 A risk with no test mapped to it is an accepted risk. Say so in §13 rather than
 leaving the gap implicit.
 
-Verification names the repository's **canonical commands** — from
-`.claude/engineering-framework.json` or from its `CLAUDE.md` — with the scope
-each will run at. Do not invent a command. Do not plan to apply a migration to
+Verification names the repository's **canonical commands** — from its
+`CLAUDE.md` — with the scope each will run at. Do not invent a command. Do not plan to apply a migration to
 any live database.
 
 ## 9. Write the plan

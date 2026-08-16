@@ -24,9 +24,21 @@ Bump MAJOR when a consuming repository may have to act:
 - a configuration key is removed or its meaning changes.
 
 Every MAJOR ships an upgrade note in `CHANGELOG.md` saying exactly what a
-consuming repository must do. `ef-doctor` compares the installed major version
-against the repository's declared `frameworkVersion` and fails on a gap, so the
-note is read rather than discovered.
+consuming repository must do, and the note has to be legible to someone who
+never sees it coming.
+
+Until 2.0.0 a repository declared `frameworkVersion` and `ef-doctor` failed on a
+major gap, so the note was read rather than discovered. **That mechanism is
+gone**, and removing it was itself a 2.0.0 change: it bought its warning at the
+price of a version number in every consuming repository, duplicating state
+Claude Code already owns and going stale in silence whenever nobody updated it.
+
+What replaces it is weaker and honest about being weaker: the changelog entry,
+and — where a removal leaves something behind that quietly stops working —
+a line in `ef-doctor` naming it. That is why the 2.0.0 doctor reports a leftover
+policy file. **A removal that leaves inert configuration behind must say so
+somewhere the user will actually look**, or the failure is indistinguishable
+from the feature working.
 
 ### MINOR — new capability, nothing to do
 

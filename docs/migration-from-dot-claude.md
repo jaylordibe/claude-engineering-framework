@@ -149,23 +149,27 @@ Add one line near the top so precedence is explicit:
 
 ## Step 6 — Keep your permissions exactly as they are
 
-**Change nothing in `.claude/settings.json`.** The framework ships no permission
+**Change none of your permission rules.** The framework ships no permission
 rules and no hooks that gate a tool call, so there is nothing to reconcile
 against and nothing of yours it will weaken. Your rules are yours; keep every
 one.
 
-The only thing to move into `.claude/engineering-framework.json` is what the
-*gates* read:
+`framework-install` adds two keys to `.claude/settings.json` —
+`extraKnownMarketplaces` and `enabledPlugins` — and touches nothing else in it.
+Your `permissions`, `hooks` and `env` are read by neither the installer nor any
+gate.
 
-- your canonical commands → `commands`, so the validation gate runs them rather
-  than inferring;
-- the paths where a change deserves more ceremony → `risk.highRiskPaths`, which
-  raises the review tier and selects a wider lens panel.
+The two things to move into your **`CLAUDE.md`** are what the *gates* read:
+
+- your canonical commands → the **Canonical commands** table, so the validation
+  gate runs them rather than inferring;
+- the paths where a change deserves more ceremony → a **High-risk paths**
+  section, which raises the review tier and selects a wider lens panel.
 
 If you had a protected-path hook, its path list is usually a good starting point
-for `risk.highRiskPaths` — but note the difference: the old hook *prompted*, and
-this *raises the review tier*. If you want those paths prompted on, that is a
-rule in your own settings, and it stays yours.
+for High-risk paths — but note the difference: the old hook *prompted*, and this
+*raises the review tier*. If you want those paths prompted on, that is a rule in
+your own settings, and it stays yours.
 
 ---
 

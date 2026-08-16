@@ -65,20 +65,67 @@ standard fails the build.
 ### 4. Repository-owned extension points
 
 Anything genuinely stack-specific has a place to live that is *not* the
-framework: the repository's own `CLAUDE.md`, its own `.claude/skills/`, and its
-own `.claude/engineering-framework.json`.
+framework: the repository's own `CLAUDE.md` and its own `.claude/skills/`.
 
 The framework never competes with those. It cites them.
 
-The extension points that remain are the ones the *gates* read:
-`commands` tells the validation gate what to run instead of inferring, and
-`risk.highRiskPaths` tells the design and review gates which changes deserve
-more ceremony. Both are advisory guidance to an agent. Neither blocks anything,
-and no document may describe them as though they do.
+The extension points that remain are the ones the *gates* read, and from 2.0.0
+both are sections of `CLAUDE.md` rather than keys in a file of the framework's
+own design: the **canonical commands** table tells the validation gate what to
+run instead of inferring, and the **High-risk paths** section tells the design
+and review gates which changes deserve more ceremony. Both are advisory guidance
+to an agent. Neither blocks anything, and no document may describe them as
+though they do.
 
-Until 1.0.0 there were also `protectedPaths` and `protectedCommands`, which
-configured two hooks that gated tool calls. Those hooks are gone; see *What was
-deliberately left behind*.
+Until 2.0.0 these lived in `.claude/engineering-framework.json`, alongside a
+`frameworkVersion` the repository declared and `ef-doctor` compared against the
+installed plugin. That file is gone, for three reasons that are worth keeping
+because each one generalises:
+
+- **`commands` was a second copy of the `CLAUDE.md` command table**, which the
+  template told you to write in both places. Stating a contract twice is the
+  drift this project's own conventions forbid everywhere else.
+- **`frameworkVersion` was a synchronisation problem the framework invented for
+  itself.** Claude Code already owns the installed version. A number in the
+  consuming repository can only agree with it or go quietly stale, and the check
+  that compared them made the second case look like a fourth kind of failure.
+- **`risk.highRiskPaths` was the only key with a real job**, and its job is to
+  state something true about *this repository* — which is the definition of what
+  `CLAUDE.md` is for.
+
+Until 1.0.0 the same file also carried `protectedPaths` and `protectedCommands`,
+which configured two hooks that gated tool calls. Those hooks are gone; see
+*What was deliberately left behind*.
+
+### 4a. The one thing the framework writes into a repository
+
+`framework-install` merges two keys into the project's own
+`.claude/settings.json` — `extraKnownMarketplaces` and `enabledPlugins` — so the
+repository declares its dependency on this framework the way it declares any
+other, and Claude Code owns everything downstream of that: trust, installation,
+the installed version, the cache, updates.
+
+The boundary is narrow on purpose, and it is the same boundary 1.0.0 drew:
+
+| The framework writes | The framework never writes |
+|---|---|
+| `extraKnownMarketplaces.<marketplace>` | `permissions`, in any scope |
+| `enabledPlugins["<plugin>@<marketplace>"]` | `hooks`, `env`, or any other key |
+| — in the project's own settings only | `~/.claude/settings.json`, or anything under `~/.claude/plugins/` |
+| — when a human runs the installer | `autoUpdate`, in either direction |
+
+**Declaring a dependency is not the same act as rewriting a permission
+posture.** The first is what a package manifest does; the second is what the
+pre-1.0.0 permissions floor did, and it is what remains banned. That distinction
+is the whole justification for the exception, so it is asserted mechanically in
+`tests/validate-install-settings.mjs` — including a case proving a run writes
+nothing into `$HOME` — rather than promised in this document.
+
+`autoUpdate` is excluded deliberately even though the schema allows it. It
+decides whether unreviewed releases of *this framework* are accepted; the
+charter names accepting operational risk on the human's behalf as human-owned,
+and doing it in our own favour is not a close call. Claude Code exposes it as a
+per-user toggle, which is where it belongs.
 
 ### 5. A vocabulary that can say "this repository does not have that"
 
@@ -130,8 +177,11 @@ plugins/engineering-framework/
 ├── templates/       thinking aids: plan, threat model, worksheets, reports
 ├── hooks/           hooks.json only — a single SessionStart entry
 ├── scripts/         session-charter.sh, the only hook the plugin registers
-├── reference/       what a consuming repository copies or is scaffolded from
-└── bin/ef-doctor    contract audit, on PATH while the plugin is enabled
+├── reference/       CLAUDE.md template, and the marketplace declaration the
+│                    installer merges into a consuming repository
+└── bin/             ef-doctor, the read-only contract audit; and
+                     ef-install-settings, the project declaration merge.
+                     Both on PATH while the plugin is enabled
 ```
 
 `standards/` and `templates/` are not Claude Code component directories. They
@@ -301,7 +351,7 @@ for, and that a generic agent must never absorb:
 - Migration tooling that keys applied migrations **by filename** makes editing
   an already-applied migration invisible to every environment that ran it. The
   generic framework can only say "an applied migration deserves the higher risk
-  tier", which is what `risk.highRiskPaths` already does. Naming the mechanism,
+  tier", which a repository's High-risk paths already do. Naming the mechanism,
   and the CI shape that catches it, needs the pack.
 - **Expand/contract sequencing** where the previous build serves traffic against
   the new schema for the length of the deploy window. The failure is real and

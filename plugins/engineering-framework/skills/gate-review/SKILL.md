@@ -31,10 +31,10 @@ Then state the **risk tier** and the evidence for it. Name it *before*
 launching anything: an unstated tier defaults to whatever panel it happens to
 get, which is how every change ends up costing the same regardless of what it
 is. Take the higher tier whenever the change sits on a boundary, or when a
-changed path matches a glob in `.claude/engineering-framework.json` →
-`risk.highRiskPaths`. Read that key rather than assuming it is empty; a
-repository that declared its own high-risk paths and then got a Medium panel
-was told its declaration mattered and it did not.
+changed path matches one the repository's `CLAUDE.md` lists under **High-risk
+paths**. Read that section rather than assuming it is empty; a repository that
+declared its own high-risk paths and then got a Medium panel was told its
+declaration mattered and it did not.
 
 **Never state a tier below one this change has already been given.** Design may
 have classified it, and implementation may have raised it on evidence the final

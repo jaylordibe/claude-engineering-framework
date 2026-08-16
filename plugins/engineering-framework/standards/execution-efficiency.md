@@ -58,7 +58,7 @@ investigation; it never removes a category from §3.1.
 |---|---|---|
 | **Targeted** | A single named behaviour in a known place, nothing in §4 applies, and the floor below is establishable without a system-wide sweep | The entry point and symbol, the files that must change, direct callers and consumers, the tests protecting the behaviour, the observable contract effect |
 | **Standard** | **The default.** Anything not positively established as Targeted | The complete affected execution path, and the boundaries, contracts, persistence, access control, tests and consumers on it |
-| **Deep** | A High or Critical signal, a cross-cutting or architectural change, an initially ambiguous one, or a changed path matching `risk.highRiskPaths` | Everything the mapping agent's own method describes, at full breadth |
+| **Deep** | A High or Critical signal, a cross-cutting or architectural change, an initially ambiguous one, or a changed path the repository's `CLAUDE.md` lists under High-risk paths | Everything the mapping agent's own method describes, at full breadth |
 
 **Standard is the default and Targeted is earned.** A band is a conclusion from
 evidence, never an opening assumption, and a cheap classification is the most

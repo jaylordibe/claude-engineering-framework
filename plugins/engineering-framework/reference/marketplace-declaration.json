@@ -1,0 +1,11 @@
+{
+  "$comment": "The identifiers `ef-install-settings` merges into a consuming repository's .claude/settings.json. This file exists because the marketplace NAME is not derivable from the plugin payload: .claude-plugin/marketplace.json lives at the marketplace repository root and is never copied into a consumer's plugin cache. tests/validate-plugin.mjs asserts every value here against marketplace.json and plugin.json, so the two cannot drift. `entry` deliberately carries no autoUpdate key - see docs/architecture.md.",
+  "marketplace": "jaylordibe",
+  "plugin": "engineering-framework",
+  "entry": {
+    "source": {
+      "source": "github",
+      "repo": "jaylordibe/claude-engineering-framework"
+    }
+  }
+}

@@ -46,10 +46,12 @@ deployed.)_
 ## Canonical commands
 
 <!--
-  The validation gate runs these. Every one must actually work from a clean
-  checkout. If a command needs a running service first, say so on its row.
-  Mirror these into .claude/engineering-framework.json under `commands` so the
-  guard hook and the gates read the same list.
+  The validation gate runs these, and this table is the only place it looks
+  before falling through to the dependency manifest and the CI workflow. Every
+  one must actually work from a clean checkout. If a command needs a running
+  service first, say so on its row. Delete a row this repository has no command
+  for - an absent step is a normal repository, and an invented command that
+  exits zero is worse than no evidence at all.
 -->
 
 | Purpose | Command | Notes |
@@ -61,6 +63,34 @@ deployed.)_
 | Unit tests | | |
 | Integration / e2e tests | | |
 | Run locally | | |
+
+## High-risk paths
+
+<!--
+  OPTIONAL, and one of the few things a repository can tell the gates that the
+  code cannot. A change touching any path listed here is classified at least
+  High risk, which buys it a full plan, a threat model, negative tests and a
+  wider review panel — and, before any of that, a deeper repository map.
+
+  It is advisory guidance to an agent. It shapes ceremony; it blocks no edit
+  and stops no command.
+
+  Delete this whole section if the diff alone classifies your changes
+  correctly. Keep it short if you keep it: a list that names half the
+  repository raises the tier for everything, which is the same as raising it
+  for nothing.
+-->
+
+| Path pattern | Why a change here is High risk |
+|---|---|
+| | |
+
+<!--
+  One paragraph on what makes this system risky in a way a reader could not
+  infer from the code — a shared store whose isolation lives in query builders,
+  a migration tool that keys by filename, an integration with no sandbox.
+  Delete the paragraph if there is nothing true to put in it.
+-->
 
 ## Architecture
 

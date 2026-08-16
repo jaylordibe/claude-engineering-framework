@@ -26,10 +26,10 @@ The vocabulary for everything below is
 
 ## 1. Establish scope
 
-Read: the repository's `CLAUDE.md` · `.claude/engineering-framework.json` if
-present · the approved plan · the review report · the current diff · the
-dependency manifest and its scripts · the test runner configuration · the CI
-workflow · any service or container definitions the tests depend on.
+Read: the repository's `CLAUDE.md` · the approved plan · the review report ·
+the current diff · the dependency manifest and its scripts · the test runner
+configuration · the CI workflow · any service or container definitions the
+tests depend on.
 
 State: the exact worktree or commit · the changed files and contracts · the
 risk tier · **the required checks for that tier** · any prerequisite that is
@@ -39,14 +39,12 @@ unavailable.
 
 Take them, in this order of authority:
 
-1. `.claude/engineering-framework.json` → `commands`, whose keys are `install`,
-   `build`, `lint`, `typecheck`, `test`, `testIntegration`, `testE2E`,
-   `securityScan` and `start`. A key that is absent was deliberately not
-   declared — treat it as undiscovered here and fall through, never as a gate
-   that does not exist;
-2. the repository's `CLAUDE.md` canonical-commands section;
-3. the dependency manifest's scripts;
-4. the CI workflow — the most reliable statement of what actually must pass.
+1. the repository's `CLAUDE.md` canonical-commands section — the repository's
+   own statement of how it is verified. A row that is absent was deliberately
+   not declared: treat it as undiscovered here and fall through, never as a
+   gate that does not exist;
+2. the dependency manifest's scripts;
+3. the CI workflow — the most reliable statement of what actually must pass.
 
 **Do not invent a command.** A guessed command that happens to exit zero is
 worse than no evidence, because it reads as a pass.
