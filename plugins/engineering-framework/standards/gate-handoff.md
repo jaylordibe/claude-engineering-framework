@@ -15,7 +15,7 @@ writing anything.
 | Mode | You are in it when | How the gate ends |
 |---|---|---|
 | **Standalone** | The human typed `/engineering-framework:gate-design`, `:gate-approve`, `:gate-implement`, `:gate-review` or `:gate-validate` directly | §1, §2, §3 — close, name the next command, ask whether to continue |
-| **Conductor** | You are executing a `/engineering-framework:work-item` stage, reading this gate's `SKILL.md` as that stage's playbook | §1 and §4 only. Emit the stage marker in §5 and **continue immediately** |
+| **Conductor** | You are executing a `/engineering-framework:work-item` stage, reading this gate's `SKILL.md` as that stage's playbook | §1 and §4 only. Emit the pipeline ledger in §5 and **continue immediately** |
 
 **In conductor mode you must not ask whether to continue.** `work-item` already
 carries the human's authorisation for the whole pipeline, and its two real
@@ -109,14 +109,58 @@ stages; it removes nothing from this list.
 
 ## 5. Closing a gate in conductor mode
 
-Close with §1, then emit a single stage marker and **keep working**:
+Close with §1, then re-emit the **pipeline ledger** and **keep working**. No
+next-command line, no `AskUserQuestion`, no fresh-session recommendation.
+
+### The pipeline ledger
+
+The ledger is the run's position, written out in full. A developer watching a
+pipeline that stops twice over a long session must be able to see, in the
+message in front of them, which stage is running, which are behind it and what
+each one concluded — without scrolling back or asking.
 
 ```text
-Stage 3 — Implement: complete. 7 files, 2 specs. Build, lint and affected tests pass.
-Stage 4 — Review: in progress.
+Pipeline — <the work item, one line>
+[x] 1 Understand   Standard band · risk High · map complete
+[x] 2 Design       GATE 1 · approved 2 conditions, verbatim below
+[>] 3 Implement    slice 2 of 3
+[ ] 4 Review
+[ ] 5 Validate
+[ ] 6 Present      HUMAN GIT / RELEASE GATE
+[ ] 7 Report to issue tracker
 ```
 
-No next-command line, no `AskUserQuestion`, no fresh-session recommendation.
+`[x]` complete · `[>]` in progress · `[ ]` not started · `[-]` skipped, which
+always carries its reason. **Exactly one stage is `[>]`.** A completed stage
+keeps a short result clause — the evidence in a few words, never a paragraph,
+because the detail is in the §1 close directly above it.
+
+Emit it in full at every one of these, and nowhere else it would be noise:
+
+- the first response of the run, before Stage 1 begins;
+- every stage transition;
+- immediately after an approval decision;
+- the first response after compaction, once the state has been re-read;
+- whenever one of the stops below fires, so the stop is read against a position
+  rather than in isolation;
+- the final response of the run.
+
+### The ledger depends on nothing
+
+**You write the ledger yourself, in the message.** It is not a tool call, and
+no host feature has to be present for it to work.
+
+This is deliberate and it is not a preference. A host task-list tool is a
+*display* of the run's position, never the record of it: current models are not
+given those tools by default, so a conductor that keeps its position only there
+shows the developer an empty panel and, after compaction, has lost its own
+place. Durable state is covered by the conductor's own rule; the ledger covers
+being *visible*, and a run that is silent about where it is has already failed
+the developer watching it.
+
+When the host does provide a task list, mirror these seven stages into it so
+the panel and the ledger say the same thing, and keep emitting the ledger
+anyway. When it does not, nothing about the run changes.
 
 ### Preserving review independence without a human stop
 

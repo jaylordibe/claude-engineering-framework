@@ -192,7 +192,7 @@ mode table.
 
 **Standalone** — offer to continue into `gate-validate`.
 
-**Conductor** — emit the stage marker and go straight into validation.
+**Conductor** — re-emit the pipeline ledger and go straight into validation.
 
 **An unresolved Critical or High finding stops the work in both modes.** Name
 what remains and stop. This is not the inter-stage prompt that conductor mode

@@ -523,6 +523,26 @@ That file was removed in 2.0.0 and nothing reads it. See
 not apply to a running session, and hooks in particular keep using the previous
 version's path until `/reload-plugins`.
 
+**Claude Code's own task list stays empty during `/engineering-framework:work-item`.**
+Expected, and the pipeline is unaffected. From Claude Code v2.1.233 the task
+tools are not given to current models by default, so nothing writes to that
+panel — see [C21](docs/constraints.md#c21--the-task-list-tools-are-not-provided-by-default-on-current-models).
+The run's position is the **pipeline ledger** it prints in the conversation:
+seven stages, one marked in progress, re-emitted at every transition. That is
+the thing to read, and it works on every model.
+
+If you would rather also have the native panel, opt in per machine — this is a
+Claude Code setting, not a framework one, and the framework will never write it
+for you:
+
+```json
+// ~/.claude/settings.json
+{ "env": { "CLAUDE_CODE_ENABLE_TODO_TOOLS": "1" } }
+```
+
+Restart afterwards; tool registration is read at startup. The ledger keeps
+printing either way.
+
 **Everything prompts for permission.** From 1.0.0 this is not the framework —
 it ships no permission rules and no hooks that gate a command. Prompting is
 governed entirely by your own settings and your chosen permission mode. If you

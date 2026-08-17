@@ -12,6 +12,72 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 2.1.0 — 2026-08-17
+
+**`/engineering-framework:work-item` had stopped showing where it was, and had
+stopped recording that its plan was approved.** Both had the same cause, both
+arrived without this repository changing a line, and one of them was silent.
+
+No action required, and nothing is asked of a consuming repository. If you are
+on 2.0.0, take this release: the run you get otherwise is one that cannot tell a
+compacted session its design was approved.
+
+### Fixed
+
+- **`work-item` prints a pipeline ledger, and no longer keeps its position in
+  Claude Code's task list.** Seven stages with exactly one marked in progress,
+  emitted in the first response and re-emitted at every stage transition, after
+  your approval, on the first response after compaction, whenever the run stops,
+  and at the end. A pipeline that stops twice and runs unattended in between is
+  now legible while it happens instead of only in its closing report. It
+  replaces the two-line stage marker, and it is written into the conversation,
+  so it needs no host feature and cannot be withdrawn by one.
+
+  **The half that was not visible.** From Claude Code v2.1.233 the task tools
+  are not provided to current models by default (`docs/constraints.md` C21), and
+  this pipeline had kept its state in them. Two things stopped working at once.
+  The stages no longer ticked — the reported symptom — **and the Stage 2
+  approval trace, which was a `TaskUpdate` call, silently stopped being
+  written**, so a compacted run could no longer show that its design had ever
+  been approved. `gate-implement` then treats the design as unapproved, which is
+  the correct outcome reached by wasting the run. That failure produces a
+  *shorter, tidier* transcript than the correct one, which is why it had to be
+  found rather than noticed.
+
+- **Durable state is a run state file kept outside your repository.** The
+  approval trace is written there before the first edit of Stage 3, not at the
+  end of it: a run compacted in between is otherwise indistinguishable from one
+  that was never approved. No framework file is written into your working tree —
+  the only thing a run leaves there is still the approved diff. When a session
+  does have task tools, the same seven stages and the same record are mirrored
+  into them.
+
+- **Optional, and yours to set:** `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` in your own
+  `~/.claude/settings.json` restores Claude Code's native task panel on current
+  models. `framework-install` will not write it for you — it merges two keys,
+  `env` is not one of them, and buying a progress display by widening that
+  exception is the trade 1.0.0 exists to refuse. The ledger prints either way.
+
+### Changed for the framework itself
+
+- **CI now fails a shipped file that requires a host task-list tool.**
+  `validate-plugin.mjs` refuses any file under `skills/`, `agents/`,
+  `standards/` or `templates/` that names `TodoWrite` or a `Task*` tool without
+  stating what the run does when the session has none, and carries normative
+  anchors for the ledger's emission points and for the run state file. The
+  defect it now catches shipped in 1.0.0 and survived every check here, because
+  the thing that vanished was the host's and not ours.
+- `standards/gate-handoff.md` §5 owns the ledger — its format, its markers and
+  every point at which it is re-emitted — so the gates and the conductor cannot
+  drift into two accounts of where a run is.
+- `evals/cases/ledger-visible-through-run` — grades a run that does all seven
+  stages correctly and tells the developer nothing as a failure, on a session
+  with no task tools, which is the default.
+- `CLAUDE.md` records the invariant this cost us: **a host feature may be used
+  and may never be required.**
+
+---
+
 ## 2.0.0 — 2026-08-16
 
 **A repository now declares that it uses this framework, the way it declares any

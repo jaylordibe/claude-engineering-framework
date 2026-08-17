@@ -153,6 +153,19 @@ docs/                               design rationale and Claude Code constraints
   than a cheap default, an uncertain lens launched rather than skipped, a
   generous turn ceiling rather than a tight one. A saving that has to be argued
   for is not a saving worth taking.
+- **A host feature may be used and may never be required.** The framework runs
+  inside an application it does not version. Claude Code stopped providing the
+  task-list tools to current models by default in v2.1.233, and `work-item` had
+  kept both its visible progress and its approval trace in them: the first
+  failure was merely confusing, the second meant an approved design could no
+  longer prove it was approved, and no test here could have caught either
+  because the thing that disappeared was not in this repository. So the ledger
+  is written into the message, durable state is a file outside the consuming
+  repository, and the task list is mirrored into when it exists. Anything a
+  guarantee depends on has to be something this repository ships.
+  `validate-plugin.mjs` fails a shipped file that names a task tool without
+  saying what happens when there is none; `docs/constraints.md` C21 has the
+  citations.
 - **These scripts must run under bash 3.2**, the version macOS ships. No
   `${var,,}`, no associative arrays. Only `session-charter.sh` and `ef-doctor`
   remain, and both are read-only.

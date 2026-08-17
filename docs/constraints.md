@@ -12,6 +12,10 @@ does not know about them will "fix" something that is not broken.
 on **2026-08-15**. Only those three entries were re-checked on that date; the
 rest still carry the 2026-08-11 verification above.
 
+**C21 verified against:** Claude Code **v2.1.233** and the same documentation on
+**2026-08-17**, plus a live session on that build in which none of the four
+`Task*` tools were registered.
+
 **C19–C20 verified against:** the same documentation on **2026-08-16**, plus the
 on-disk plugin state of an installed machine. C20 is *measured*: the documented
 sentences alone do not settle where a project-scoped `autoUpdate` ends up, and
@@ -508,6 +512,66 @@ every run, rather than writing it quietly. The cost is recorded in
 shipped declaration loses the key or carries a non-boolean, and
 `validate-install-settings.mjs` fails if a fresh install omits it, if
 `--no-auto-update` writes it anyway, or if an existing `false` is flipped.
+
+---
+
+## C21 — The task-list tools are not provided by default on current models
+
+> In Claude Code v2.1.233 and later, the following tools aren't available on
+> Opus 4.8, Sonnet 5, Fable 5, Mythos 5, or later versions of those families
+> unless you opt in: `TodoWrite`, `TaskCreate`, `TaskGet`, `TaskUpdate`, and
+> `TaskList`. Those models keep track of multi-step work without a written
+> checklist, and the tools' definitions and reminders take up context, so Claude
+> Code leaves them out. Without them, Claude adds nothing to the task list while
+> it works. — *Tools reference, "Task tool availability"*
+
+Opting in is per machine, not per repository: export
+`CLAUDE_CODE_ENABLE_TODO_TOOLS=1`, or name one of the tools in `--allowedTools`.
+An earlier rename sits behind this one — `TodoWrite` became the four `Task*`
+tools — so a file written against either name is now two removes from what the
+session actually has.
+
+**Consequence, and it is not the cosmetic one.** `work-item` is a seven-stage
+pipeline that stops twice and runs unattended in between. It kept its position
+in the task list, and the stage-2 approval trace was a `TaskUpdate` call. On a
+current model both of those became no-ops:
+
+1. the developer watching a long run saw no stages tick and had no way to tell
+   which stage was executing — the symptom that surfaced this;
+2. **the approval trace stopped being written**, so a compacted session had no
+   evidence that the design was ever approved. The rule that catches that
+   condition is `gate-implement`'s, and it is written to treat a missing trace
+   as an unapproved design — the correct outcome, reached by wasting the run.
+
+The second failure is the one this entry exists for. It is silent from here, it
+looks like nothing at all in a transcript, and no test in this repository would
+have found it: every check we run reads files, and the tool that vanished was
+the host's.
+
+**What we do.** The conductor writes its own ledger into the message at every
+stage transition — `standards/gate-handoff.md` §5 — and keeps durable state in a
+run state file outside the consuming repository. Neither depends on a host
+feature, so neither can be withdrawn by a release note. When the session *does*
+have the task tools, the same seven stages are mirrored into them, because the
+native panel is a better display than a code block; nothing about the run
+changes when it is absent.
+
+**What we deliberately do not do.** `ef-install-settings` is not extended to
+write `env` into a consuming repository's settings. It merges two keys, that
+width is asserted by `validate-install-settings.mjs`, and buying back a nicer
+progress display by widening the one exception this framework grants itself is
+the trade the whole 1.0.0 line exists to refuse. The environment variable is
+documented for people who want the native list; it is never written for them.
+
+**Mechanically checked.** `validate-plugin.mjs` fails any file under `skills/`,
+`agents/`, `standards/` or `templates/` that names a task tool without stating
+what happens when the session has none, and holds two normative anchors: the
+ledger's emission points in `standards/gate-handoff.md`, and the run state file
+in `skills/work-item/SKILL.md`.
+
+**Verified against** Claude Code **v2.1.233** and the documentation at
+`code.claude.com/docs/en/tools-reference`, on **2026-08-17**, plus the observed
+absence of all four `Task*` tools in a live session on that build.
 
 ---
 

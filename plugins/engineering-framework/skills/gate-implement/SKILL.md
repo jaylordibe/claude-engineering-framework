@@ -165,7 +165,7 @@ fresh session when the change is High or Critical risk**. A review carries more
 weight from a context that did not just write the code; the reviewer should be
 re-reading the diff, not recalling its own intentions.
 
-**Conductor** — emit the stage marker and go straight into the review. Do not
+**Conductor** — re-emit the pipeline ledger and go straight into the review. Do not
 offer, and do not recommend a fresh session: independence there comes from the
 review's read-only subagents, which is why that fan-out is mandatory rather
 than optional on High and Critical work.
