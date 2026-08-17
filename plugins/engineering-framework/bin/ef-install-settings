@@ -153,6 +153,11 @@ USAGE
   shift
 done
 
+# PASS is the present tense and TODO is the future one: PASS states what the
+# file already says, TODO what this run would add. Nothing else distinguishes
+# them, and under --check nothing else can - a value reported as PASS when it is
+# merely intended reads as already-configured, which is the one thing a dry run
+# exists to tell you apart.
 pass() { printf 'PASS  %s\n' "$1"; }
 todo() { printf 'TODO  %s\n' "$1"; }
 fail() { printf 'FAIL  %s\n' "$1"; }
@@ -403,7 +408,7 @@ report_auto_update() {
         note 'Auto-update left unset (--no-auto-update). Adopt releases with'
         note '/plugin marketplace update, then /plugin update.'
       else
-        pass 'Auto-update is on for this marketplace.'
+        todo 'Turn auto-update on for this marketplace.'
         note 'A released version arrives without anyone running an update'
         note 'command, which is the point: this repository records no framework'
         note 'version, so nothing else would ever ask for a correction. Claude'
@@ -427,7 +432,7 @@ report_task_tools() {
     note "${task_tools_key} left unset (--no-task-tools). work-item's stages"
     note 'will not appear in the task panel on current models.'
   else
-    pass "${task_tools_key} is \"1\" for this project."
+    todo "Set ${task_tools_key} to \"1\" for this project."
     note 'Current models are not given the task tools by default, so without'
     note 'this the seven stages of a work-item run tick nowhere while it works.'
     note 'It grants and denies nothing. A developer who wants it off sets it in'

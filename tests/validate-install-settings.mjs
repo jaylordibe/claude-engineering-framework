@@ -612,6 +612,22 @@ runCase('--check reports the pending work and writes nothing', (name) => {
   check(name, !existsSync(settingsPath(repository)), '--check created a settings file', run.output);
 });
 
+// A dry run's whole job is separating what the file says from what this run
+// would add, and PASS/TODO is the only thing carrying that distinction. Both
+// of these were once reported as PASS while still absent, which reads as
+// already-configured and is the exact misreading --check exists to prevent.
+runCase('--check marks an absent value TODO rather than PASS', (name) => {
+  const repository = buildRepository({ 'CLAUDE.md': '# CLAUDE.md\n' });
+  const run = runInstaller(repository, ['--check']);
+
+  const lineFor = (pattern) => run.output.split('\n').find((line) => pattern.test(line)) ?? '';
+  const taskLine = lineFor(new RegExp(TASK_TOOLS_KEY));
+  const autoLine = lineFor(/auto-update/i);
+
+  check(name, /^TODO/.test(taskLine), `${TASK_TOOLS_KEY} is not reported as pending: ${taskLine}`, run.output);
+  check(name, /^TODO/.test(autoLine), `auto-update is not reported as pending: ${autoLine}`, run.output);
+});
+
 runCase('nothing is ever written outside the repository', (name) => {
   const repository = buildRepository({ 'CLAUDE.md': '# CLAUDE.md\n' });
   const run = runInstaller(repository);
