@@ -287,9 +287,17 @@ Two boundaries are enforced by mechanism, not by instruction:
 `disable-model-invocation: true`, which removes it from Claude's context
 entirely. There is no phrasing that causes Claude to invoke it. Under the
 conductor, approval instead comes from a plan-mode decision — a real user
-action, recorded into the implementation task so it survives compaction. A
-summary claiming "the user approved" is not evidence, and `gate-implement`
-says so explicitly.
+action, recorded before the first edit into a run state file kept outside the
+consuming repository so it survives compaction, and onto the implementation task
+as well when the session has task tools at all. A summary claiming "the user
+approved" is not evidence, and `gate-implement` says so explicitly.
+
+That record used to live only on the task, which is the shape of defect
+[C21](constraints.md#c21--the-task-list-tools-are-not-provided-by-default-on-current-models)
+describes: a host application withdrew the tool by default, the write became a
+no-op, and the guarantee was gone with nothing in this repository able to see
+it. A boundary that depends on an optional feature of the host is enforced by
+instruction after all.
 
 **The commit is the human's.** Git writes are denied at two layers, and the
 work is reported as existing only in the working tree.

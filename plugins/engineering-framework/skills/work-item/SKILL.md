@@ -16,7 +16,7 @@ $ARGUMENTS
 ```
 
 Run this workflow in the **main conversation context**. Do not fork the whole
-skill into a subagent: the conductor must hold the task checklist, stop for
+skill into a subagent: the conductor must hold the pipeline ledger, stop for
 human approval, delegate multiple independent agents, edit only after approval,
 and resume after discussion or compaction.
 
@@ -48,7 +48,7 @@ skills in **conductor mode** — `${CLAUDE_PLUGIN_ROOT}/standards/gate-handoff.m
 §0 and §5 — so when a gate's own `SKILL.md` ends by offering to continue,
 recommending a fresh session, or printing the next command, **that instruction
 is addressed to a human who typed that command directly and does not apply
-here.** Emit the stage marker and proceed.
+here.** Re-emit the pipeline ledger and proceed.
 
 Removing the prompts removes no rigor. Every panel still fans out at full width
 for the risk tier, every check still runs, and every stop condition still stops.
@@ -105,7 +105,10 @@ its answers is a form of escalation.
 
 ## Pipeline state — do this first
 
-Create a persistent task checklist:
+Before anything else, emit the **pipeline ledger** with all seven stages and
+Stage 1 in progress. `${CLAUDE_PLUGIN_ROOT}/standards/gate-handoff.md` §5 owns
+its format, its state markers and every point at which it is re-emitted; this
+file owns the stages themselves:
 
 1. Understand
 2. Design — GATE 1
@@ -115,6 +118,12 @@ Create a persistent task checklist:
 6. Present — HUMAN GIT / RELEASE GATE
 7. Report to issue tracker
 
+The ledger is the developer's only view of a run that stops twice and otherwise
+executes on its own. **It is written by you, in the message, and requires no
+host feature** — that section says why, and a run that keeps its position only
+in a task-list tool shows an empty panel on the models this framework actually
+runs on.
+
 Rules:
 
 - Keep exactly one stage in progress.
@@ -122,12 +131,13 @@ Rules:
 - Keep Stage 2 in progress throughout all design discussion.
 - Treat "approved", "looks good", "go ahead" as resuming *this* pipeline, not
   as an unrelated request.
-- Re-read the checklist and the approved scope after approval and after
-  compaction.
+- Re-read the run state and the approved scope after approval and after
+  compaction, and re-emit the ledger from what you read rather than from
+  recollection.
 - Never skip Review, Validate, Present or Report because approval arrived after
   a long discussion.
 
-If this is a resumed session, inspect the current diff and the checklist and
+If this is a resumed session, inspect the current diff and the run state and
 resume from the earliest incomplete safe stage. The design is not recoverable
 from disk: if approval had not yet happened, re-design. Never restart blindly,
 and never post a duplicate tracker comment.
@@ -135,8 +145,25 @@ and never post a duplicate tracker comment.
 ## Durable state — what has to survive compaction
 
 This pipeline runs long enough that it will be compacted, and the conversation
-does not survive that. **Tasks do.** Keep the list below current on the
-in-progress task, and nothing beyond it:
+does not survive that. The ledger does not either: it is emitted *into* the
+conversation, so it is compacted with everything else. **Something outside the
+conversation has to hold the record.**
+
+Open a **run state file** at Stage 1 and keep it current. Put it
+outside the repository — the scratch directory this session names, or the
+system temporary directory when it names none — and **never inside the working
+tree**: a run that leaves a file behind for a human to notice, review or
+accidentally commit has changed the repository it was only supposed to change
+through the approved diff. Opening it is not a source edit and does not touch
+the approval boundary above; name its path once, in the first ledger, so a
+resumed session can find it.
+
+If this session has a task-list tool, keep the same record on the in-progress
+task as well. Two copies written in the same act do not drift, and either alone
+is enough to resume from. If it has none, the file is the mechanism and nothing
+else about the run changes.
+
+Keep the list below current, and nothing beyond it:
 
 the original and resolved requirement · the current stage · the risk tier and
 the depth band · the approved scope · every human condition, **verbatim** · the
@@ -150,14 +177,15 @@ it. `standards/execution-efficiency.md` §11 states why: a carried-forward
 summary is never stronger evidence than the file it summarises, and after
 compaction the file is still there.
 
-So after compaction: re-read the checklist and the approval trace, then **re-read
-the source for anything correctness depends on**. Do not resume from a summary's
-account of what the code does.
+So after compaction: re-read the run state and the approval trace, re-emit the
+ledger from them, then **re-read the source for anything correctness depends
+on**. Do not resume from a summary's account of what the code does.
 
-The one thing a summary can never establish is the approval itself. A resumed
-session that finds no approval trace has an unapproved design, however
-confidently the surrounding context reads — `gate-implement` says so, and this
-is the failure that rule exists to prevent.
+The one thing no record establishes by asserting it is the approval itself. A
+resumed session that finds no approval trace has an unapproved design, however
+confidently the surrounding context reads — and a trace is only a trace if it
+carries the human's own words, which is why the record keeps them verbatim.
+`gate-implement` says so, and this is the failure that rule exists to prevent.
 
 ## Input resolution
 
@@ -286,19 +314,20 @@ in either direction. If `ExitPlanMode` is unavailable, fall back to
 
 On approval:
 
-1. re-read the checklist;
+1. re-read the run state;
 2. restate the approved scope and every condition the user attached, **verbatim**
    — those conditions bind the implementation exactly as the plan does;
-3. **write that record into the Stage 3 task** (`TaskUpdate`, appended to its
-   description): what was approved, the risk tier, the depth band, and each
-   condition in the user's own words. This is the approval trace and the
-   durable state above. The plan is not a file, so
-   without it a compacted session has no way to tell *approved* from merely
-   *presented* — and a summary asserting "the user approved" is not evidence,
-   it is the failure mode this step exists to prevent. Tasks survive
-   compaction; the conversation does not;
-4. mark Stage 2 complete, mark Stage 3 in progress, and continue in the same
-   session.
+3. **write that record into the run state**, and onto the Stage 3 task when
+   this session has one: what was approved, the risk tier, the depth band, and
+   each condition in the user's own words. This is the approval trace and the
+   durable state above. The plan is not a file, so without it a compacted
+   session has no way to tell *approved* from merely *presented* — and a
+   summary asserting "the user approved" is not evidence, it is the failure
+   mode this step exists to prevent. **Write it before the first edit of
+   Stage 3**, not at the end of it: a run compacted between approval and the
+   trace is indistinguishable from one that was never approved;
+4. mark Stage 2 complete, mark Stage 3 in progress, re-emit the ledger, and
+   continue in the same session.
 
 If the user requests changes, revise and remain at Stage 2.
 
@@ -317,8 +346,8 @@ If a material divergence becomes necessary, stop and return to the approval
 gate. Never edit the plan to match what you built.
 
 When the approved implementation and its focused tests are complete, mark
-Stage 3 complete, emit the stage marker, and **begin Stage 4 immediately**. Do
-not ask whether to proceed.
+Stage 3 complete, re-emit the pipeline ledger, and **begin Stage 4
+immediately**. Do not ask whether to proceed.
 
 # Stage 4 — Review
 
@@ -342,7 +371,7 @@ Stage 4 exits only when no unresolved Critical or High finding remains, any
 unresolved Medium risk is plainly documented as needing human action, and every
 review fix has focused test evidence.
 
-Mark Stage 4 complete, emit the stage marker, and **begin Stage 5
+Mark Stage 4 complete, re-emit the pipeline ledger, and **begin Stage 5
 immediately**.
 
 # Stage 5 — Validate
@@ -362,7 +391,8 @@ The evidence goes into the Stage 6 presentation and the pull request — not int
 any document in the repository.
 
 Mark Stage 5 complete when the evidence report is complete, **even if the
-verdict is FAIL or BLOCKED**, then continue to Stage 6.
+verdict is FAIL or BLOCKED**, re-emit the pipeline ledger with the verdict on
+its line, then continue to Stage 6.
 
 # Stage 6 — Present [HUMAN GIT / RELEASE GATE]
 
@@ -392,7 +422,8 @@ Do not perform Git writes, publication, migration application, deployment,
 release or risk acceptance.
 
 Stage 6 is a human ownership boundary, not an additional permission for
-Stage 7. After presenting, mark Stage 6 complete and Stage 7 in progress.
+Stage 7. After presenting, mark Stage 6 complete, mark Stage 7 in progress, and
+re-emit the pipeline ledger.
 
 # Stage 7 — Report to issue tracker
 
@@ -400,7 +431,7 @@ Run **only** when all are true: the input was a real issue key · a tracker MCP
 server is connected · the work was not abandoned · no comment has already been
 posted by this run.
 
-Otherwise mark Stage 7 skipped, say why, and finish.
+Otherwise mark Stage 7 skipped, say why, and finish with the closing ledger.
 
 Post **exactly one** comment. Invoking this skill with a real issue key or URL
 is the authorisation for that single comment; do not ask for a separate
@@ -426,3 +457,7 @@ human create it. Do not create one under this authorisation.
 
 After the comment succeeds: mark Stage 7 complete, tell the user it was posted,
 and confirm that issue status and fields were untouched.
+
+The run ends with the ledger, all seven stages resolved and none in progress.
+That final block is what a developer scrolls back to, and it is the last chance
+to say plainly that the work is in the working tree and nothing was committed.

@@ -264,6 +264,28 @@ authorization and background work; yours carry **this repository's answers**.
 Expect to be stopped for plan approval, and expect the run to end with a diff
 in your working tree and nothing committed. Both are the design.
 
+### Following a run
+
+`work-item` prints a **pipeline ledger** — seven stages, exactly one marked in
+progress — in its first response and again at every stage transition, after
+your approval, and at the end. That block is where the run is; it is written
+into the conversation, so it works on every model and on every Claude Code
+build.
+
+Claude Code's own task-list panel is a separate thing and will usually stay
+empty: from v2.1.233 those tools are not given to current models by default
+([C21](constraints.md#c21--the-task-list-tools-are-not-provided-by-default-on-current-models)).
+Nothing is wrong, and no stage is being skipped. To have the native panel as
+well, set `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` in your **own**
+`~/.claude/settings.json` `env` block and restart. That is a per-developer
+choice about your terminal, so `framework-install` does not write it into the
+repository — the two keys it merges are the whole of what it touches.
+
+The run also keeps a state file **outside** your repository, so a compacted
+session can recover the approved scope and your conditions. Nothing is written
+into your working tree except the approved diff; if you ever find a framework
+state file inside the repository, that is a bug worth reporting.
+
 ## Updating the framework
 
 ```text

@@ -1014,7 +1014,50 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'an incomplete map stops the pipeline rather than starting the design',
     patterns: [/incomplete/i, /stop/i, /re-?launch|resolve it/i],
   },
+  // The ledger and the run state file are one defect's two halves, and both
+  // are the kind of line a later edit removes as ceremony. C21 is why they
+  // exist: the host stopped providing the task tools this pipeline used to
+  // keep its position in, and it stopped silently.
+  {
+    file: 'standards/gate-handoff.md',
+    guarantee: 'the conductor emits a full ledger at every stage transition, written in the message rather than through a host tool',
+    patterns: [/ledger/i, /stage transition/i, /task-list tool/i, /depends on nothing|no host feature/i],
+  },
+  {
+    file: 'skills/work-item/SKILL.md',
+    guarantee: 'durable state survives compaction without depending on a host task-list tool',
+    patterns: [/run state file/i, /compact/i, /task-list tool/i, /outside the repository/i],
+  },
 ];
+
+// Host tools this framework may USE but must never REQUIRE. Claude Code stopped
+// providing the task tools by default on current models in v2.1.233
+// (docs/constraints.md C21), which broke `work-item` in two ways at once: the
+// developer lost every sign of where the run was, and the approval trace — a
+// `TaskUpdate` call — silently stopped being written, so a compacted session
+// could no longer tell an approved design from a presented one.
+//
+// Naming these tools is fine. Naming one in a file that does not also state the
+// mechanism used when it is absent is the regression, and it is invisible
+// until someone runs the pipeline on a model that has no task list.
+const OPTIONAL_HOST_TOOLS = /\bTodoWrite\b|\bTask(Create|Update|List|Get)\b/;
+
+function validateNoRequiredHostTaskTool() {
+  const ledgerOwner = 'standards/gate-handoff.md';
+
+  for (const directoryName of DENYLIST_SCANNED_DIRECTORIES) {
+    const directory = join(pluginRoot, directoryName);
+    if (!existsSync(directory)) continue;
+
+    for (const filePath of listFilesRecursively(directory, (path) => path.endsWith('.md'))) {
+      const content = readFileSync(filePath, 'utf8');
+      if (!OPTIONAL_HOST_TOOLS.test(content)) continue;
+      if (content.includes(ledgerOwner) && /when (this session|the host)|if (this session|the host)|is absent|has none/i.test(content)) continue;
+
+      fail(filePath, `names a host task-list tool without stating what happens when the session does not have one. Those tools are omitted by default on current models, so a step written as though one exists is a step that silently does not run. Make the dependency conditional and cite \${CLAUDE_PLUGIN_ROOT}/${ledgerOwner}, which owns the mechanism that always works.`);
+    }
+  }
+}
 
 // Where a policy is defined, and the vocabulary that gives it away. A second
 // file may USE these words freely — it just has to cite the file that owns
@@ -1030,6 +1073,11 @@ const SINGLE_SOURCE_POLICIES = [
     owner: 'standards/execution-efficiency.md',
     vocabulary: /\bdepth band\b|\bTargeted\b.*\bStandard\b.*\bDeep\b/i,
     what: 'investigation depth banding',
+  },
+  {
+    owner: 'standards/gate-handoff.md',
+    vocabulary: /\bpipeline ledger\b/i,
+    what: 'the conductor pipeline ledger',
   },
 ];
 
@@ -1139,6 +1187,7 @@ validateNoLegacyPolicyFileReferences();
 validateInstallerBoundary();
 validateNormativeAnchors();
 validateSingleSourcePolicies();
+validateNoRequiredHostTaskTool();
 validateNoStackAssumptions();
 validateChangelog(manifest);
 
