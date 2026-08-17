@@ -11,10 +11,11 @@
 #
 # WHAT IT WRITES, AND THE LINE IT DOES NOT CROSS
 # ----------------------------------------------
-# Exactly two keys of <repository>/.claude/settings.json:
+# Exactly three keys of <repository>/.claude/settings.json:
 #
 #   extraKnownMarketplaces.<marketplace>   so the marketplace resolves
 #   enabledPlugins["<plugin>@<marketplace>"]   so the plugin is active here
+#   env.CLAUDE_CODE_ENABLE_TODO_TOOLS      so the pipeline's stages are visible
 #
 # It never writes `permissions`, never writes `hooks`, never writes a global
 # ~/.claude/settings.json, and never touches Claude Code's own plugin state
@@ -22,6 +23,31 @@
 # the permission rules a developer chose; that line is unchanged. Declaring a
 # dependency is not the same act as changing someone's permission posture, and
 # this script is written so the difference is mechanical rather than promised.
+#
+# THE THIRD KEY, AND WHY IT IS A DEPENDENCY RATHER THAN A POSTURE
+# ---------------------------------------------------------------
+# From Claude Code v2.1.233 the task-list tools are not given to current models
+# unless a session opts in (docs/constraints.md C21). `work-item` is a
+# seven-stage pipeline that stops twice and runs unattended in between, and the
+# task panel is how a developer sees which stage is executing while it works.
+# Without the opt-in the panel stays empty for the whole run.
+#
+# This key was deliberately NOT written until 2.2.0, on the reasoning that a
+# developer's terminal is theirs. That was the wrong call, and the reason is the
+# asymmetry this project already applies elsewhere: the setting grants nothing
+# and denies nothing, so a wrong value here cannot block anybody's work — the
+# worst case is a checklist someone did not want and slightly more context. A
+# per-machine step that every developer must find and perform by hand is not
+# neutrality; it is a step most of them will never take, which makes the
+# framework's own progress display a thing that usually does not work.
+#
+# Project settings take precedence over ~/.claude/settings.json, so a developer
+# who wants it off sets it in .claude/settings.local.json, which is per-developer
+# and not committed. `--no-task-tools` writes the entry without it.
+#
+# An `env` that ALREADY states this key, either way, is never rewritten — same
+# rule as autoUpdate below, and for the same reason. Only a file with no opinion
+# gains one, and nothing else inside `env` is read or touched.
 #
 # AUTO-UPDATE IS ON, AND WHY THAT IS THE RIGHT DEFAULT HERE
 # ---------------------------------------------------------
@@ -71,6 +97,11 @@ fi
 check_only=false
 enable_disabled=false
 auto_update=true
+task_tools=true
+
+# The one env key this script knows about. Named once, because the merge, the
+# conflict report and the intended block must all mean the same key.
+task_tools_key='CLAUDE_CODE_ENABLE_TODO_TOOLS'
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -85,10 +116,11 @@ while [ "$#" -gt 0 ]; do
     --check) check_only=true ;;
     --enable-disabled) enable_disabled=true ;;
     --no-auto-update) auto_update=false ;;
+    --no-task-tools) task_tools=false ;;
     -h | --help)
       cat <<'USAGE'
 Usage: ef-install-settings [--path <repository>] [--check] [--enable-disabled]
-                          [--no-auto-update]
+                          [--no-auto-update] [--no-task-tools]
 
 Declares the engineering-framework marketplace and enables the plugin in a
 repository's own .claude/settings.json, preserving everything else in the file.
@@ -98,10 +130,16 @@ repository's own .claude/settings.json, preserving everything else in the file.
   --enable-disabled   Re-enable the plugin when the project explicitly disabled it
   --no-auto-update    Write the marketplace entry without "autoUpdate": true,
                       so releases are adopted deliberately instead of arriving
+  --no-task-tools     Do not set env.CLAUDE_CODE_ENABLE_TODO_TOOLS, so the
+                      pipeline's stages do not appear in Claude Code's task panel
 
 A new entry is written with "autoUpdate": true, because a consuming repository
 records no framework version and would otherwise never receive a correction. An
 entry that already states autoUpdate, either way, is left exactly as it is.
+
+env.CLAUDE_CODE_ENABLE_TODO_TOOLS is set to "1" so work-item's seven stages are
+visible while a run works; current models are not given the task tools by
+default. A file that already states that key, either way, is left as it is.
 
 Writes nothing outside <repository>/.claude/settings.json.
 USAGE
@@ -176,8 +214,11 @@ intended_block() {
   jq -n \
     --arg marketplace "$marketplace" \
     --arg plugin_id "$plugin_id" \
+    --arg task_key "$task_tools_key" \
+    --arg task_tools "$task_tools" \
     --argjson entry "$declared_entry" \
-    '{extraKnownMarketplaces: {($marketplace): $entry}, enabledPlugins: {($plugin_id): true}}'
+    '{extraKnownMarketplaces: {($marketplace): $entry}, enabledPlugins: {($plugin_id): true}}
+     | if $task_tools == "true" then .env = {($task_key): "1"} else . end'
 }
 
 # ---------------------------------------------------------------------------
@@ -223,12 +264,12 @@ if [ -e "$settings" ]; then
 
   current=$(cat "$settings")
 
-  # The two keys this script merges into must themselves be objects. Without
+  # The three keys this script merges into must themselves be objects. Without
   # this, a `"enabledPlugins": "yes"` reaches jq's indexing and the run ends in
   # raw parser noise and a generic refusal - safe, but undiagnosable. Valid
   # JSON of the wrong shape is a failure this project has met before, and the
   # lesson was that the shape has to be checked where the value is read.
-  for owned_key in extraKnownMarketplaces enabledPlugins; do
+  for owned_key in extraKnownMarketplaces enabledPlugins env; do
     # The parentheses are load-bearing: `|` binds looser than `or` in jq, so
     # `has($key) | not or (...)` pipes a boolean into `.[$key]` and errors.
     if ! printf '%s' "$current" | jq -e --arg key "$owned_key" '
@@ -310,6 +351,8 @@ fi
 merged=$(printf '%s' "$current" | jq \
   --arg marketplace "$marketplace" \
   --arg plugin_id "$plugin_id" \
+  --arg task_key "$task_tools_key" \
+  --arg task_tools "$task_tools" \
   --argjson entry "$declared_entry" '
   if (.extraKnownMarketplaces[$marketplace] | not)
     then .extraKnownMarketplaces[$marketplace] = $entry
@@ -320,6 +363,14 @@ merged=$(printf '%s' "$current" | jq \
   end
   | if (.enabledPlugins[$plugin_id] == null or .enabledPlugins[$plugin_id] == false)
       then .enabledPlugins[$plugin_id] = true
+      else .
+    end
+  # `has` rather than a truthiness test, for the reason above the autoUpdate
+  # merge: "0" is a decision, and a test that cannot tell it from absent would
+  # reverse it on the next install. Only this one member of `env` is considered;
+  # everything else in the object is carried through untouched.
+  | if $task_tools == "true" and ((.env // {}) | has($task_key) | not)
+      then .env = ((.env // {}) + {($task_key): "1"})
       else .
     end
 ')
@@ -363,10 +414,32 @@ report_auto_update() {
   esac
 }
 
+# Read from the file as it stands, so the report describes what is there rather
+# than what the merge wanted. An absent key reads as `null`, and `"0"` is a
+# decision this script leaves alone.
+existing_task_tools=$(printf '%s' "$current" | jq -r --arg key "$task_tools_key" '.env[$key] // "unset"')
+
+report_task_tools() {
+  if [ "$existing_task_tools" != 'unset' ]; then
+    pass "${task_tools_key} is \"${existing_task_tools}\", as this project set it."
+    note 'Left as it is.'
+  elif [ "$task_tools" = false ]; then
+    note "${task_tools_key} left unset (--no-task-tools). work-item's stages"
+    note 'will not appear in the task panel on current models.'
+  else
+    pass "${task_tools_key} is \"1\" for this project."
+    note 'Current models are not given the task tools by default, so without'
+    note 'this the seven stages of a work-item run tick nowhere while it works.'
+    note 'It grants and denies nothing. A developer who wants it off sets it in'
+    note '.claude/settings.local.json, which is theirs and is not committed.'
+  fi
+}
+
 if [ "$(printf '%s' "$current" | jq -S -c '.')" = "$(printf '%s' "$merged" | jq -S -c '.')" ]; then
   pass "Marketplace \"${marketplace}\" is declared."
   pass "${plugin_id} is enabled for this project."
   report_auto_update
+  report_task_tools
   note 'Already correct. The file was not rewritten.'
   exit 0
 fi
@@ -386,6 +459,7 @@ else
 fi
 
 report_auto_update
+report_task_tools
 
 if [ "$check_only" = true ]; then
   note 'Nothing was written (--check).'

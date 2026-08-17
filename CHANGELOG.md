@@ -12,6 +12,44 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 2.2.0 — 2026-08-17
+
+**`framework-install` now switches the task panel on for you.** 2.1.0 moved the
+pipeline's position into a ledger in the message, which was right, and left the
+native panel as a manual step in each developer's own `~/.claude/settings.json`,
+which was not. A per-machine step that has to be found and performed by hand is
+one most people never take, so the framework was promising visible progress and
+delivering it to almost nobody.
+
+- **What changed on disk.** `ef-install-settings` merges a third thing into your
+  project's committed `.claude/settings.json`: the single `env` member
+  `CLAUDE_CODE_ENABLE_TODO_TOOLS`, set to `"1"`. A `work-item` run's seven
+  stages then tick in Claude Code's task panel, because current models are not
+  given the task tools unless a session opts in
+  ([C21](docs/constraints.md)). **Re-run
+  `/engineering-framework:framework-install` once and commit** — a repository
+  configured by an earlier version does not have the key, and nothing else asks
+  for it.
+
+- **Nothing else in `env` is read or written**, an existing value for that key —
+  `"1"` or `"0"` — is never rewritten, and `--no-task-tools` skips it. To turn
+  it off for yourself without changing it for your team, set it in
+  `.claude/settings.local.json`, which is per developer and is not committed.
+  Note that project settings outrank your own `~/.claude/settings.json`.
+
+- **Why this is not the permissions floor coming back.** The test that admitted
+  it is that the key **grants nothing and denies nothing**: a wrong value costs
+  you a checklist you did not want, where a wrong permission rule blocks work
+  outright and cannot be clicked through. The 1.0.0 line is about rules that can
+  deny, and it is unchanged. `tests/validate-install-settings.mjs` asserts the
+  new width — three keys, and still nothing written into `$HOME`.
+
+- **The ledger is unchanged and still prints.** It is the durable record and the
+  thing that survives a compaction; the panel is how you read the current stage
+  without scrolling. Both, not either.
+
+---
+
 ## 2.1.0 — 2026-08-17
 
 **`/engineering-framework:work-item` had stopped showing where it was, and had
@@ -52,11 +90,18 @@ compacted session its design was approved.
   does have task tools, the same seven stages and the same record are mirrored
   into them.
 
-- **Optional, and yours to set:** `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` in your own
+- **Set this on every machine:** `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` in your own
   `~/.claude/settings.json` restores Claude Code's native task panel on current
-  models. `framework-install` will not write it for you — it merges two keys,
-  `env` is not one of them, and buying a progress display by widening that
-  exception is the trade 1.0.0 exists to refuse. The ledger prints either way.
+  models, so the seven stages tick while a run works. `framework-install` will
+  not write it for you — it merges two keys, `env` is not one of them, and
+  buying a progress display by widening that exception is the trade 1.0.0
+  exists to refuse. The ledger is the record either way; the panel is how you
+  read the current stage without scrolling.
+
+  **Superseded by 2.2.0**, which writes the key into the project's own settings.
+  A step every developer had to find and perform by hand was one most never
+  took, which made this a feature that mostly did not work. Nothing to undo: a
+  value already in your own settings is still honoured.
 
 ### Changed for the framework itself
 

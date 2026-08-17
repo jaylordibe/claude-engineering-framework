@@ -49,9 +49,11 @@ It writes two things and shows you each before writing it:
 
 Commit both.
 
-**It writes no permission rules.** It merges exactly two top-level keys —
-`extraKnownMarketplaces` and `enabledPlugins` — and never touches
-`permissions`, `hooks` or `env`. It writes nothing global — not your
+**It writes no permission rules.** It merges exactly three things —
+`extraKnownMarketplaces`, `enabledPlugins`, and the single `env` member
+`CLAUDE_CODE_ENABLE_TODO_TOOLS` that makes a run's stages visible in the task
+panel — and never touches `permissions`, `hooks`, or any other member of `env`.
+It writes nothing global — not your
 `~/.claude/settings.json`, not Claude Code's plugin state. Trust, installation,
 the installed version, the cache and updates are Claude Code's; the repository
 just says it depends on this framework.
@@ -185,8 +187,9 @@ repository and to you — if you turn on a permission mode, you get that mode.
 The single exception to "it does not edit your settings" is narrow and
 deliberate: when *you* run `framework-install`, it merges the marketplace and
 plugin declaration into your project's `.claude/settings.json` and nothing else.
-It never writes `permissions`, `hooks` or `env`, and never writes a file outside
-your repository.
+It never writes `permissions`, never writes `hooks`, never touches a member of
+`env` other than `CLAUDE_CODE_ENABLE_TODO_TOOLS`, and never writes a file
+outside your repository.
 
 What it does instead is methodology: gates you invoke, review lenses that read
 your diff, and standards those lenses judge against. The charter states which

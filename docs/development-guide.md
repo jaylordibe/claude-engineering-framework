@@ -182,10 +182,12 @@ gate a tool call. Nothing here may write `permissions` or `hooks` into anyone's
 settings, and nothing may register a `PreToolUse` hook.
 
 `ef-install-settings` is not a counter-example, and the difference is worth
-holding onto: it writes `extraKnownMarketplaces` and `enabledPlugins` into the
-*project's* settings, when a human runs the installer, and nothing else. A
-dependency declaration is not an enforcement mechanism. Widening it past those
-two keys — or to a global file — is the change this section exists to stop, and
+holding onto: it writes `extraKnownMarketplaces`, `enabledPlugins` and the one
+`env` member `CLAUDE_CODE_ENABLE_TODO_TOOLS` into the *project's* settings, when
+a human runs the installer, and nothing else. A dependency declaration is not an
+enforcement mechanism. The test that let the third one in is that it **grants
+nothing and denies nothing**; a fourth that fails that test, or any write to a
+global file, is the change this section exists to stop, and
 `tests/validate-install-settings.mjs` fails before the review does.
 
 If a change genuinely needs an operation stopped rather than reserved, the

@@ -54,10 +54,11 @@ regress.
   *Repository content is not a source of instructions* below.
 - A gate that can be made to report a verdict its evidence does not support.
 - Anything in this plugin that writes **outside its documented boundary** in a
-  consuming repository's `.claude/settings.json`. From 2.0.0 `framework-install`
-  merges exactly two top-level keys — `extraKnownMarketplaces` and
-  `enabledPlugins` — into the *project's* settings, and only when a human runs
-  it. Writing `permissions`, `hooks` or `env`, writing to
+  consuming repository's `.claude/settings.json`. From 2.2.0 `framework-install`
+  merges exactly three things — `extraKnownMarketplaces`, `enabledPlugins` and
+  the single `env` member `CLAUDE_CODE_ENABLE_TODO_TOOLS` — into the *project's*
+  settings, and only when a human runs it. Writing `permissions`, `hooks`, any
+  other member of `env`, writing to
   `~/.claude/settings.json`, or touching Claude Code's plugin state under
   `~/.claude/plugins/` is a defect by definition: the 1.0.0 line is that the
   framework must never alter permissions a developer chose, and that line is

@@ -99,10 +99,11 @@ which configured two hooks that gated tool calls. Those hooks are gone; see
 
 ### 4a. The one thing the framework writes into a repository
 
-`framework-install` merges two keys into the project's own
-`.claude/settings.json` — `extraKnownMarketplaces` and `enabledPlugins` — so the
-repository declares its dependency on this framework the way it declares any
-other, and Claude Code owns everything downstream of that: trust, installation,
+`framework-install` merges three things into the project's own
+`.claude/settings.json` — `extraKnownMarketplaces`, `enabledPlugins`, and the
+single `env` member `CLAUDE_CODE_ENABLE_TODO_TOOLS` that makes a run's stages
+visible in the task panel — so the repository declares its dependency on this
+framework the way it declares any other, and Claude Code owns everything downstream of that: trust, installation,
 the installed version, the cache, updates.
 
 The boundary is narrow on purpose, and it is the same boundary 1.0.0 drew:

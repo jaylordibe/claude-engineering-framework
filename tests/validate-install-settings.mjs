@@ -48,6 +48,13 @@ const declaration = JSON.parse(readFileSync(declarationPath, 'utf8'));
 const MARKETPLACE = declaration.marketplace;
 const PLUGIN_ID = `${declaration.plugin}@${declaration.marketplace}`;
 
+// The third key, from 2.2.0. Current models are not given the task tools by
+// default, so without it work-item's stages tick nowhere — see docs/constraints
+// C21. It is here rather than inline because "already configured" now means
+// three keys, and a fixture that means it should say so in one place.
+const TASK_TOOLS_KEY = 'CLAUDE_CODE_ENABLE_TODO_TOOLS';
+const CONFIGURED_ENV = { [TASK_TOOLS_KEY]: '1' };
+
 // ---------------------------------------------------------------------------
 // Harness
 // ---------------------------------------------------------------------------
@@ -197,6 +204,7 @@ runCase('an entry that already says autoUpdate: false keeps saying it', (name) =
     '.claude/settings.json': {
       extraKnownMarketplaces: { [MARKETPLACE]: { source: declaration.entry.source, autoUpdate: false } },
       enabledPlugins: { [PLUGIN_ID]: true },
+      env: CONFIGURED_ENV,
     },
   });
   const before = snapshot(repository);
@@ -248,7 +256,10 @@ runCase('existing unrelated settings survive the merge', (name) => {
   check(name, run.exit === 0, `expected exit 0, got ${run.exit}`, run.output);
 
   const settings = readSettings(repository);
-  for (const key of Object.keys(original)) {
+  // `env` is no longer unrelated — the installer owns exactly one member of it
+  // from 2.1.0 — so it is asserted below rather than compared wholesale. Every
+  // other key must come back byte-identical.
+  for (const key of Object.keys(original).filter((k) => k !== 'env')) {
     check(
       name,
       JSON.stringify(settings?.[key]) === JSON.stringify(original[key]),
@@ -256,6 +267,79 @@ runCase('existing unrelated settings survive the merge', (name) => {
       JSON.stringify(settings, null, 2),
     );
   }
+  check(
+    name,
+    settings?.env?.MY_FLAG === '1',
+    'an unrelated member of env was changed or dropped',
+    JSON.stringify(settings, null, 2),
+  );
+  check(
+    name,
+    settings?.env?.[TASK_TOOLS_KEY] === '1',
+    'an existing env object did not gain the task-tools key',
+    JSON.stringify(settings, null, 2),
+  );
+  check(name, settings?.enabledPlugins?.[PLUGIN_ID] === true, 'the plugin was not enabled', JSON.stringify(settings, null, 2));
+});
+
+runCase('env.CLAUDE_CODE_ENABLE_TODO_TOOLS is written on a fresh install', (name) => {
+  // work-item's stages tick nowhere without this on current models, and a step
+  // every developer must find and perform by hand is a step most never take.
+  const repository = buildRepository({ 'CLAUDE.md': '# CLAUDE.md\n' });
+  const run = runInstaller(repository);
+
+  check(name, run.exit === 0, `expected exit 0, got ${run.exit}`, run.output);
+  check(
+    name,
+    readSettings(repository)?.env?.[TASK_TOOLS_KEY] === '1',
+    'a fresh install did not enable the task tools, so the pipeline has no visible progress',
+    JSON.stringify(readSettings(repository), null, 2),
+  );
+  check(
+    name,
+    new RegExp(TASK_TOOLS_KEY).test(run.output),
+    'the run set the key without saying so',
+    run.output,
+  );
+});
+
+runCase('a project that already said "0" keeps saying it', (name) => {
+  // Same rule as autoUpdate: "0" is somebody's decision, and this file is
+  // committed, so it may be the team's. Only a file with no opinion gains one.
+  const repository = buildRepository({
+    'CLAUDE.md': '# CLAUDE.md\n',
+    '.claude/settings.json': {
+      extraKnownMarketplaces: { [MARKETPLACE]: declaration.entry },
+      enabledPlugins: { [PLUGIN_ID]: true },
+      env: { [TASK_TOOLS_KEY]: '0' },
+    },
+  });
+  const before = snapshot(repository);
+  const run = runInstaller(repository);
+  const after = snapshot(repository);
+
+  check(name, run.exit === 0, `expected exit 0, got ${run.exit}`, run.output);
+  check(
+    name,
+    readSettings(repository)?.env?.[TASK_TOOLS_KEY] === '0',
+    'a deliberate "0" was flipped by the installer',
+    after.bytes,
+  );
+  check(name, before.bytes === after.bytes, 'an already-decided file was rewritten', after.bytes);
+});
+
+runCase('--no-task-tools writes nothing into env', (name) => {
+  const repository = buildRepository({ 'CLAUDE.md': '# CLAUDE.md\n' });
+  const run = runInstaller(repository, ['--no-task-tools']);
+
+  check(name, run.exit === 0, `expected exit 0, got ${run.exit}`, run.output);
+  const settings = readSettings(repository);
+  check(
+    name,
+    settings?.env === undefined,
+    '--no-task-tools still wrote an env block',
+    JSON.stringify(settings, null, 2),
+  );
   check(name, settings?.enabledPlugins?.[PLUGIN_ID] === true, 'the plugin was not enabled', JSON.stringify(settings, null, 2));
 });
 
@@ -326,6 +410,7 @@ runCase('already configured — idempotent, and the file is not rewritten', (nam
     '.claude/settings.json': {
       extraKnownMarketplaces: { [MARKETPLACE]: declaration.entry },
       enabledPlugins: { [PLUGIN_ID]: true },
+      env: CONFIGURED_ENV,
     },
   });
   const before = snapshot(repository);
@@ -343,6 +428,7 @@ runCase('a correct file formatted differently is still not rewritten', (name) =>
     {
       extraKnownMarketplaces: { [MARKETPLACE]: declaration.entry },
       enabledPlugins: { [PLUGIN_ID]: true },
+      env: CONFIGURED_ENV,
     },
     null,
     4,

@@ -157,7 +157,7 @@ fi
 # ---------------------------------------------------------------------------
 # 3. The project's dependency declaration
 #
-# This audits the same two keys `ef-install-settings` writes, and deliberately
+# This audits the same three keys `ef-install-settings` writes, and deliberately
 # does its own small read rather than calling that script: the doctor is
 # read-only, and a doctor that shells out to the installer to find out what the
 # installer would do is one refactor away from doing it.
@@ -217,6 +217,24 @@ if command -v jq >/dev/null 2>&1 && [ -r "$declaration" ]; then
         note 'commands by hand — and nothing records a framework version here'
         note 'that could look stale. Re-run framework-install to set it, or'
         note 'set it deliberately to false.'
+        ;;
+    esac
+
+    # Added in 2.2.0. A repository configured by an earlier version has a
+    # complete-looking declaration and no way to know this key is missing: the
+    # panel is simply empty for a whole run, which reads as the pipeline being
+    # stuck rather than as a setting nobody wrote. Nothing else reports it.
+    case "$(jq -r '.env.CLAUDE_CODE_ENABLE_TODO_TOOLS' "$project_settings")" in
+      1) pass 'The task panel is on, so a work-item run shows which stage is live.' ;;
+      null)
+        warn 'env.CLAUDE_CODE_ENABLE_TODO_TOOLS is not set here.'
+        note 'Current models are not given the task tools unless a session opts'
+        note 'in, so a work-item run ticks no stages while it works and the'
+        note 'panel stays empty. Re-run framework-install to set it, or run it'
+        note 'with --no-task-tools if that is deliberate.'
+        ;;
+      *)
+        pass 'The task panel setting is stated by this project. Left as it is.'
         ;;
     esac
   fi
