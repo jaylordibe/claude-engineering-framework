@@ -48,6 +48,13 @@ delivering it to almost nobody.
   thing that survives a compaction; the panel is how you read the current stage
   without scrolling. Both, not either.
 
+- **`ef-install-settings --check` no longer reports a pending value as done.**
+  A key this run *would* write was printed as `PASS ... is "1"`, which is what
+  an already-configured project prints — so a dry run on a repository missing
+  the key looked identical to one that had it. Both that key and `autoUpdate`
+  now print `TODO`, which is what every other pending change in the report has
+  always used. The merge itself never changed; only the report did.
+
 ---
 
 ## 2.1.0 — 2026-08-17
