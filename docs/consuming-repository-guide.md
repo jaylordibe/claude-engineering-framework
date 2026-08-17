@@ -66,12 +66,13 @@ directory, no mandated test framework or language, and **no framework version
 anywhere in your repository** — Claude Code owns the installed version.
 
 **The framework still ships no permission rules.** `framework-install` merges
-`extraKnownMarketplaces` and `enabledPlugins` into `.claude/settings.json` and
-nothing else; it never writes `permissions`, `hooks` or `env`, and never writes
-outside your repository. Versions before 1.0.0 installed a permissions floor; if
-you have one, it is still there because a merge only ever adds, and nothing here
-reads it any more. See the 1.0.0 entry in `CHANGELOG.md` for what is worth
-deleting.
+`extraKnownMarketplaces`, `enabledPlugins` and the single `env` member
+`CLAUDE_CODE_ENABLE_TODO_TOOLS` into `.claude/settings.json` and nothing else;
+it never writes `permissions`, never writes `hooks`, never touches any other
+member of `env`, and never writes outside your repository. Versions before 1.0.0
+installed a permissions floor; if you have one, it is still there because a
+merge only ever adds, and nothing here reads it any more. See the 1.0.0 entry in
+`CHANGELOG.md` for what is worth deleting.
 
 ### What the declaration looks like
 
@@ -87,13 +88,22 @@ lands in the commit:
       "autoUpdate": true
     }
   },
-  "enabledPlugins": { "engineering-framework@jaylordibe": true }
+  "enabledPlugins": { "engineering-framework@jaylordibe": true },
+  "env": { "CLAUDE_CODE_ENABLE_TODO_TOOLS": "1" }
 }
 ```
 
 That is the whole declaration: **which marketplace, that the plugin is enabled
-here, and that releases arrive on their own.** No framework version — that is
-Claude Code's to track, not yours.
+here, that releases arrive on their own, and that a `work-item` run's stages
+show up in Claude Code's task panel.** No framework version — that is Claude
+Code's to track, not yours.
+
+The last one is there because current models are not given the task tools unless
+a session opts in, so without it the panel stays empty for a whole run. It
+grants nothing and denies nothing, which is why it is the one environment value
+the installer writes. `--no-task-tools` skips it, an existing value is never
+rewritten, and a developer who wants it off only for themselves sets it in
+`.claude/settings.local.json`, which is not committed.
 
 Anything already in the file is preserved — permissions, hooks, environment,
 other marketplaces, other plugins. The installer refuses to write at all if the
@@ -272,14 +282,18 @@ your approval, and at the end. That block is where the run is; it is written
 into the conversation, so it works on every model and on every Claude Code
 build.
 
-Claude Code's own task-list panel is a separate thing and will usually stay
-empty: from v2.1.233 those tools are not given to current models by default
+The same seven stages also tick in Claude Code's native task panel, because
+`framework-install` sets `env.CLAUDE_CODE_ENABLE_TODO_TOOLS` in the
+repository's committed `.claude/settings.json` — from v2.1.233 those tools are
+not given to current models unless a session opts in
 ([C21](constraints.md#c21--the-task-list-tools-are-not-provided-by-default-on-current-models)).
-Nothing is wrong, and no stage is being skipped. To have the native panel as
-well, set `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` in your **own**
-`~/.claude/settings.json` `env` block and restart. That is a per-developer
-choice about your terminal, so `framework-install` does not write it into the
-repository — the two keys it merges are the whole of what it touches.
+The ledger is the record; the panel is how you read the current stage without
+scrolling back through the output.
+
+If the panel stays empty, the repository was configured by a framework older
+than 2.2.0. Re-run `framework-install` once and commit. To turn it off for
+yourself without changing it for the team, set it in
+`.claude/settings.local.json`, which is per developer and is not committed.
 
 The run also keeps a state file **outside** your repository, so a compacted
 session can recover the approved scope and your conditions. Nothing is written

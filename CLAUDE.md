@@ -105,8 +105,9 @@ docs/                               design rationale and Claude Code constraints
   charter, which states the human-owned operations, and by the gates, which stop
   and hand off.
 - **The one file the framework writes, and the exact width of the exception.**
-  From 2.0.0 `ef-install-settings` merges two keys —
-  `extraKnownMarketplaces` and `enabledPlugins` — into the *project's* own
+  From 2.2.0 `ef-install-settings` merges three keys —
+  `extraKnownMarketplaces`, `enabledPlugins` and the single `env` member
+  `CLAUDE_CODE_ENABLE_TODO_TOOLS` — into the *project's* own
   `.claude/settings.json`, and only when a human runs `framework-install`.
   Nothing else in the file is read or written, no global file is touched, and
   Claude Code's plugin state under `~/.claude/plugins/` is never opened.
@@ -115,8 +116,20 @@ docs/                               design rationale and Claude Code constraints
   above rather than an erosion of it: the first is what `package.json` does, the
   second is what the pre-1.0.0 permissions floor did. The width of the exception
   is asserted in `tests/validate-install-settings.mjs`, including that a run
-  writes nothing into `$HOME`. A change that widens it past those two keys is
+  writes nothing into `$HOME`. A change that widens it past those three keys is
   the change this note exists to stop.
+
+  **The third key was added in 2.2.0, and the test to apply to a fourth is the
+  one that admitted it.** `work-item`'s visible progress depends on a host tool
+  current models are not given by default (C21), so a framework that would not
+  set it was shipping a progress display that usually did not work, and calling
+  the per-machine step neutrality. What made it admissible is that the key
+  **grants nothing and denies nothing** — a wrong value cannot block anyone's
+  work, which is exactly what the pre-1.0.0 floor could do. Project settings
+  outrank `~/.claude/settings.json`, so the opt-out is a developer's own
+  `.claude/settings.local.json`, which is not committed; `--no-task-tools` opts
+  out at install time. A fourth key that fails the grants-nothing test is the
+  erosion this note is still here to stop.
 - **A consuming repository carries no framework version, and no install
   marker.** Claude Code owns the installed version, the cache and the update
   lifecycle. Until 2.0.0 the repository also declared `frameworkVersion` in

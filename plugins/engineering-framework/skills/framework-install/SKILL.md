@@ -35,11 +35,13 @@ Two things go in the repository, and both are committed:
 
 ## What this skill does not do
 
-**It writes no permission rules.** It merges exactly two top-level keys —
-`extraKnownMarketplaces` and `enabledPlugins` — and never `permissions`, never
-`hooks`, never `env`. The 1.0.0 line holds: a developer who turns on a
-permission mode is entitled to get that mode, not one a plugin rewrote
-underneath them. Declaring a dependency and rewriting someone's permission
+**It writes no permission rules.** It merges exactly three things —
+`extraKnownMarketplaces`, `enabledPlugins`, and the single `env` member
+`CLAUDE_CODE_ENABLE_TODO_TOOLS` — and never `permissions`, never `hooks`, never
+another member of `env`. That third key grants nothing and denies nothing; it
+only lets a run's stages appear in the task panel. The 1.0.0 line holds: a
+developer who turns on a permission mode is entitled to get that mode, not one a
+plugin rewrote underneath them. Declaring a dependency and rewriting someone's permission
 posture are different acts, and `bin/ef-install-settings` is written so the
 difference is mechanical rather than promised.
 
@@ -165,7 +167,12 @@ Then state plainly:
 - that nothing outside this repository was touched;
 - what remains for the user to fill in, in priority order;
 - that nothing was committed, and that both files are meant to be;
-- the one command each colleague still runs on their own machine.
+- the one command each colleague still runs on their own machine;
+- that `env.CLAUDE_CODE_ENABLE_TODO_TOOLS` was set, so a `work-item` run's
+  stages appear in Claude Code's task panel — current models are not given
+  those tools by default — and that a developer who wants it off for themselves
+  sets it in `.claude/settings.local.json` rather than editing the committed
+  file.
 
 Suggested next step: run `/engineering-framework:framework-doctor` after
 filling in `CLAUDE.md`, then start real work with

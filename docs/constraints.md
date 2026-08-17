@@ -525,8 +525,15 @@ shipped declaration loses the key or carries a non-boolean, and
 > Code leaves them out. Without them, Claude adds nothing to the task list while
 > it works. — *Tools reference, "Task tool availability"*
 
-Opting in is per machine, not per repository: export
-`CLAUDE_CODE_ENABLE_TODO_TOOLS=1`, or name one of the tools in `--allowedTools`.
+Opting in is a session's environment: export `CLAUDE_CODE_ENABLE_TODO_TOOLS=1`,
+name one of the tools in `--allowedTools`, or set the variable in an `env` block
+in settings. **The `env` block works at project scope, and that is measured**
+— on v2.1.233, with the key absent from `~/.claude/settings.json` and unset in
+the environment, a probe in a directory whose `.claude/settings.json` carried
+the `env` block reported `TaskCreate` available, and the same probe in a
+directory without it did not. That measurement is why the position below
+changed in 2.2.0.
+
 An earlier rename sits behind this one — `TodoWrite` became the four `Task*`
 tools — so a file written against either name is now two removes from what the
 session actually has.
@@ -556,12 +563,29 @@ have the task tools, the same seven stages are mirrored into them, because the
 native panel is a better display than a code block; nothing about the run
 changes when it is absent.
 
-**What we deliberately do not do.** `ef-install-settings` is not extended to
-write `env` into a consuming repository's settings. It merges two keys, that
-width is asserted by `validate-install-settings.mjs`, and buying back a nicer
-progress display by widening the one exception this framework grants itself is
-the trade the whole 1.0.0 line exists to refuse. The environment variable is
-documented for people who want the native list; it is never written for them.
+**What we do about the opt-in, and why this reversed in 2.2.0.** Until 2.2.0
+`ef-install-settings` deliberately did not write `env`, on the reasoning that
+widening the one exception this framework grants itself to buy a nicer progress
+display was the trade the 1.0.0 line exists to refuse. That reasoning was
+wrong, and the error was in treating the two keys as the principle instead of
+the *test* the principle applies.
+
+The 1.0.0 line is about rules that can **deny**: a false denial cannot be
+clicked through and blocks work outright. `CLAUDE_CODE_ENABLE_TODO_TOOLS`
+grants nothing and denies nothing — a wrong value costs a checklist somebody
+did not want. Meanwhile the framework was promising visible progress on a
+seven-stage unattended pipeline and delivering it only to developers who found
+and performed a manual step in their home directory, which most never did. A
+per-machine step nobody takes is not neutrality; it is a broken feature with a
+principled explanation.
+
+So from 2.2.0 the installer merges that one `env` member, and only into the
+project's own committed settings. An existing value — `"1"` or `"0"` — is never
+rewritten, nothing else inside `env` is read, `--no-task-tools` skips it, and a
+developer who wants it off for themselves uses `.claude/settings.local.json`,
+which is per developer and not committed. The width is still asserted by
+`validate-install-settings.mjs`; it now asserts three keys rather than two, and
+the grants-nothing test is what a fourth would have to pass.
 
 **Mechanically checked.** `validate-plugin.mjs` fails any file under `skills/`,
 `agents/`, `standards/` or `templates/` that names a task tool without stating

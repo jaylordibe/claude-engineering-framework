@@ -65,7 +65,8 @@ You should see `engineering-framework@jaylordibe` with a version and
 version gets its own directory, so nothing is overwritten in place.
 
 That is the whole machine-level setup. It applies to every repository you open
-from now on.
+from now on. The task panel that shows a run's stages is set up per repository,
+in step 2, so there is nothing else to configure here.
 
 ---
 
@@ -94,12 +95,22 @@ Commit both files. Then verify:
 
 ### What the installer writes, and what it will not
 
-It merges **exactly two top-level keys** — `extraKnownMarketplaces` and
-`enabledPlugins`. It never writes `permissions`, `hooks` or `env`;
-it ships no permission rules; and it writes nothing outside your repository — not
-your `~/.claude/settings.json`, not Claude Code's plugin state under
-`~/.claude/plugins/`. See
+It merges **exactly three things** — `extraKnownMarketplaces`, `enabledPlugins`,
+and the single `env` member `CLAUDE_CODE_ENABLE_TODO_TOOLS`. It never writes
+`permissions`, never writes `hooks`, never reads or changes any other member of
+`env`; it ships no permission rules; and it writes nothing outside your
+repository — not your `~/.claude/settings.json`, not Claude Code's plugin state
+under `~/.claude/plugins/`. See
 [What this framework does not do](#what-this-framework-does-not-do).
+
+The third one is what makes a `work-item` run's seven stages appear in Claude
+Code's task panel: current models are not given the task tools unless a session
+opts in ([C21](docs/constraints.md#c21--the-task-list-tools-are-not-provided-by-default-on-current-models)),
+and without it the panel stays empty for the whole run. It grants nothing and
+denies nothing, which is why it is here and a permissions rule is not. A file
+that already states that key — `"1"` or `"0"` — is left exactly as it is, and
+`--no-task-tools` skips it. A developer who wants it off for themselves sets it
+in `.claude/settings.local.json`, which is theirs and is not committed.
 
 A repository that already declares a *different* source under the same
 marketplace name, or that deliberately set this plugin to `false`, or whose
@@ -176,6 +187,9 @@ What you actually need is the plugin on your machine:
   the one install command Claude Code shows you, and restart.
 - **If it does not**: run the two commands from
   [Install the plugin](#1-install-the-plugin) once.
+
+Nothing else. The task panel is configured in the repository's committed
+`.claude/settings.json`, so it arrived with the clone.
 
 Then confirm everything is wired:
 
@@ -365,17 +379,26 @@ repository and the person who owns it.
 
 ### The one thing it does write, and how narrow that is
 
-From 2.0.0, when *you* run `framework-install`, it merges two top-level keys
-into your project's `.claude/settings.json`: `extraKnownMarketplaces` and
-`enabledPlugins`. That is the whole of it. It never writes `permissions`,
-`hooks` or `env`; never writes a file outside your repository; and never touches
-Claude Code's own plugin state.
+From 2.2.0, when *you* run `framework-install`, it merges three things into your
+project's `.claude/settings.json`: `extraKnownMarketplaces`, `enabledPlugins`,
+and the single `env` member `CLAUDE_CODE_ENABLE_TODO_TOOLS`. That is the whole
+of it. It never writes `permissions`, never writes `hooks`, never reads or
+changes any other member of `env`; never writes a file outside your repository;
+and never touches Claude Code's own plugin state.
 
 **Declaring a dependency and rewriting a permission posture are different
 acts.** The first is what `package.json` does. The second is what the pre-1.0.0
 floor did, and it is what stays banned. The line between them is asserted in
 CI — including that a run writes nothing into your home directory — rather than
 promised in this paragraph.
+
+The third key is on the dependency side of that line, and the test it passes is
+the one to apply to any future addition: **it grants nothing and denies
+nothing.** A wrong value there costs you a checklist you did not want; a wrong
+permission rule blocks work outright and cannot be clicked through. `work-item`
+promises visible progress, that progress needs a host tool current models are
+not given by default, and a framework that made every developer switch it on by
+hand was promising a display that usually did not appear.
 
 The methodology is unchanged. The charter states which operations are
 human-owned, the gates stop and hand off rather than blocking, and the review
@@ -524,24 +547,20 @@ not apply to a running session, and hooks in particular keep using the previous
 version's path until `/reload-plugins`.
 
 **Claude Code's own task list stays empty during `/engineering-framework:work-item`.**
-Expected, and the pipeline is unaffected. From Claude Code v2.1.233 the task
-tools are not given to current models by default, so nothing writes to that
-panel — see [C21](docs/constraints.md#c21--the-task-list-tools-are-not-provided-by-default-on-current-models).
-The run's position is the **pipeline ledger** it prints in the conversation:
-seven stages, one marked in progress, re-emitted at every transition. That is
-the thing to read, and it works on every model.
+Check `.claude/settings.json` for `env.CLAUDE_CODE_ENABLE_TODO_TOOLS`. From
+2.2.0 `framework-install` writes it; a repository configured by an earlier
+version does not have it, so re-run `/engineering-framework:framework-install`
+once and commit the result. Current models are not given the task tools unless
+a session opts in ([C21](docs/constraints.md#c21--the-task-list-tools-are-not-provided-by-default-on-current-models)).
 
-If you would rather also have the native panel, opt in per machine — this is a
-Claude Code setting, not a framework one, and the framework will never write it
-for you:
+If the key is there and the panel is still empty, check
+`.claude/settings.local.json` — it is per developer, it is not committed, and it
+outranks the committed file.
 
-```json
-// ~/.claude/settings.json
-{ "env": { "CLAUDE_CODE_ENABLE_TODO_TOOLS": "1" } }
-```
-
-Restart afterwards; tool registration is read at startup. The ledger keeps
-printing either way.
+The run also prints a **pipeline ledger** in the conversation — seven stages,
+one marked in progress, re-emitted at every transition. That is the durable
+record, and it is what survives a compaction; the panel is what shows you the
+current stage without scrolling. Both, not either.
 
 **Everything prompts for permission.** From 1.0.0 this is not the framework —
 it ships no permission rules and no hooks that gate a command. Prompting is

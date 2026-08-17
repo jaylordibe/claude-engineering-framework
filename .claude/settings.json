@@ -19,5 +19,8 @@
       },
       "autoUpdate": true
     }
+  },
+  "env": {
+    "CLAUDE_CODE_ENABLE_TODO_TOOLS": "1"
   }
 }

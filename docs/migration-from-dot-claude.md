@@ -159,10 +159,11 @@ rules and no hooks that gate a tool call, so there is nothing to reconcile
 against and nothing of yours it will weaken. Your rules are yours; keep every
 one.
 
-`framework-install` adds two keys to `.claude/settings.json` —
-`extraKnownMarketplaces` and `enabledPlugins` — and touches nothing else in it.
-Your `permissions`, `hooks` and `env` are read by neither the installer nor any
-gate.
+`framework-install` adds three things to `.claude/settings.json` —
+`extraKnownMarketplaces`, `enabledPlugins`, and the single `env` member
+`CLAUDE_CODE_ENABLE_TODO_TOOLS` — and touches nothing else in it. Your
+`permissions`, your `hooks` and every other member of your `env` are read by
+neither the installer nor any gate.
 
 The two things to move into your **`CLAUDE.md`** are what the *gates* read:
 
