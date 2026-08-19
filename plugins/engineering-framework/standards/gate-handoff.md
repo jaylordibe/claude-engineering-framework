@@ -162,6 +162,24 @@ When the host does provide a task list, mirror these seven stages into it so
 the panel and the ledger say the same thing, and keep emitting the ledger
 anyway. When it does not, nothing about the run changes.
 
+**Provided is not the same as loaded, and the difference is where this failed
+silently.** A host may *list* a tool it has not handed over — named in the
+session's inventory of what it can load on request, callable only once the run
+asks for it by name. A conductor that answers "does this session have a task
+list?" from the tools already in front of it reads that as *no*, skips the
+mirror, and shows the developer the empty panel this section exists to prevent
+— in a session that had the tool the whole time.
+
+So answer from both: what is already callable, **and** what the host says it
+can load. If it is only in the second, load it once, at Stage 1, by the
+mechanism that session documents for acquiring a listed tool; one attempt, and
+the answer then stands for the rest of the run. If it is in neither, or the
+attempt fails, this session has none.
+
+**Never retry it, never let a stage wait on it, and never report a mirroring
+failure as a stage failure.** The ledger is the guarantee; the panel is the
+display, and this rule is about the display.
+
 ### Preserving review independence without a human stop
 
 The fresh-session rule in §3 protects a real property: whoever reviews the diff

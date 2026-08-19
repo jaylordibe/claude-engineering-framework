@@ -12,6 +12,38 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 2.3.0 — 2026-08-19
+
+**The task panel 2.2.0 promised now actually fills.** Setting
+`CLAUDE_CODE_ENABLE_TODO_TOOLS` was necessary and, it turns out, not
+sufficient: Claude Code registers the task tools behind that key but hands them
+over *deferred* — listed by name in the session's inventory of tools it can
+load on request, callable only once the run asks for one. A conductor deciding
+"do I have a task list?" from the tools already in front of it answered **no**
+in a session that had one, skipped the mirror, and left the panel empty. The
+run itself was correct throughout — the ledger in the message is the record and
+never depended on the host — so the only visible symptom was the one 2.2.0 was
+released to remove.
+
+- **What changed.** `standards/gate-handoff.md` §5 now asks the question of
+  both places: what is already callable, **and** what the host says it can
+  load. If the task list is only in the second, the run loads it once, at
+  Stage 1, and the answer stands for the rest of the run.
+
+- **Nothing about a stage depends on the outcome.** One attempt, never
+  retried, never waited on, and a mirroring failure is never reported as a
+  stage failure. The rule also names no tool and no loading mechanism: two
+  renames have already invalidated files written against a specific tool name
+  ([C21](docs/constraints.md)), and a third would invalidate a rule written
+  against a specific loader.
+
+- **Nothing to do.** No settings change, no re-run of `framework-install`. A
+  repository already configured by 2.2.0 has the key it needs; this release is
+  the half that reads it. If you configured before 2.2.0, that entry's
+  instruction still stands.
+
+---
+
 ## 2.2.0 — 2026-08-17
 
 **`framework-install` now switches the task panel on for you.** 2.1.0 moved the

@@ -553,7 +553,13 @@ version does not have it, so re-run `/engineering-framework:framework-install`
 once and commit the result. Current models are not given the task tools unless
 a session opts in ([C21](docs/constraints.md#c21--the-task-list-tools-are-not-provided-by-default-on-current-models)).
 
-If the key is there and the panel is still empty, check
+If the key is there and the panel is still empty, check the framework version.
+Claude Code hands those tools over **deferred** rather than callable — listed
+for loading, not ready to call — and until 2.3.0 a run read that as having no
+task list at all, so the key was necessary and not sufficient. Update the
+plugin; nothing on disk changes.
+
+If both are current and the panel is still empty, check
 `.claude/settings.local.json` — it is per developer, it is not committed, and it
 outranks the committed file.
 
