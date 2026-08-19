@@ -51,7 +51,7 @@ Commit both.
 
 **It writes no permission rules.** It merges exactly three things —
 `extraKnownMarketplaces`, `enabledPlugins`, and the single `env` member
-`CLAUDE_CODE_ENABLE_TODO_TOOLS` that makes a run's stages visible in the task
+`CLAUDE_CODE_ENABLE_TODO_TOOLS` that lets a run's stages appear in the task
 panel — and never touches `permissions`, `hooks`, or any other member of `env`.
 It writes nothing global — not your
 `~/.claude/settings.json`, not Claude Code's plugin state. Trust, installation,

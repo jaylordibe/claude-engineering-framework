@@ -290,10 +290,17 @@ not given to current models unless a session opts in
 The ledger is the record; the panel is how you read the current stage without
 scrolling back through the output.
 
-If the panel stays empty, the repository was configured by a framework older
-than 2.2.0. Re-run `framework-install` once and commit. To turn it off for
-yourself without changing it for the team, set it in
-`.claude/settings.local.json`, which is per developer and is not committed.
+If the panel stays empty, two different things cause it. A repository
+configured by a framework older than 2.2.0 does not have the key at all —
+re-run `framework-install` once and commit. A repository that *has* the key but
+runs a framework older than 2.3.0 has the other half: Claude Code hands those
+tools over **deferred** rather than callable, and until 2.3.0 a run read that
+as having no task list at all. Update the plugin; nothing on disk changes.
+Either way the ledger is unaffected, because it never depended on the panel.
+
+To turn the panel off for yourself without changing it for the team, set the
+key in `.claude/settings.local.json`, which is per developer and is not
+committed.
 
 The run also keeps a state file **outside** your repository, so a compacted
 session can recover the approved scope and your conditions. Nothing is written

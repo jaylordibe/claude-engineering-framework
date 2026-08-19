@@ -1028,6 +1028,20 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'durable state survives compaction without depending on a host task-list tool',
     patterns: [/run state file/i, /compact/i, /task-list tool/i, /outside the repository/i],
   },
+  // The second half of C21, found two days after 2.2.0 shipped the opt-in that
+  // was supposed to close the first: the host registers the task tools but
+  // hands them over deferred, so a conductor reading only its callable tools
+  // concludes it has no task list in a session that has one. That answer is
+  // wrong in exactly the direction nothing catches — the run continues, the
+  // ledger is still correct, and only the panel the opt-in paid for stays
+  // empty. The patterns hold the shape of the fix rather than its wording: ask
+  // what the host can load, settle it once, and never let the answer stall a
+  // stage.
+  {
+    file: 'standards/gate-handoff.md',
+    guarantee: 'the mirror asks what the host can load as well as what is already callable, settles it once, and can never stall a stage',
+    patterns: [/can load|has not handed over/i, /Stage 1/i, /one attempt/i, /never retry/i],
+  },
 ];
 
 // Host tools this framework may USE but must never REQUIRE. Claude Code stopped

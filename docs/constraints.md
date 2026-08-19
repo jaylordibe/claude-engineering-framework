@@ -14,7 +14,9 @@ rest still carry the 2026-08-11 verification above.
 
 **C21 verified against:** Claude Code **v2.1.233** and the same documentation on
 **2026-08-17**, plus a live session on that build in which none of the four
-`Task*` tools were registered.
+`Task*` tools were registered; **re-measured on v2.1.235 on 2026-08-19**, where
+the opt-in registers them but the host hands them over deferred rather than
+callable.
 
 **C19–C20 verified against:** the same documentation on **2026-08-16**, plus the
 on-disk plugin state of an installed machine. C20 is *measured*: the documented
@@ -538,6 +540,25 @@ An earlier rename sits behind this one — `TodoWrite` became the four `Task*`
 tools — so a file written against either name is now two removes from what the
 session actually has.
 
+**Availability is not callability, and that is a second gap behind the first.**
+Measured on **v2.1.235**: with the `env` key set, all four tools are registered
+*and deferred* — the session lists them by name in an inventory of tools it can
+load on request, with no schemas attached, and a call made before the load
+fails. Once loaded, `TaskList` returned normally, so the opt-in works and the
+whole gap sits between *listed* and *callable*. A conductor that answers "do I
+have a task list?" from its callable tools alone answers **no** in a session
+that has one, skips the mirror, and reproduces the empty panel the opt-in was
+added to remove — which is what a 2.2.0-configured repository reported two days
+after the release. The `env` key was never the fix on its own.
+
+The framework's response is in `standards/gate-handoff.md` §5, and its shape
+matters more than the finding: the rule says to read *both* places and settle
+the answer once, at Stage 1, without naming a tool or a loading mechanism. Two
+renames have already invalidated files written against a specific name, and a
+third would invalidate a rule written against a specific loader. Nothing about
+a stage depends on the outcome either way — that is what keeps this a *use* of
+a host feature rather than a requirement.
+
 **Consequence, and it is not the cosmetic one.** `work-item` is a seven-stage
 pipeline that stops twice and runs unattended in between. It kept its position
 in the task list, and the stage-2 approval trace was a `TaskUpdate` call. On a
@@ -595,7 +616,10 @@ in `skills/work-item/SKILL.md`.
 
 **Verified against** Claude Code **v2.1.233** and the documentation at
 `code.claude.com/docs/en/tools-reference`, on **2026-08-17**, plus the observed
-absence of all four `Task*` tools in a live session on that build.
+absence of all four `Task*` tools in a live session on that build. **Re-measured
+on v2.1.235 on 2026-08-19**: in a session with the `env` key set, the four tools
+are listed as deferred rather than callable, and a `TaskList` call succeeded
+after being loaded by name.
 
 ---
 

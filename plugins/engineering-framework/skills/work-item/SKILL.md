@@ -122,7 +122,9 @@ The ledger is the developer's only view of a run that stops twice and otherwise
 executes on its own. **It is written by you, in the message, and requires no
 host feature** — that section says why, and a run that keeps its position only
 in a task-list tool shows an empty panel on the models this framework actually
-runs on.
+runs on. That section also owns the **mirror**: whether this session has a task
+list to mirror into has a subtler answer than the callable tools suggest, it is
+settled once at Stage 1, and no answer to it changes a stage.
 
 Rules:
 
@@ -160,8 +162,9 @@ resumed session can find it.
 
 If this session has a task-list tool, keep the same record on the in-progress
 task as well. Two copies written in the same act do not drift, and either alone
-is enough to resume from. If it has none, the file is the mechanism and nothing
-else about the run changes.
+is enough to resume from. Whether it has one was settled at Stage 1 by §5's
+question, not by a fresh look at what is currently callable. If it has none,
+the file is the mechanism and nothing else about the run changes.
 
 Keep the list below current, and nothing beyond it:
 
