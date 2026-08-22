@@ -48,6 +48,32 @@ is genuinely absent, and `BLOCKED` for one that exists and could not run. Only
 `BLOCKED` prevents an overall `PASS` — see
 `${CLAUDE_PLUGIN_ROOT}/standards/evidence.md` §1.
 
+### What goes in `Notes`
+
+A passing row's note is one line, drawn from what the command actually printed:
+
+```text
+PASS — unit tests
+Command: <the exact command that ran>
+Exit: 0
+Tests: <only if the runner printed a count>
+Duration: <only if the runner printed one>
+```
+
+**Every field is optional except the command and the result.** A count, a
+duration or an exit status the runner did not print is left out — never
+estimated, never carried over from an earlier run, never reconstructed from
+memory. This row is shorter and more confident-looking than the log it replaces,
+so a number invented to complete it reads as measured evidence and is not:
+that is a false `PASS` in a tidier format, and
+`${CLAUDE_PLUGIN_ROOT}/standards/evidence.md` §5 already names what that
+destroys.
+
+A failing row's note keeps what diagnoses the failure and nothing around it: the
+exit status, the test or check that failed, the error text, and the `path:line`
+it points at. Not the whole log, and not a one-word summary of it either — the
+next stage has to be able to act on this row without re-running the command.
+
 ## Coverage
 
 - **Acceptance criteria covered by evidence:** which, and by which check.

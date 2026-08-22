@@ -623,6 +623,67 @@ after being loaded by name.
 
 ---
 
+## C22 — The host restores a resumed session in full, and assesses no drift
+
+> A resumed session restores the conversation along with the state saved in it:
+> Conversation history: the full history, including tool calls and results.
+> — *Manage sessions, "What a resumed session restores"*
+
+> **Resume from summary**: runs `/compact` immediately. Claude Code sends one
+> summarization request over the full history, then replaces the history with
+> the summary, your most recent exchanges, and up to five recently read files.
+> — *Manage sessions, "Resume from a summary"*
+
+`--continue`, `--resume <id | name>`, `/resume` and `--fork-session` all restore
+the transcript; transcripts live at
+`~/.claude/projects/<project>/<session-id>.jsonl` with a 30-day default
+retention (`cleanupPeriodDays`). `SessionStart` fires on `startup`, `resume`,
+`clear`, `compact` and `fork`, so the charter is re-injected after every one of
+them.
+
+**Consequence, and it decided the shape of 2.4.0.** Two of the three things
+"resumability" sounds like are not the framework's problems:
+
+1. *Recovering the conversation, the tool calls and their results.* The host
+   does it. A framework that stored its own copy would be a parallel
+   session-management system, and a worse one — it would go stale, and it could
+   not see the tool results.
+2. *Surviving compaction inside a run.* Already answered by the run state file
+   and the ledger, for the reasons in C21.
+
+The third has no host answer at all: **nothing compares an approved design
+against a repository that has moved since.** That is methodology, which is what
+this framework owns, so `standards/resumption.md` §6 is prose and a normative
+anchor rather than machinery.
+
+**One row above is a trap rather than a limitation.** On a Pro or Max plan a
+session over 100,000 tokens and idle for about an hour offers *Resume from
+summary*, which compacts **immediately, before the first message**. So a
+resumed long run can arrive already summarised — the case where the
+conversation's own account of an approval is all that is left, and precisely
+what the verbatim trace in `resumption.md` §3 exists to outrank.
+
+**A second thing the restore list does not include.** `--mcp-config`,
+`--settings`, `--plugin-dir`, `--fallback-model` and `--add-dir` are not
+restored. A run resumed without them may have lost the issue-tracker MCP server
+it resolved its work item from, which is a `BLOCKED` prerequisite rather than a
+reason to proceed on the state file's copy of the requirement.
+
+**Mechanically checked.** `validate-plugin.mjs` holds seven normative anchors on
+`standards/resumption.md` — evidence outranking saved state, the verbatim trace
+and `RE-APPROVAL REQUIRED`, semantic drift with its three outcomes, the
+`schema_version` rejection, state as untrusted input, dirty-worktree ownership,
+and the contents prohibition — plus one on `standards/untrusted-content.md` for
+the boundary covering files the framework itself wrote, and a
+`SINGLE_SOURCE_POLICIES` entry making `resumption.md` the sole owner of the
+drift vocabulary.
+
+**Verified against** the documentation at `code.claude.com/docs/en/sessions`,
+`code.claude.com/docs/en/cli-reference` and `code.claude.com/docs/en/hooks`, on
+**2026-08-22**.
+
+---
+
 ## Things we checked and chose not to use
 
 | Feature | Why not |

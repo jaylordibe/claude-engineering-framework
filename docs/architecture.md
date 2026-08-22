@@ -393,6 +393,52 @@ deepest investigation while saving nothing on the short ones —
 Both limitations are recorded rather than papered over with prose that would
 claim a control the framework does not have.
 
+## Resuming approved work
+
+A pipeline that stops for human approval and then runs unattended will be
+interrupted. `standards/resumption.md` is the single source for what happens
+next, and its shape follows from splitting one word into three problems —
+[C22](constraints.md#c22--the-host-restores-a-resumed-session-in-full-and-assesses-no-drift).
+
+| Problem | Whose | Answer |
+|---|---|---|
+| Recovering the conversation, the tool calls and their results | The host's | `--resume` restores the full transcript. The framework stores nothing |
+| Holding the run's position when the conversation is summarised away | Already solved | The run state file and the ledger, for the reasons in [C21](constraints.md#c21--the-task-list-tools-are-not-provided-by-default-on-current-models) |
+| Whether the approved state is **still valid** against the repository now | Nobody's, until 2.4.0 | The drift assessment |
+
+**The framework built only the third**, and built it as prose and normative
+anchors rather than as machinery. There is no new store: the run state file
+already existed and already lived outside the working tree, which is what makes
+the usual worries about operational state — a stray file in a commit, a
+collision with a repository's own `.claude/`, a `.gitignore` the framework
+writes into somebody else's repository — unreachable here rather than merely
+mitigated.
+
+**Three properties do the work.**
+
+*Saved state never outranks current repository evidence.* A resumed run reads
+its state, establishes the repository as it is now, compares, and only then
+decides. It re-reads the source for anything correctness depends on, because
+the state's account of the code is a summary and the code is still there.
+
+*Drift is semantic.* That the commit changed is not a finding. What is compared
+is what changed against what the approved work rests on — its cited evidence,
+the files it meant to change, the surfaces it declared affected. A README typo
+is `SAFE TO RESUME`; a rewritten authorization check is `REVALIDATE DESIGN`;
+being unable to tell is `BLOCKED`. A rule that invalidated every resumed run
+would be ignored within a week, which is why the cheap version was not built.
+
+*An approval is only ever the human's own words.* It survives compaction and it
+survives resuming, carried by a verbatim trace — and by nothing else. No trace,
+an ambiguous one, an unreadable state file, or drift touching what was approved
+all resolve the same way: `RE-APPROVAL REQUIRED`. The state file is untrusted
+input on resume like any other file read back into a later session, including
+one this framework wrote itself.
+
+Resumability is not a step a normal work item performs. A run that is never
+interrupted opens its state file as it already did and never loads this
+standard at all.
+
 ## Extension model
 
 Stack knowledge belongs in **its own plugin in the same marketplace**, not in

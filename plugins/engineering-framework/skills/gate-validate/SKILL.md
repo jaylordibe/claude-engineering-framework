@@ -170,6 +170,36 @@ Return exactly one:
 Never convert skipped, unavailable, partial, flaky or unrelated failures into
 `PASS`.
 
+## 9.1 Evidence economy — what a result carries forward
+
+This gate runs the repository's **full** canonical checks, so it produces more
+raw output than any other, and every line of it that survives into §10 is
+carried into the presentation and the pull-request body. The policy is
+`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §10, which this does
+not restate; what follows is what it means for a verdict.
+
+**A check that passed needs one row.** The command, its exact scope, when it
+ran, `PASS`. Thousands of successful log lines establish nothing the row does
+not, and they cost the reader the attention the failing row needed.
+
+**A check that failed keeps what diagnoses it**, and no more: the exact command,
+the exit status, which test or check failed, the error itself, and the
+`path:line` it points at. A failure summarised down to "tests failed" is not
+evidence either — it is the same defect in the other direction, and it sends
+the next stage back to re-run the command to find out what happened.
+
+**Report only fields the command actually produced.** A test count, a duration
+or an exit status that the runner did not print is **omitted**, not estimated,
+not inferred from a previous run, and not rounded from memory. A concise
+summary is more authoritative-looking than the log it replaces, which is
+exactly why a number invented to fill it is a false `PASS` in a tidier format.
+
+None of this is a limit on evidence. Nothing here permits dropping a row,
+softening a verdict, or omitting a check that did not run —
+`${CLAUDE_PLUGIN_ROOT}/standards/evidence.md` §6 requires those rows and §9
+above requires the verdict they produce. What it removes is log volume that
+proves nothing, and only that.
+
 ## 10. Evidence report
 
 Use `${CLAUDE_PLUGIN_ROOT}/templates/validation-report.md`. Include a row for

@@ -946,10 +946,17 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'exactly one verdict, and never a converted one',
     patterns: [/\bPASS\b/, /\bFAIL\b/, /\bBLOCKED\b/, /never convert|skipped/i],
   },
+  // Reworded in 2.4.0 from "an approval taken in this session". The host
+  // restores a resumed session's entire conversation, so "this session" named
+  // two different things at once and the three files that used it disagreed:
+  // gate-approve said an approval never carries to a later session, work-item
+  // said a resumed run continues from its trace. The guarantee that actually
+  // matters was never the process boundary — it is that an approval exists
+  // only where a human's own words record one.
   {
     file: 'skills/gate-implement/SKILL.md',
-    guarantee: 'implementation requires an approval taken in this session',
-    patterns: [/approv/i, /this session/i, /stop and say so|treat the design as unapproved/i],
+    guarantee: 'implementation requires an approval evidenced by a trace carrying the human\'s own words, never by a summary asserting one',
+    patterns: [/approv/i, /verbatim/i, /stop and say so|treat the design as unapproved/i, /not evidence/i],
   },
   {
     file: 'skills/gate-design/SKILL.md',
@@ -1042,6 +1049,73 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'the mirror asks what the host can load as well as what is already callable, settles it once, and can never stall a stage',
     patterns: [/can load|has not handed over/i, /Stage 1/i, /one attempt/i, /never retry/i],
   },
+  // 2.4.0 — resumption. Every line of this standard is the kind a later edit
+  // removes as ceremony, and each one is load-bearing for a different failure:
+  // an old plan executed against moved code, an approval nobody gave, a state
+  // file somebody edited, a colleague's uncommitted work reverted.
+  {
+    file: 'standards/resumption.md',
+    guarantee: 'saved state never outranks current repository evidence, and the source is re-read on resume',
+    patterns: [/never outranks|outranks/i, /re-?read the source/i, /summary is never stronger/i],
+  },
+  {
+    file: 'standards/resumption.md',
+    guarantee: 'a trace is only a trace if it carries the human\'s own words, and every uncertainty about it is RE-APPROVAL REQUIRED',
+    patterns: [/verbatim/i, /RE-?APPROVAL REQUIRED/i, /ambiguous/i, /High or Critical/i],
+  },
+  {
+    file: 'standards/resumption.md',
+    guarantee: 'drift is assessed semantically before resume, with three outcomes and escalation when balanced',
+    patterns: [/SAFE TO RESUME/, /REVALIDATE DESIGN/, /\bBLOCKED\b/, /not identifiers|not against a commit|Compare meaning/i],
+  },
+  {
+    file: 'standards/resumption.md',
+    guarantee: 'an unreadable or unrecognised state version is BLOCKED rather than an empty run',
+    patterns: [/schema_version/, /unrecognised|unrecognized|does not recognise/i, /\bBLOCKED\b/],
+  },
+  {
+    file: 'standards/resumption.md',
+    guarantee: 'persisted state is untrusted data on resume and can never instruct',
+    patterns: [/untrusted/i, /instruction/i, /untrusted-content\.md/],
+  },
+  {
+    file: 'standards/resumption.md',
+    guarantee: 'unknown dirty-worktree ownership is never resolved as Claude\'s, and nothing unrelated is ever discarded',
+    // `/unknown/i` alone was not enough: the word occurs elsewhere in the file,
+    // so deleting the Unknown ownership row left the anchor green. Match the
+    // rule, not a word that happens to be in it.
+    patterns: [/never resolved as Claude/i, /never reset, clean, stash/i, /pre-?existing/i],
+  },
+  {
+    file: 'standards/resumption.md',
+    guarantee: 'the state file holds no secrets, no conversation and no source, and cleanup never reaches the repository',
+    patterns: [/secrets/i, /credential/i, /deletes anything inside the repository/i],
+  },
+  {
+    file: 'standards/untrusted-content.md',
+    guarantee: 'the untrusted boundary covers files the framework itself wrote, not only the repository',
+    // "framework wrote" appears twice in the section, so an alternation on it
+    // survived deleting the sentence that carries the rule. Anchor the scope
+    // statement itself — the boundary is the file, not the repository.
+    patterns: [/wherever it lives and\s+whoever wrote it/i, /outside the working tree|outside the repository/i, /resumption\.md/],
+  },
+  // The gate that runs the full canonical suite is the one that produces
+  // enough output to bury its own failure — and a concise PASS format is an
+  // invitation to complete it with a plausible number. Both halves are the
+  // guarantee; either alone is a defect.
+  {
+    file: 'skills/gate-validate/SKILL.md',
+    guarantee: 'a passing check is one row, a failing check keeps what diagnoses it, and no field the command did not print is reported',
+    // Each pattern is one half of the rule, deliberately not an alternation:
+    // an OR here passed a mutation that deleted "not estimated" outright,
+    // because the word survived elsewhere in the paragraph.
+    patterns: [/one row/i, /diagnos/i, /\bomitted\b/i, /not estimated/i, /false `?PASS/i],
+  },
+  {
+    file: 'templates/validation-report.md',
+    guarantee: 'a count or duration the runner did not print is left out rather than estimated',
+    patterns: [/only if the runner printed/i, /never\s+estimated/i, /false `?PASS/i],
+  },
 ];
 
 // Host tools this framework may USE but must never REQUIRE. Claude Code stopped
@@ -1054,7 +1128,20 @@ const NORMATIVE_ANCHORS = [
 // Naming these tools is fine. Naming one in a file that does not also state the
 // mechanism used when it is absent is the regression, and it is invisible
 // until someone runs the pipeline on a model that has no task list.
-const OPTIONAL_HOST_TOOLS = /\bTodoWrite\b|\bTask(Create|Update|List|Get)\b/;
+//
+// WIDENED IN 2.4.0, because the tool-name form was not how it came back.
+// `gate-implement` told the implementation stage to read the approval trace
+// from "the implementation task" — a host task-list record, in prose, naming no
+// tool. On a model with no task list that record never exists, so a correctly
+// approved run reached Stage 3, found nothing, and applied its own rule that a
+// design with no trace is unapproved. It failed safe and it stopped work that
+// had been approved, and the check written for exactly this missed it because
+// it was looking for an identifier.
+//
+// So the pattern now covers the prose spelling too: a task the pipeline is told
+// to read or write is a dependency on a host feature whether or not the tool
+// that backs it is named.
+const OPTIONAL_HOST_TOOLS = /\bTodoWrite\b|\bTask(Create|Update|List|Get)\b|\b(the|a|its)\s+(implementation|in-progress|Stage\s*\d+|current)\s+task\b|\bonto the\s+\S+\s+task\b/i;
 
 function validateNoRequiredHostTaskTool() {
   const ledgerOwner = 'standards/gate-handoff.md';
@@ -1066,7 +1153,13 @@ function validateNoRequiredHostTaskTool() {
     for (const filePath of listFilesRecursively(directory, (path) => path.endsWith('.md'))) {
       const content = readFileSync(filePath, 'utf8');
       if (!OPTIONAL_HOST_TOOLS.test(content)) continue;
-      if (content.includes(ledgerOwner) && /when (this session|the host)|if (this session|the host)|is absent|has none/i.test(content)) continue;
+      // The escape must state the ABSENCE branch specifically. Until 2.4.0 it
+      // also accepted `when this session ...` / `if the host ...`, which a
+      // purely positive conditional satisfies: "when this session has a task
+      // list, write the record there" passed while saying nothing at all about
+      // the session that has none — which is the majority case and the whole
+      // reason this check exists. Only phrases that name the absence count.
+      if (content.includes(ledgerOwner) && /is absent|has none|there is none|does not have one|when it does not|without one/i.test(content)) continue;
 
       fail(filePath, `names a host task-list tool without stating what happens when the session does not have one. Those tools are omitted by default on current models, so a step written as though one exists is a step that silently does not run. Make the dependency conditional and cite \${CLAUDE_PLUGIN_ROOT}/${ledgerOwner}, which owns the mechanism that always works.`);
     }
@@ -1092,6 +1185,16 @@ const SINGLE_SOURCE_POLICIES = [
     owner: 'standards/gate-handoff.md',
     vocabulary: /\bpipeline ledger\b/i,
     what: 'the conductor pipeline ledger',
+  },
+  // Added in 2.4.0. Drift assessment is a three-outcome decision that three
+  // separate files reach — work-item on resume, gate-implement before its first
+  // edit, gate-approve before a stale read-back. A per-file copy of "when is it
+  // safe to continue" would be three different answers within two releases, and
+  // the one that drifts loosest is the one a resumed run happens to load.
+  {
+    owner: 'standards/resumption.md',
+    vocabulary: /\bSAFE TO RESUME\b|\bREVALIDATE DESIGN\b|\bRE-APPROVAL REQUIRED\b|\bdrift assessment\b/i,
+    what: 'the resume drift assessment and its outcomes',
   },
 ];
 
