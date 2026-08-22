@@ -307,6 +307,30 @@ session can recover the approved scope and your conditions. Nothing is written
 into your working tree except the approved diff; if you ever find a framework
 state file inside the repository, that is a bug worth reporting.
 
+### Picking work back up later
+
+From 2.4.0 you can close the session and come back to an approved work item —
+tomorrow, or after a restart. `claude --resume` restores the conversation; the
+state file carries what the conversation cannot prove on its own.
+
+What you should expect to see before anything is edited:
+
+- **the repository checked before the plan is trusted.** A change to something
+  unrelated does not invalidate an approved design. A change to a file the
+  design was written about does, and the run says so and goes back to design
+  rather than implementing over it.
+- **your own words quoted back.** An approval is only ever the words you typed.
+  If the run cannot find them, it asks you again — that is the correct
+  behaviour, not a lost session.
+- **your uncommitted work left alone.** A resumed run classifies changed files
+  as its own, as pre-existing, or as unknown, and it never resolves *unknown*
+  as its own. Nothing is reset, stashed or discarded in any of the three cases.
+
+You do not have to do anything to enable this, and a work item you finish in one
+sitting never touches it. **The state file is not a document about your project
+and it is not something to commit** — it is scratch, it holds no source and no
+secrets, and it is deleted when the run completes successfully.
+
 ## Updating the framework
 
 ```text

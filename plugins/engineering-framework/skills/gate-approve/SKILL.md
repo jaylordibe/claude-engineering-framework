@@ -41,6 +41,13 @@ design whose evidence has gone stale is approving a decision about a codebase
 that no longer exists. Say plainly what no longer holds, and recommend
 `gate-design` instead.
 
+"The worktree has moved under it" has a method rather than a feeling:
+`${CLAUDE_PLUGIN_ROOT}/standards/resumption.md` §5 and §6 own it. Compare what
+changed against what this design rests on — its cited evidence, the files it
+intended to change, the surfaces it declared affected — not against a commit
+identifier. An unrelated change is not staleness, and a change to a file the
+design was written about is, whoever made it.
+
 ## 2. Read it back before they decide
 
 An approval nobody re-read is a rubber stamp, and the whole value of this gate
@@ -79,9 +86,34 @@ scope, the implementation stops there.
 **On rejection**, say what would have to change for a new design to supersede
 this one, and stop.
 
-There is no status line and no file to write. The approval is the decision
-itself, and it authorises implementation **in this session only** — it does not
-carry to a later one, where the design would have to be presented again.
+There is no status line to set. The approval is the decision itself.
+
+### What the approval survives, and what ends it
+
+An approval authorises implementation **of this run**, and a run is not a
+process. Getting this precise matters, because the imprecise version stopped
+correctly approved work: the host restores a resumed session's whole
+conversation, so "this session" no longer names one thing.
+
+An approval **survives** compaction, and survives the session being closed and
+resumed later — but **only** while carried by a trace holding the human's own
+words, in the run state file
+`${CLAUDE_PLUGIN_ROOT}/standards/resumption.md` §3 governs. Under `work-item`
+that trace is written here, before implementation touches anything.
+
+An approval **ends** on any of these, and the answer is
+`RE-APPROVAL REQUIRED`, never a wider reading of what was already said:
+
+- no trace, or a trace with no verbatim human words in it;
+- the repository moved under the design — §6 there returned
+  `REVALIDATE DESIGN` or `BLOCKED`;
+- a material divergence from what was approved became necessary;
+- the work is High or Critical and the approval's provenance is uncertain at
+  all.
+
+A design presented in an earlier session with **no trace behind it** is
+unapproved. It is presented again, here, and decided again — however confidently
+a summary describes the decision that was supposedly taken.
 
 ## 5. Stop
 
