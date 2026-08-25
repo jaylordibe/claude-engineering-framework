@@ -242,6 +242,29 @@ to design safely.
 
 # Stage 1 — Understand
 
+## First, whether this is a work item at all
+
+`standards/execution-efficiency.md` §3 has a **Direct** band, and a request in
+it does not get this pipeline. If the whole change is a comment or wording fix,
+a rename inside one file, a log line, a formatting or test-only tidy, or a
+one-liner whose cause and effect are both already visible — and nothing in §4
+applies and no changed path is a declared high-risk path — then say so in one
+line, make the edit, and stop. Do not run Stage 1, do not open a plan, do not
+run the panel, and do not offer to.
+
+**Being invoked is not evidence that the pipeline is warranted.** A human types
+`/work-item` for the work they have, not for the ceremony, and running six
+stages over a typo because a command was typed is the failure mode this check
+exists for. Say which band and why in one sentence, so the judgement is visible
+and can be overruled in one word.
+
+That check is cheap and its failure mode is bounded: anything that turns out
+larger re-enters at Stage 1 having cost one turn. What is not recoverable is
+the reverse — nobody gets the hour back, and the next small change goes
+somewhere else.
+
+## Then map it
+
 Launch `engineering-framework:context-mapper` with the complete request **and
 the depth band you are asking for**, from `standards/execution-efficiency.md`
 §3. Naming it is what makes the band a decision rather than a mood; the mapper
@@ -305,9 +328,17 @@ Enter plan mode when available. Remain read-only even if it is not.
 
 **Classify the risk tier first — it decides how much design this stage
 produces.** A **Low** risk change gets no plan document: state the tier and the
-evidence, present the approach, and on approval go straight to Stage 3. Stages
-4–7 still run in full. Everything Medium and above gets a plan whose depth
-matches the tier.
+evidence, present the approach, and on approval go straight to Stage 3.
+Everything Medium and above gets a plan whose depth matches the tier.
+
+**On Low, Stages 4–7 run at Low width, not at full width.** Each of those
+stages already scales by tier in its own gate — `gate-review`'s Low row is no
+subagents, and `standards/execution-efficiency.md` §9 keeps the report to the
+risk — so the conductor's job is to carry the tier forward, not to reassert
+full ceremony over it. A Low classification that still convenes a panel has
+classified nothing. What does not change with the tier is the floor: whatever
+runs, runs honestly, and `standards/evidence.md` governs the verdict exactly as
+it does on Critical.
 
 Structure the plan on `${CLAUDE_PLUGIN_ROOT}/templates/plan.md`. **Nothing is
 written to the repository.**

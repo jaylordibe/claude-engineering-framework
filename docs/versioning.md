@@ -27,11 +27,10 @@ Every MAJOR ships an upgrade note in `CHANGELOG.md` saying exactly what a
 consuming repository must do, and the note has to be legible to someone who
 never sees it coming.
 
-Until 2.0.0 a repository declared `frameworkVersion` and `ef-doctor` failed on a
-major gap, so the note was read rather than discovered. **That mechanism is
-gone**, and removing it was itself a 2.0.0 change: it bought its warning at the
-price of a version number in every consuming repository, duplicating state
-Claude Code already owns and going stale in silence whenever nobody updated it.
+**No mechanism forces that note to be read.** A declared `frameworkVersion` in
+the consuming repository, failed on by `ef-doctor`, would buy the warning at the
+price of duplicating state Claude Code already owns — a number that goes stale
+in silence whenever nobody updates it. The note has to carry itself.
 
 What replaces it is weaker and honest about being weaker: the changelog entry,
 and — where a removal leaves something behind that quietly stops working —
@@ -85,23 +84,18 @@ and it must arrive before the refusal does.
 Conversely, *removing* a restriction is a PATCH: nobody's workflow breaks
 because the framework stopped being wrong about something.
 
-From 1.0.0 this rule has a much smaller surface, because the framework no
-longer refuses anything — it ships no permission rules and no hooks that gate a
-command. What can still "block a workflow" is a gate that stops, or a standard
-that makes a review demand something new. Both count.
+This rule has a small surface, because the framework refuses nothing — it ships
+no permission rules and no hooks that gate a command. What can "block a
+workflow" is a gate that stops, or a standard that makes a review demand
+something new. Both count.
 
-## Since 1.0.0
+## The contract
 
-`1.0.0` shipped on 2026-08-12. The bar it had to clear was that a real
-repository be migrated onto it and run a pipeline end to end — a framework
-nobody has used is a framework whose contract has not been tested. That bar has
-been met.
+MAJOR may ask a consuming repository to act; MINOR and PATCH never do. That is
+the ordinary semver contract, and entries below `1.0.0` in the changelog were
+released under the `0.x` convention where a MINOR bump could break you.
 
-From here the semver contract is the ordinary one: MAJOR may ask a consuming
-repository to act, MINOR and PATCH never do. The `0.x` caveat that a MINOR bump
-might break you no longer applies.
-
-**Consumers auto-update, and this is no longer an assumption.** From 2.0.0
+**Consumers auto-update, and that is not an assumption.**
 `framework-install` writes `"autoUpdate": true` on the marketplace entry, so
 every repository it configures receives a release without anyone typing an update
 command: Claude Code refreshes the catalogue *and* updates the installed plugin

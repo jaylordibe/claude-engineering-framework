@@ -12,6 +12,70 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 2.5.0 — 2026-08-25
+
+**A one-line change now costs a one-line change.** Until this release the
+framework had a floor and no ceiling. Every proportion mechanism it owned moved
+in one direction — the higher tier on a boundary, `Standard` as the default
+band and `Targeted is earned`, a `Low` classification that still ran Stages 4–7
+at full width, and an always-on charter paragraph that classified a human
+asking for less ceremony as expressing a preference rather than making a
+decision. There was nowhere for a small change to land, so a typo, a log line
+or a one-line fix could be mapped, planned, reviewed by a panel and reported
+on, and the person paying for it could not turn that off by asking.
+
+Nothing above the line moved. The evidence, tests, review independence and
+validation each tier requires are unchanged, and the exit added below is
+bounded to the same sensitive-area list the tiers use.
+
+### The exit
+
+- **`standards/execution-efficiency.md` §3 has a fourth band, `Direct`.** A
+  comment or wording fix, a rename inside one file, a log line, a formatting or
+  test-only tidy, a one-liner whose cause and effect are both already visible,
+  or work a human has scoped that tightly: the lines changed and the symbol
+  they sit in. No map is produced and none is owed. It is entered from the
+  shape of the request rather than earned from one, because a band you have to
+  map to justify is not a band — and it is left for `Targeted` the moment a §4
+  trigger appears or a §3.1 question cannot be answered from what is open.
+- **The charter states the same exit always-on**, as `Below Low there is no
+  tier`. It has to be always-on for the same reason the injection defence does:
+  the requests that most need the low end are exactly the ones where no gate
+  ran and no standard was ever loaded, so an exit stated only inside the
+  machinery is unreachable from outside it. The charter line ceiling went from
+  80 to 84 to pay for it; `tests/validate-charter.mjs` argues the purchase and
+  now fails if the exit — or the bound on it — is deleted.
+- **`work-item` checks whether a request is a work item before Stage 1**, and
+  says which band and why in one sentence. Being invoked is not evidence that
+  six stages are warranted.
+
+### What a request to spend less now decides
+
+- **`standards/execution-efficiency.md` §13 splits in two.** Below the `Direct`
+  line a human calling a change small is scoping the work, and it is decisive —
+  they know what they meant. Above it the previous rule is unchanged: it buys
+  method, not whether, and it is not one of the §1 risk acceptances. Overruling
+  a human's scoping is still possible and now has one acceptable form — name
+  the §4 trigger that fired.
+- New §13.1 states the other half of the asymmetry this framework was built on.
+  Overspending was priced as an aesthetic cost; its real cost is that it is
+  charged to the same person every time until they stop routing work through
+  the framework at all, and a framework routed around protects nothing.
+- §12 gains three anti-patterns, and a line saying the quality floor is a floor
+  rather than a defence of the entries above it. The first — treating a request
+  as a work item because it arrived as a sentence rather than as an edit — is
+  the one a careful reader commits while believing they are being thorough.
+
+### Elsewhere
+
+- The charter's evidence labels are scoped to a map, plan, finding or report.
+  Ordinary conversation is not a report and is no longer labelled like one.
+- `work-item`'s `Low` path carries the tier into Stages 4–7 instead of
+  reasserting full ceremony over it. Each of those stages already scaled by
+  tier in its own gate; the conductor was overriding them.
+
+Nothing here asks a consuming repository to act.
+
 ## 2.4.0 — 2026-08-22
 
 **Approved work can now be picked up safely a day later, and the three files

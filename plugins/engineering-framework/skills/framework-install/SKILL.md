@@ -39,9 +39,9 @@ Two things go in the repository, and both are committed:
 `extraKnownMarketplaces`, `enabledPlugins`, and the single `env` member
 `CLAUDE_CODE_ENABLE_TODO_TOOLS` — and never `permissions`, never `hooks`, never
 another member of `env`. That third key grants nothing and denies nothing; it
-only lets a run's stages appear in the task panel. The 1.0.0 line holds: a
-developer who turns on a permission mode is entitled to get that mode, not one a
-plugin rewrote underneath them. Declaring a dependency and rewriting someone's permission
+only lets a run's stages appear in the task panel. A developer who turns on a
+permission mode is entitled to get that mode, not one a plugin rewrote
+underneath them. Declaring a dependency and rewriting someone's permission
 posture are different acts, and `bin/ef-install-settings` is written so the
 difference is mechanical rather than promised.
 

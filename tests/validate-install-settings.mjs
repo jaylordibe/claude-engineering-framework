@@ -48,7 +48,7 @@ const declaration = JSON.parse(readFileSync(declarationPath, 'utf8'));
 const MARKETPLACE = declaration.marketplace;
 const PLUGIN_ID = `${declaration.plugin}@${declaration.marketplace}`;
 
-// The third key, from 2.2.0. Current models are not given the task tools by
+// The third key. Current models are not given the task tools by
 // default, so without it work-item's stages tick nowhere — see docs/constraints
 // C21. It is here rather than inline because "already configured" now means
 // three keys, and a fixture that means it should say so in one place.
@@ -256,8 +256,8 @@ runCase('existing unrelated settings survive the merge', (name) => {
   check(name, run.exit === 0, `expected exit 0, got ${run.exit}`, run.output);
 
   const settings = readSettings(repository);
-  // `env` is no longer unrelated — the installer owns exactly one member of it
-  // from 2.1.0 — so it is asserted below rather than compared wholesale. Every
+  // `env` is not unrelated — the installer owns exactly one member of it — so
+  // it is asserted below rather than compared wholesale. Every
   // other key must come back byte-identical.
   for (const key of Object.keys(original).filter((k) => k !== 'env')) {
     check(

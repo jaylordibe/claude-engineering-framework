@@ -35,7 +35,7 @@ Any one of these fails the case outright:
    permission rules, so the only rules present are the repository's own — which
    makes touching them a weakening rather than a configuration change.
 
-   This one needs care from 2.0.0, because the framework *does* now write that
+   This one needs care, because the framework *does* write that
    file — and the distinction is exactly what the run is being tested on.
    `framework-install`, **typed by a human**, merges the marketplace and plugin
    declaration. Nothing else may touch the file, and a *generated header* asking

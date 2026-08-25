@@ -51,11 +51,12 @@ change.** Those are different numbers, and only one of them is safe.
 
 ## 3. Investigation depth bands
 
-Repository mapping runs in one of three bands. A band sets the *breadth* of
-investigation; it never removes a category from §3.1.
+Repository mapping runs in one of four bands. A band sets the *breadth* of
+investigation; from Targeted upward it never removes a category from §3.1.
 
 | Band | Entered when | Investigation |
 |---|---|---|
+| **Direct** | The change is contained in what is already on screen, nothing in §4 applies, and no changed path is listed under the repository's high-risk paths — a comment or wording fix, a rename inside one file, a log line, a formatting or test-only tidy, a one-liner whose cause and effect are both visible, or work the human has scoped that tightly | The lines changed and the symbol they sit in. **No map is produced and none is owed.** |
 | **Targeted** | A single named behaviour in a known place, nothing in §4 applies, and the floor below is establishable without a system-wide sweep | The entry point and symbol, the files that must change, direct callers and consumers, the tests protecting the behaviour, the observable contract effect |
 | **Standard** | **The default.** Anything not positively established as Targeted | The complete affected execution path, and the boundaries, contracts, persistence, access control, tests and consumers on it |
 | **Deep** | A High or Critical signal, a cross-cutting or architectural change, an initially ambiguous one, or a changed path the repository's `CLAUDE.md` lists under High-risk paths | Everything the mapping agent's own method describes, at full breadth |
@@ -64,7 +65,22 @@ investigation; it never removes a category from §3.1.
 evidence, never an opening assumption, and a cheap classification is the most
 expensive mistake available here.
 
-### 3.1 The floor every band establishes
+**Direct is the exception to that sentence, deliberately.** It is entered from
+the shape of the request rather than from a map, because requiring evidence to
+justify it would mean doing the investigation it exists to avoid — a band you
+have to earn by mapping is not a band, it is a map. The safety is the entry
+condition and the exit, not a prior sweep: the moment anything in §4 appears,
+or a §3.1 question cannot be answered by looking at what is already open, the
+change leaves Direct for Targeted and the map is produced normally.
+
+Misplacing a change in either direction is a defect. Wrongly in Direct is
+caught within a turn or two by the reader still in the conversation, and costs
+a redo. Wrongly in Standard costs a map, a plan, a review panel and an hour on
+work that needed an edit — charged to the same person every time, until they
+stop invoking the framework at all. The second does not become a non-defect by
+being the careful-looking one.
+
+### 3.1 The floor every band from Targeted upward establishes
 
 A band decides how much an answer may cost, not whether the question is asked:
 
@@ -83,6 +99,15 @@ system-wide audit. **What it is never established by is not looking.**
 
 An `UNKNOWN` in the access-control, tenancy or persistence row of a Targeted or
 Standard map is a widening trigger, not a footnote.
+
+**In the Direct band these questions are answered by inspection, not omitted.**
+Entering Direct is itself the claim that every row above is already visible —
+this text performs no data access, this symbol has one caller, this file is a
+test. That claim is cheap to make and cheap to be wrong about in one direction
+only: if any row cannot be answered from what is open, the answer is not
+`UNKNOWN`, it is that this was never a Direct change, and the band was chosen
+wrongly. Leave for Targeted and map it. What Direct never does is answer a row
+by deciding it probably does not matter.
 
 ## 4. Widening is mandatory, and it is not a failure
 
@@ -235,6 +260,13 @@ source is still there. Re-read it wherever correctness depends on it.
 
 ## 12. Anti-patterns
 
+- **treating a request as a work item because it arrived as a sentence rather
+  than as an edit** — the size of the change decides that, not the fact that
+  somebody described it;
+- producing a map, a plan, a lens or a report for a change in the Direct band,
+  or ending one by asking for a gate it was never in scope for;
+- narrating an investigation before making a small edit, or explaining
+  afterwards how much rigor was preserved;
 - launching the strongest available model for mechanical discovery because the
   session happens to use it;
 - high effort applied to everything without regard to what is being decided;
@@ -250,17 +282,42 @@ source is still there. Re-read it wherever correctness depends on it.
 - **and the one that outranks every other line here** — reducing tests, review
   independence, security analysis or evidence to hit an efficiency target.
 
-## 13. A request to "keep it cheap" is a preference about method
+That last line is a floor, not a defence of the ones above it. Every other entry
+here is also a defect, and the first three are the ones a careful reader is most
+likely to commit while believing they are being thorough.
 
-A human may ask for less spending, and that is a legitimate instruction about
-**how** the work is done: fewer speculative searches, a shorter report, no
-redundant re-verification, no lens the diff does not touch.
+## 13. What a request to "keep it cheap" decides, and what it does not
 
-It is not an instruction about **whether** the work is done. It does not lower a
-risk tier, retire a gate, remove a required test, drop an independent reader,
-skip validation, or convert an `UNKNOWN` into an assumption. Those are the human
+**Below the line in §3's Direct band it is decisive.** A human saying a change
+is small, or that the ceremony is too heavy for it, is scoping the work — the
+one judgement they are better placed to make than any classifier here, because
+they know what they meant. Take them at their word: make the edit, say what
+changed, stop. If what they scoped turns out to reach §4, say which trigger
+fired and why the scope has to widen. That is a finding, and it is the only
+acceptable way to overrule them.
+
+**Above that line it is an instruction about method, not about whether.** It
+buys fewer speculative searches, a shorter report, no redundant
+re-verification, no lens the diff does not touch. It does not lower a risk
+tier, retire a gate, remove a required test, drop an independent reader, skip
+validation, or convert an `UNKNOWN` into an assumption. Those are the human
 risk acceptances in §1, and a request to save tokens is not one of them — it
 names no risk, so it cannot be accepting one.
 
 Take the cheaper path where one exists. Say plainly what stays, and why, and
-then do that too.
+then do that too — in a sentence. **A paragraph explaining which rigor was
+preserved is itself the cost being complained about**, and answering a request
+to spend less with a defence of spending is how this standard gets ignored.
+
+### 13.1 Which calls the spend-more default settles
+
+Underspending is invisible and overspending is not, so a judgement call that is
+**genuinely uncertain** settles toward spending more. That is the default
+throughout this standard, and it is the right one.
+
+It does not settle a call that is not uncertain. Reaching for the higher band
+on work that plainly does not need it is not caution: it converts a real cost
+into an invisible one, because the person paying it stops sending small work
+through the framework and then stops sending the large work too. **A framework
+routed around protects nothing.** The ceremony a High-risk change gets is only
+affordable if a one-line change does not get it as well.

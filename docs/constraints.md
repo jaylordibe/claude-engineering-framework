@@ -42,20 +42,16 @@ is a comment, not a guardrail.
 **Consequence.** A declarative `permissions.deny` floor — the only layer that
 cannot fail open — is not distributable by a plugin.
 
-**What we did until 1.0.0.** Shipped `reference/permissions-floor.json` for
-`framework-install` to merge into the consuming repository's own settings, plus
-two `PreToolUse` hooks to cover the command forms a prefix rule cannot see.
+**What we do: nothing.** The framework ships no permission rules and no hooks
+that gate a tool call. The constraint above is one reason — a merged copy can
+never be un-merged, so a withdrawn rule would stay in every repository that had
+it. The larger reason is that the workaround is worse than the limitation: a
+six-lens review of an attempt at such guards found two Critical and ten High
+defects in one pass, and shipping `defaultMode` into a consuming repository
+silently overrides the permission mode its developers chose, because a project
+settings file outranks the user's own.
 
-**What we do now: nothing.** The framework ships no permission rules and no
-hooks that gate a tool call. The constraint above is one reason — a merged copy
-can never be un-merged, so a rule the floor withdrew stayed in every repository
-that had it. The larger reason is that the workaround was worse than the
-limitation: a six-lens review of the last attempt to extend the guards found two
-Critical and ten High defects in one pass, and shipping `defaultMode` into a
-consuming repository silently overrode the permission mode its developers had
-chosen, because a project settings file outranks the user's own.
-
-Permissions belong to the repository and its owner. This constraint is no longer
+Permissions belong to the repository and its owner. This constraint is not
 something to route around.
 
 ---
@@ -189,7 +185,7 @@ official-sounding prefix.
 startup. This is the worst failure shape available: the path reads as protected
 in the settings file while being fully writable.
 
-**No longer enforced here.** The framework wrote no path rules from 1.0.0, so
+**Not enforced here.** The framework writes no path rules, so
 there is nothing of ours to check. Kept because it is the highest-value thing to
 say to a repository owner writing their own rules, and because it is exactly the
 shape of mistake that reads as protection.
@@ -218,10 +214,9 @@ version's path until `/reload-plugins`.
 > or later. — *Configure permissions*
 
 **Consequence.** A `Read(**/*.p12)` rule alone leaves the file writable, and on
-any version before 2.1.208 editable too. The floor this framework used to ship
-had four such paths — `*.p12`, `*.pfx`, `.netrc`, `.npmrc` — with a `Read` rule
-and no `Edit` rule, so they read as protected while a tool could still write
-them.
+any version before v2.1.208 editable too. A floor pairing `Read` rules with no
+`Edit` rules for `*.p12`, `*.pfx`, `.netrc` and `.npmrc` reads as protecting
+them while a tool can still write them.
 
 **No longer enforced here**, for the reason in C9: the framework writes no
 rules. Pair every `Read` deny with an `Edit` deny in your own settings — an
@@ -533,8 +528,8 @@ in settings. **The `env` block works at project scope, and that is measured**
 — on v2.1.233, with the key absent from `~/.claude/settings.json` and unset in
 the environment, a probe in a directory whose `.claude/settings.json` carried
 the `env` block reported `TaskCreate` available, and the same probe in a
-directory without it did not. That measurement is why the position below
-changed in 2.2.0.
+directory without it did not. That measurement is what the position below rests
+on.
 
 An earlier rename sits behind this one — `TodoWrite` became the four `Task*`
 tools — so a file written against either name is now two removes from what the
@@ -584,23 +579,20 @@ have the task tools, the same seven stages are mirrored into them, because the
 native panel is a better display than a code block; nothing about the run
 changes when it is absent.
 
-**What we do about the opt-in, and why this reversed in 2.2.0.** Until 2.2.0
-`ef-install-settings` deliberately did not write `env`, on the reasoning that
-widening the one exception this framework grants itself to buy a nicer progress
-display was the trade the 1.0.0 line exists to refuse. That reasoning was
-wrong, and the error was in treating the two keys as the principle instead of
-the *test* the principle applies.
+**What we do about the opt-in.** `ef-install-settings` writes the key, and the
+test that admits it is the one to apply to any future addition.
 
-The 1.0.0 line is about rules that can **deny**: a false denial cannot be
-clicked through and blocks work outright. `CLAUDE_CODE_ENABLE_TODO_TOOLS`
-grants nothing and denies nothing — a wrong value costs a checklist somebody
-did not want. Meanwhile the framework was promising visible progress on a
+The rule the framework holds itself to is about settings that can **deny**: a
+false denial cannot be clicked through and blocks work outright.
+`CLAUDE_CODE_ENABLE_TODO_TOOLS` grants nothing and denies nothing — a wrong
+value costs a checklist somebody did not want. The principle is that test, not a
+fixed list of keys. Meanwhile the framework was promising visible progress on a
 seven-stage unattended pipeline and delivering it only to developers who found
 and performed a manual step in their home directory, which most never did. A
 per-machine step nobody takes is not neutrality; it is a broken feature with a
 principled explanation.
 
-So from 2.2.0 the installer merges that one `env` member, and only into the
+So the installer merges that one `env` member, and only into the
 project's own committed settings. An existing value — `"1"` or `"0"` — is never
 rewritten, nothing else inside `env` is read, `--no-task-tools` skips it, and a
 developer who wants it off for themselves uses `.claude/settings.local.json`,

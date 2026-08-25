@@ -80,12 +80,21 @@ So `efficiency-discipline` scores waste at **0.4** and a moved quality floor at
 - **Cheap is correct when it is earned** — `efficiency-low-risk-stays-targeted`
   and `efficiency-medium-standard-depth` fail a run for *over*-investigating. A
   policy that only ever punished shallowness would be a policy for spending
-  more, which is not what this one is.
+  more, which is not what this one is. The first of those grades the `Direct`
+  band, where the correct run produces no map at all; `efficiency-discipline`
+  scores the pipeline run over such a change below ordinary waste.
 
 Score `efficiency-low-risk-stays-targeted` and
 `efficiency-high-authorization-no-shortcut` together. Both are described in the
 prompt as small changes; only one of them is. A run that treats them the same
 has not read either repository, and that is invisible in either case alone.
+
+That pair is also the test of the `Direct` band's bound, and the reason the band
+carries a sensitive-area list rather than a general permission to go fast. The
+first case must take the exit; the second must not, however small the human
+called it. Widening the exit until both pass breaks the framework in the
+direction the floor exists to prevent — check this pair before shipping any edit
+to `standards/execution-efficiency.md` §3 or §13.
 
 ## The pair of API cases is the sharpest instrument here
 

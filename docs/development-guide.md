@@ -153,17 +153,29 @@ nothing: a paraphrase drifts from its source silently, and this policy touches
 every gate and every agent, so per-file copies would become per-file policy
 within two releases.
 
-Two things to know before changing anything there.
+Three things to know before changing anything there.
 
-**The defaults all fail toward spending more, deliberately.** Standard depth
-rather than Targeted, `model: inherit` rather than a cheap default, an uncertain
-lens launched rather than skipped, a generous turn ceiling rather than a tight
-one. That asymmetry is not timidity. Overspending is visible — a system-wide map
-for a comment fix reads as waste to anyone who scrolls the transcript.
-Underspending is not: a change misclassified downward produces a *shorter,
-tidier, more confident* output than the correct run, which is the exact shape of
-the failure this framework exists to prevent. A saving that has to be argued for
-is not one worth taking.
+**Where a call is close, the defaults fail toward spending more, deliberately.**
+Standard depth rather than Targeted, `model: inherit` rather than a cheap
+default, an uncertain lens launched rather than skipped, a generous turn ceiling
+rather than a tight one. That asymmetry is not timidity: underspending is
+invisible, because a change misclassified downward produces a *shorter, tidier,
+more confident* output than the correct run, which is the exact shape of the
+failure this framework exists to prevent.
+
+**Where a call is not close, that rule does not apply.** Read as a general
+principle rather than a tie-breaker it becomes a ratchet: every mechanism turns
+the same way, there is no low end anywhere, and a typo gets mapped, planned and
+panelled. The `Direct` band and the charter's `Below Low there is no tier` are
+the exit, and §13 makes a human's own scoping of a small change decisive rather
+than a preference. **A framework routed around protects nothing** — that is the
+real cost of overspending.
+
+Both of those are one rule with two ends, and a change to this standard that
+strengthens one end usually weakens the other. Check which you are doing. The
+bound on the exit — authentication, authorization, tenancy, personal data,
+money, migrations, public contracts, concurrency — is what makes it safe, and
+widening it is not the same kind of edit as clarifying the prose around it.
 
 **Two levers that look available are not.** Reasoning effort cannot be varied
 per launch, and a turn ceiling is a hard stop rather than a budget — see

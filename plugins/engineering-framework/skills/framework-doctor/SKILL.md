@@ -84,8 +84,8 @@ Repository contract audit
   Commands:    <declared vs. actually resolvable>
   Risk paths:  <declared high-risk paths, and that they shape ceremony only>
   Leftovers:   <pre-plugin .claude/ directories still overriding the plugin,
-                and any policy file left over from before 2.0.0 that ef-doctor
-                names — report what it says; do not read the file yourself>
+                and any obsolete policy file ef-doctor names — report what it
+                says; do not read the file yourself>
 ```
 
 Everything this reports is **advisory**. The framework ships no permission
