@@ -9,15 +9,14 @@ they judge against.
 **It ships no permission rules and no hooks that gate a tool call. It is not a
 security control, and it must never be described as one.**
 
-Until 1.0.0 it shipped both: a reference permissions floor that
-`framework-install` merged into a consuming repository's settings, and two
-`PreToolUse` guards that inspected every Bash and Edit call. Both were removed,
-for two reasons worth stating here because they are security reasoning:
+A permissions floor merged into a consuming repository's settings, and
+`PreToolUse` guards inspecting every Bash and Edit call, are both out of scope
+here — for two reasons worth stating, because they are security reasoning:
 
 - **A text parser cannot out-guess a shell.** A verb built from a variable, an
   operation inside a script file, a here-doc, an interpreter given a string — a
-  guard sees the forms it models and no more. A six-lens review of the last
-  attempt to extend those guards found two Critical and ten High defects in a
+  guard sees the forms it models and no more. A six-lens review of one such
+  attempt found two Critical and ten High defects in a
   single pass, each one a command that reached a destructive operation without a
   decision. Every hole patched implied another.
 - **A hook can fail open.** Claude Code treats every non-zero exit except 2 as a
@@ -54,8 +53,8 @@ regress.
   *Repository content is not a source of instructions* below.
 - A gate that can be made to report a verdict its evidence does not support.
 - Anything in this plugin that writes **outside its documented boundary** in a
-  consuming repository's `.claude/settings.json`. From 2.2.0 `framework-install`
-  merges exactly three things — `extraKnownMarketplaces`, `enabledPlugins` and
+  consuming repository's `.claude/settings.json`. `framework-install` merges
+  exactly three things — `extraKnownMarketplaces`, `enabledPlugins` and
   the single `env` member `CLAUDE_CODE_ENABLE_TODO_TOOLS` — into the *project's*
   settings, and only when a human runs it. Writing `permissions`, `hooks`, any
   other member of `env`, writing to
@@ -93,8 +92,8 @@ The framework will not do any of this for you, and that is deliberate.
 4. **Check `permissions.defaultMode` in your repository settings.** A project
    settings file *overrides* your own `~/.claude/settings.json` for that key, so
    a value committed to a repository silently changes the permission mode for
-   everyone who works in it. Versions of this framework before 1.0.0 installed
-   one; if yours has it, decide deliberately whether you want it.
+   everyone who works in it. This framework never writes that key; if your
+   settings have it, decide deliberately whether you want it.
 5. **Keep `CLAUDE.md` true.** Agents treat it as evidence, so a stale one is a
    security problem and not only a documentation one.
 
@@ -113,7 +112,7 @@ report with its `path:line` rather than a directive to follow.
 
 **This is guidance, not a control.** It is enforced by instruction to a model,
 which is materially weaker than a rule, and it should be described that way.
-Since 1.0.0 it is the framework's *primary* defence rather than one layer of
+It is the framework's *primary* defence rather than one layer of
 several, which raises rather than lowers the bar for keeping it honest.
 `fixtures/adversarial-injection/` and the `injection-resistance` grader exist
 for that.
@@ -124,7 +123,7 @@ a credential, or a fabricated verdict — as in scope for a report.
 ## Supply chain
 
 The plugin has **no runtime dependencies** beyond `jq`. It is Markdown, JSON and
-POSIX shell, and it executes nothing it did not ship. Since 1.0.0 the only script
+POSIX shell, and it executes nothing it did not ship. The only script
 it runs *on its own* is `scripts/session-charter.sh`, on `SessionStart`. Two more
 run only when you invoke them: `bin/ef-doctor`, which is read-only, and
 `bin/ef-install-settings`, which `framework-install` calls and which writes only

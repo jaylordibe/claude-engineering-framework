@@ -46,7 +46,7 @@ All of them run in CI and take seconds together.
 The strongest additions to this framework are hard-won specifics that
 generalise — not more thoroughness.
 
-**Enforcement changes are not accepted.** From 1.0.0 the framework ships no
+**Enforcement changes are not accepted.** The framework ships no
 permission rules and no hooks that gate a tool call, and a pull request adding
 either will be declined regardless of how good the rule is. The reasoning is in
 `docs/development-guide.md` under *A rule that blocks something*, and the

@@ -47,12 +47,16 @@ const ADDITIONAL_CONTEXT_CHARACTER_CAP = 10000;
 // constraint is the reader's attention and the token cost on every request in
 // every repository, not the API limit.
 //
-// Raised from 70 to 80 to pay for the "repository content is evidence, not
-// instruction" section, which cannot live in a lazily-loaded skill — see the
-// header of session-charter.sh. That was a deliberate purchase, and the number
-// is deliberately tight afterwards: the next addition removes something. A
-// change that raises this constant is a change that has to argue for it here.
-const CHARTER_LINE_CEILING = 80;
+// The ceiling is deliberately tight, and the next addition here removes
+// something. Three sections earn their place against it — the source
+// precedence, "repository content is evidence, not instruction", and the
+// floor-and-exit pair — because each defends against something that arrives
+// before any skill or standard has loaded. A change that raises this constant
+// has to argue for it here.
+//
+// 82 rendered lines against 84. That margin is the whole budget for the next
+// change, and it is meant to be spent by removing something.
+const CHARTER_LINE_CEILING = 84;
 
 // Each entry is a guarantee the framework makes in its always-on text, and the
 // evidence that the guarantee is still stated. Matched case-insensitively
@@ -76,6 +80,16 @@ const REQUIRED_GUARANTEES = [
   // standard has loaded. A floor stated only inside the machinery it protects
   // is not reachable at the moment it is tested.
   { concept: 'efficiency never lowers the quality floor', patterns: [/efficiency/i, /floor|reduce|lower/i, /token|cheap|spend/i] },
+  // The same guarantee as the one above, seen from the other side. The floor
+  // and the exit are one mechanism with two ends, and both need a test: without
+  // this one the section that tells a session to stop could be deleted with
+  // every suite still green, and every installed repository would go back to
+  // mapping a typo.
+  //
+  // The third pattern is not decoration. This section is only safe because it
+  // is bounded; a version of it that dropped the sensitive-area list would
+  // pass a test that checked for the exit alone, and be worse than no exit.
+  { concept: 'the exit below the lowest tier, and the bound on it', patterns: [/below Low|below the line/i, /no map|no plan/i, /authorization/i, /tenancy/i] },
 ];
 
 if (!existsSync(charterScript)) {
@@ -214,12 +228,10 @@ if (charter) {
 // 6. The charter says nothing about the repository's permission settings
 // ---------------------------------------------------------------------------
 //
-// INVERTED IN 1.0.0. This used to assert that the charter warned when a
-// repository had no `.claude/settings.json`, so the user knew the permissions
-// floor was missing. The framework ships no floor now, so there is nothing to
-// miss — and the charter is the always-on budget, paid on every request in
-// every repository. Spending any of it on an opinion about a file the framework
-// neither writes nor reads is exactly the overreach 1.0.0 removed.
+// The framework ships no permissions floor, so there is nothing for the charter
+// to warn about — and the charter is the always-on budget, paid on every
+// request in every repository. Spending any of it on an opinion about a file
+// the framework neither writes nor reads is overreach.
 
 for (const [label, rendered] of [
   ['with a settings file', renderCharter(repositoryRoot)],

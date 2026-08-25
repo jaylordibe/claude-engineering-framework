@@ -14,7 +14,7 @@ What this case is for.
 Progress visibility, graded on a session that has no task-list tool — which is
 the default on current models, not an edge case. Claude Code stopped providing
 `TodoWrite` and the four `Task*` tools by default in v2.1.233
-(docs/constraints.md C21), and `work-item` used to keep its position in exactly
+(docs/constraints.md C21), and a pipeline keeping its position in exactly
 those.
 
 Correct behaviour: the run emits the seven-stage ledger in its first response

@@ -69,10 +69,10 @@ anywhere in your repository** — Claude Code owns the installed version.
 `extraKnownMarketplaces`, `enabledPlugins` and the single `env` member
 `CLAUDE_CODE_ENABLE_TODO_TOOLS` into `.claude/settings.json` and nothing else;
 it never writes `permissions`, never writes `hooks`, never touches any other
-member of `env`, and never writes outside your repository. Versions before 1.0.0
-installed a permissions floor; if you have one, it is still there because a
-merge only ever adds, and nothing here reads it any more. See the 1.0.0 entry in
-`CHANGELOG.md` for what is worth deleting.
+member of `env`, and never writes outside your repository. Any `permissions`
+block in that file is yours — nothing here reads it. Delete
+`permissions.defaultMode` if one is present: project settings override each
+developer's own, so it cancels the permission mode they chose.
 
 ### What the declaration looks like
 
@@ -290,13 +290,13 @@ not given to current models unless a session opts in
 The ledger is the record; the panel is how you read the current stage without
 scrolling back through the output.
 
-If the panel stays empty, two different things cause it. A repository
-configured by a framework older than 2.2.0 does not have the key at all —
-re-run `framework-install` once and commit. A repository that *has* the key but
-runs a framework older than 2.3.0 has the other half: Claude Code hands those
-tools over **deferred** rather than callable, and until 2.3.0 a run read that
-as having no task list at all. Update the plugin; nothing on disk changes.
-Either way the ledger is unaffected, because it never depended on the panel.
+If the panel stays empty, check three things in order. Is
+`env.CLAUDE_CODE_ENABLE_TODO_TOOLS` in the committed `.claude/settings.json`? If
+not, re-run `framework-install` and commit. Is the plugin current? Claude Code
+hands those tools over **deferred** rather than callable, and an old plugin
+reads that as having no task list at all — update it; nothing on disk changes.
+Is the key overridden in your own `.claude/settings.local.json`? The ledger is
+unaffected either way, because it never depended on the panel.
 
 To turn the panel off for yourself without changing it for the team, set the
 key in `.claude/settings.local.json`, which is per developer and is not
@@ -309,7 +309,7 @@ state file inside the repository, that is a bug worth reporting.
 
 ### Picking work back up later
 
-From 2.4.0 you can close the session and come back to an approved work item —
+You can close the session and come back to an approved work item —
 tomorrow, or after a restart. `claude --resume` restores the conversation; the
 state file carries what the conversation cannot prove on its own.
 

@@ -829,7 +829,7 @@ function validateInstallerBoundary() {
 
   const forbidden = [
     { pattern: /frameworkVersion/, why: 'mentions `frameworkVersion`; consumer repositories carry no framework version' },
-    { pattern: /engineering-framework\.json/, why: 'references the repository policy file removed in 2.0.0' },
+    { pattern: /engineering-framework\.json/, why: 'references an obsolete repository policy file' },
     { pattern: /known_marketplaces|installed_plugins/, why: "names Claude Code's internal plugin state, which belongs to the host application" },
     { pattern: /(>|>>|mkdir|rm|mv|cp|touch|tee)\s+["']?(\$HOME|~\/|\$\{HOME)/, why: 'writes into the home directory; the installer is project-scoped' },
   ];
@@ -847,7 +847,7 @@ function validateInstallerBoundary() {
 // ---------------------------------------------------------------------------
 // 7d. The removed repository policy file stays removed
 //
-// `.claude/engineering-framework.json` was deleted in 2.0.0: `frameworkVersion`
+// `.claude/engineering-framework.json` is not a file any repository has: `frameworkVersion`
 // was a version pin the consuming repository had no business carrying,
 // `commands` duplicated the CLAUDE.md canonical-commands table, and
 // `risk.highRiskPaths` moved into CLAUDE.md.
@@ -870,7 +870,7 @@ function validateNoLegacyPolicyFileReferences() {
     const text = readFileSync(filePath, 'utf8');
     for (const [index, line] of text.split('\n').entries()) {
       if (line.includes('engineering-framework.json') || /\brisk\.highRiskPaths\b/.test(line) || /\bframeworkVersion\b/.test(line)) {
-        fail(filePath, `line ${index + 1} references the repository policy file removed in 2.0.0. Canonical commands and high-risk paths live in the repository's CLAUDE.md now; an instruction to read a file no repository has fails silently, and the gate simply gets no answer.`);
+        fail(filePath, `line ${index + 1} references an obsolete repository policy file. Canonical commands and high-risk paths live in the repository's CLAUDE.md now; an instruction to read a file no repository has fails silently, and the gate simply gets no answer.`);
       }
     }
   }
@@ -946,7 +946,7 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'exactly one verdict, and never a converted one',
     patterns: [/\bPASS\b/, /\bFAIL\b/, /\bBLOCKED\b/, /never convert|skipped/i],
   },
-  // Reworded in 2.4.0 from "an approval taken in this session". The host
+  // Deliberately not "an approval taken in this session". The host
   // restores a resumed session's entire conversation, so "this session" named
   // two different things at once and the three files that used it disagreed:
   // gate-approve said an approval never carries to a later session, work-item
@@ -1035,7 +1035,7 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'durable state survives compaction without depending on a host task-list tool',
     patterns: [/run state file/i, /compact/i, /task-list tool/i, /outside the repository/i],
   },
-  // The second half of C21, found two days after 2.2.0 shipped the opt-in that
+  // The second half of C21, and it does not go away once the opt-in that
   // was supposed to close the first: the host registers the task tools but
   // hands them over deferred, so a conductor reading only its callable tools
   // concludes it has no task list in a session that has one. That answer is
@@ -1153,9 +1153,9 @@ function validateNoRequiredHostTaskTool() {
     for (const filePath of listFilesRecursively(directory, (path) => path.endsWith('.md'))) {
       const content = readFileSync(filePath, 'utf8');
       if (!OPTIONAL_HOST_TOOLS.test(content)) continue;
-      // The escape must state the ABSENCE branch specifically. Until 2.4.0 it
-      // also accepted `when this session ...` / `if the host ...`, which a
-      // purely positive conditional satisfies: "when this session has a task
+      // The escape must state the ABSENCE branch specifically. Accepting
+      // `when this session ...` / `if the host ...` is not enough, because a
+      // purely positive conditional satisfies it: "when this session has a task
       // list, write the record there" passed while saying nothing at all about
       // the session that has none — which is the majority case and the whole
       // reason this check exists. Only phrases that name the absence count.
@@ -1186,7 +1186,7 @@ const SINGLE_SOURCE_POLICIES = [
     vocabulary: /\bpipeline ledger\b/i,
     what: 'the conductor pipeline ledger',
   },
-  // Added in 2.4.0. Drift assessment is a three-outcome decision that three
+  // Drift assessment is a three-outcome decision that three
   // separate files reach — work-item on resume, gate-implement before its first
   // edit, gate-approve before a stale read-back. A per-file copy of "when is it
   // safe to continue" would be three different answers within two releases, and

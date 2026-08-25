@@ -50,7 +50,7 @@ const DECLARATION = JSON.parse(readFileSync(declarationPath, 'utf8'));
 const MARKETPLACE = DECLARATION.marketplace;
 const PLUGIN_ID = `${DECLARATION.plugin}@${DECLARATION.marketplace}`;
 
-// From 1.0.0 ef-doctor audits the repository contract and nothing else: the
+// ef-doctor audits the repository contract and nothing else: the
 // framework ships no permission rules and no hooks that gate a command, so
 // there is no floor to build, no user settings to control, and no permission
 // shape left to assert. Everything below describes a repository, and every case
@@ -202,9 +202,9 @@ const CASES = [
     mustNotReport: ['FAIL'],
   },
   {
-    // Removed in 2.0.0. A repository that still has one is declaring commands
+    // Obsolete. A repository that still has one is declaring commands
     // and risk paths that nothing reads, and nothing else would ever say so.
-    name: 'a leftover policy file from before 2.0.0 is named, not parsed',
+    name: 'an obsolete policy file is named, not parsed',
     build: {
       'CLAUDE.md': HEALTHY_CLAUDE_MD,
       '.claude/engineering-framework.json': { commands: { test: 'make test' } },

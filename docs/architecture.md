@@ -69,7 +69,7 @@ framework: the repository's own `CLAUDE.md` and its own `.claude/skills/`.
 
 The framework never competes with those. It cites them.
 
-The extension points that remain are the ones the *gates* read, and from 2.0.0
+The extension points that remain are the ones the *gates* read, and
 both are sections of `CLAUDE.md` rather than keys in a file of the framework's
 own design: the **canonical commands** table tells the validation gate what to
 run instead of inferring, and the **High-risk paths** section tells the design
@@ -77,25 +77,18 @@ and review gates which changes deserve more ceremony. Both are advisory guidance
 to an agent. Neither blocks anything, and no document may describe them as
 though they do.
 
-Until 2.0.0 these lived in `.claude/engineering-framework.json`, alongside a
-`frameworkVersion` the repository declared and `ef-doctor` compared against the
-installed plugin. That file is gone, for three reasons that are worth keeping
-because each one generalises:
+They live in `CLAUDE.md` and nowhere else. A separate configuration file for
+them is the design this one rejects, for three reasons that generalise:
 
-- **`commands` was a second copy of the `CLAUDE.md` command table**, which the
-  template told you to write in both places. Stating a contract twice is the
-  drift this project's own conventions forbid everywhere else.
-- **`frameworkVersion` was a synchronisation problem the framework invented for
-  itself.** Claude Code already owns the installed version. A number in the
-  consuming repository can only agree with it or go quietly stale, and the check
-  that compared them made the second case look like a fourth kind of failure.
-- **`risk.highRiskPaths` was the only key with a real job**, and its job is to
-  state something true about *this repository* — which is the definition of what
-  `CLAUDE.md` is for.
-
-Until 1.0.0 the same file also carried `protectedPaths` and `protectedCommands`,
-which configured two hooks that gated tool calls. Those hooks are gone; see
-*What was deliberately left behind*.
+- **A `commands` key is a second copy of the `CLAUDE.md` command table.**
+  Stating a contract twice is the drift this project's conventions forbid
+  everywhere else.
+- **A declared `frameworkVersion` is a synchronisation problem the framework
+  would be inventing for itself.** Claude Code owns the installed version. A
+  number in the consuming repository can only agree with it or go quietly
+  stale.
+- **High-risk paths state something true about *this repository*** — which is
+  the definition of what `CLAUDE.md` is for.
 
 ### 4a. The one thing the framework writes into a repository
 
@@ -117,7 +110,7 @@ The boundary is narrow on purpose, and it is the same boundary 1.0.0 drew:
 
 **Declaring a dependency is not the same act as rewriting a permission
 posture.** The first is what a package manifest does; the second is what the
-pre-1.0.0 permissions floor did, and it is what remains banned. That distinction
+a permissions floor does, and it is what stays banned. That distinction
 is the whole justification for the exception, so it is asserted mechanically in
 `tests/validate-install-settings.mjs` — including a case proving a run writes
 nothing into `$HOME` — rather than promised in this document.
@@ -357,30 +350,45 @@ computation to establish production-grade confidence for the actual risk and
 scope** — which is a different number from the lowest token count, and only one
 of the two is safe to optimise for.
 
-### Risk now governs investigation, not only ceremony
+### Risk governs investigation, not only ceremony
 
-Before this, the risk tier decided what a change had to *produce* — a plan, a
-threat model, negative tests, a wider review panel. It now also decides what a
-change is investigated *with*. Both directions of that are deliberate: a Low
-change stops paying for a system-wide map, and a High change cannot buy its way
-out of one by having a small diff.
+The risk tier decides both what a change must *produce* — a plan, a threat
+model, negative tests, a wider review panel — and what it is investigated
+*with*. Both directions matter: a Low change does not pay for a system-wide
+map, and a High change cannot buy its way out of one by having a small diff.
 
-### The three properties that keep it safe
+### The four properties that keep it safe
 
 **Standard depth is the default; Targeted is earned.** A band is a conclusion
-from evidence, never an opening assumption. The dangerous failure here is not
-overspending — it is a change misclassified downward, which produces a shorter,
-tidier, more confident output than the correct run.
+from evidence, never an opening assumption. One failure here is a change
+misclassified downward, which produces a shorter, tidier, more confident output
+than the correct run.
 
-**No band drops a category.** A Targeted map answers every question a Deep map
-answers, and is allowed to answer some of them cheaply — *this path performs no
-data access, this symbol has one caller* — rather than by a system-wide audit.
-It is never allowed to answer one by not looking, and an `UNKNOWN` on access
-control, tenancy or persistence forces the band wider.
+**No band from Targeted upward drops a category.** A Targeted map answers every
+question a Deep map answers, and is allowed to answer some of them cheaply —
+*this path performs no data access, this symbol has one caller* — rather than by
+a system-wide audit. It is never allowed to answer one by not looking, and an
+`UNKNOWN` on access control, tenancy or persistence forces the band wider.
 
-**Depth is iterative and moves one way.** Evidence widens a band and raises a
-tier; nothing lowers either afterwards, and neither the eventual size of the
-diff nor how far along the work is counts as evidence that it should be.
+**Depth is iterative and moves one way once it has started.** Evidence widens a
+band and raises a tier; nothing lowers either afterwards, and neither the
+eventual size of the diff nor how far along the work is counts as evidence that
+it should be.
+
+**And below all of it there is `Direct`.** A comment fix, a log line or a
+one-liner whose cause and effect are both already visible gets the lines changed
+and the symbol they sit in — no map, and none owed. It is the one band entered
+from the shape of the request rather than concluded from a map, because a band
+you have to map to justify is not a band; the safety is the entry condition and
+the exit rather than a prior sweep, and any §4 trigger or unanswerable §3.1
+question sends the change to `Targeted`.
+
+It exists because the first three properties address only one of the two
+failures. Overspending is not merely an aesthetic cost: it is charged to the
+same person every time, on the work least able to absorb it, and the endpoint is
+that they stop routing anything through the framework. **A framework routed
+around protects nothing**, so the ceremony a High-risk change gets is only
+affordable if a trivial change does not get it too.
 
 ### What is left on the table, and why
 
@@ -404,7 +412,7 @@ next, and its shape follows from splitting one word into three problems —
 |---|---|---|
 | Recovering the conversation, the tool calls and their results | The host's | `--resume` restores the full transcript. The framework stores nothing |
 | Holding the run's position when the conversation is summarised away | Already solved | The run state file and the ledger, for the reasons in [C21](constraints.md#c21--the-task-list-tools-are-not-provided-by-default-on-current-models) |
-| Whether the approved state is **still valid** against the repository now | Nobody's, until 2.4.0 | The drift assessment |
+| Whether the approved state is **still valid** against the repository now | The framework's | The drift assessment |
 
 **The framework built only the third**, and built it as prose and normative
 anchors rather than as machinery. There is no new store: the run state file
@@ -484,7 +492,7 @@ here so the first pack starts from evidence rather than from a blank page.
 | Left behind | Why |
 |---|---|
 | Repository-specific playbooks | They cite symbols that exist in one repository. They stay there. |
-| **Enforcement of any kind** | Removed in 1.0.0. The framework shipped a permissions floor and two hooks that gated tool calls; a six-lens review of the last attempt to extend them found two Critical and ten High defects in one pass. A text parser cannot out-guess a shell, and a plugin that rewrites a developer's permission rules confuses advice with authority. Permissions belong to the repository and its owner. |
+| **Enforcement of any kind** | A text parser cannot out-guess a shell — an attempt at a permissions floor and tool-call guards produced two Critical and ten High defects under a six-lens review, and every hole patched suggested another. A plugin that rewrites a developer's permission rules also confuses advice with authority. Permissions belong to the repository and its owner. |
 | Issue-tracker specifics | Tracker-agnostic and optional. |
 | A worktree fan-out for parallel implementation | Deferred in the original design for good reasons that still hold. |
 | `permissionMode` on agents | Not supported for plugin-shipped agents. Read-only comes from the tool pool and is asserted in CI. |

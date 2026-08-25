@@ -49,8 +49,8 @@ are silent from this side.
 | `.claude-plugin/marketplace.json` | The catalogue; a break here stops the marketplace loading for everyone |
 
 This repository ships methodology that runs in other people's repositories, and
-from 1.0.0 it ships no permission rules and no hooks that gate a command —
-nothing here can block a consumer's work, and no document may describe it as
+it ships no permission rules and no hooks that gate a command — nothing here
+can block a consumer's work, and no document may describe it as
 though it can. What can still go wrong is invisible from here: a wrong standard
 makes an agent describe an architecture that does not exist, and a wrong charter
 line is paid on every request in every installed repository.
@@ -105,8 +105,8 @@ docs/                               design rationale and Claude Code constraints
   charter, which states the human-owned operations, and by the gates, which stop
   and hand off.
 - **The one file the framework writes, and the exact width of the exception.**
-  From 2.2.0 `ef-install-settings` merges three keys —
-  `extraKnownMarketplaces`, `enabledPlugins` and the single `env` member
+  `ef-install-settings` merges three keys — `extraKnownMarketplaces`,
+  `enabledPlugins` and the single `env` member
   `CLAUDE_CODE_ENABLE_TODO_TOOLS` — into the *project's* own
   `.claude/settings.json`, and only when a human runs `framework-install`.
   Nothing else in the file is read or written, no global file is touched, and
@@ -114,67 +114,84 @@ docs/                               design rationale and Claude Code constraints
   **Declaring a dependency is not the same act as rewriting a permission
   posture**, and the distinction is what makes this compatible with the line
   above rather than an erosion of it: the first is what `package.json` does, the
-  second is what the pre-1.0.0 permissions floor did. The width of the exception
+  second is what a permissions floor does. The width of the exception
   is asserted in `tests/validate-install-settings.mjs`, including that a run
   writes nothing into `$HOME`. A change that widens it past those three keys is
   the change this note exists to stop.
 
-  **The third key was added in 2.2.0, and the test to apply to a fourth is the
-  one that admitted it.** `work-item`'s visible progress depends on a host tool
-  current models are not given by default (C21), so a framework that would not
-  set it was shipping a progress display that usually did not work, and calling
-  the per-machine step neutrality. What made it admissible is that the key
-  **grants nothing and denies nothing** — a wrong value cannot block anyone's
-  work, which is exactly what the pre-1.0.0 floor could do. Project settings
+  **The test that admits the third key is the test to apply to a fourth.**
+  `work-item`'s visible progress depends on a host tool current models are not
+  given by default (C21), so a framework that declined to set it would ship a
+  progress display that usually does not work and call the per-machine step
+  neutrality. What makes the key admissible is that it **grants nothing and
+  denies nothing** — a wrong value cannot block anyone's work, which is exactly
+  what a permissions floor can do. Project settings
   outrank `~/.claude/settings.json`, so the opt-out is a developer's own
   `.claude/settings.local.json`, which is not committed; `--no-task-tools` opts
   out at install time. A fourth key that fails the grants-nothing test is the
   erosion this note is still here to stop.
 - **A consuming repository carries no framework version, and no install
   marker.** Claude Code owns the installed version, the cache and the update
-  lifecycle. Until 2.0.0 the repository also declared `frameworkVersion` in
-  `.claude/engineering-framework.json` and `ef-doctor` compared the two — a
-  second copy of a number that goes stale in silence, and a synchronisation
-  problem the framework invented for itself. The whole file is gone: `commands`
-  duplicated the `CLAUDE.md` canonical-commands table, which is the one-copy
-  rule below applied to configuration, and `risk.highRiskPaths` moved into
-  `CLAUDE.md` where the rest of the repository's truth already lives.
-- **Why the enforcement layer was removed rather than fixed.** Until 1.0.0 this
-  plugin shipped a 172-rule permissions floor and two PreToolUse guards — about
-  a third of the code and nearly half the test burden, to enforce one clause of
-  a charter with seven. A multi-lens review of the last attempt to extend it
-  found two Critical and ten High defects in a single pass: a `SELECT`-shaped
-  statement reaching `sqlite3`'s `writefile()`, `-hprod` bypassing a hostname
-  check that only matched the separated spelling, `git checkout --ours` silently
-  discarding uncommitted work because the premise that it only applies to
-  conflicts is false. **A text parser cannot out-guess a shell.** The host
-  application's own permission modes do this work, and a plugin second-guessing
-  them adds confusion rather than safety.
+  lifecycle. A `frameworkVersion` declared in the consuming repository would be
+  a second copy of a number that goes stale in silence — a synchronisation
+  problem the framework would be inventing for itself. There is no separate
+  policy file either: a `commands` key duplicates the `CLAUDE.md`
+  canonical-commands table, which is the one-copy rule below applied to
+  configuration, and high-risk paths belong in `CLAUDE.md` where the rest of the
+  repository's truth already lives.
+- **Why an enforcement layer is not worth building.** A permissions floor plus
+  PreToolUse guards costs about a third of the code and nearly half the test
+  burden, to enforce one clause of a charter with seven — and it does not work.
+  A multi-lens review of one such attempt found two Critical and ten High
+  defects in a single pass: a `SELECT`-shaped statement reaching `sqlite3`'s
+  `writefile()`, `-hprod` bypassing a hostname check that only matched the
+  separated spelling, `git checkout --ours` silently discarding uncommitted work
+  because the premise that it only applies to conflicts is false. **A text
+  parser cannot out-guess a shell.** The host application's own permission modes
+  do this work, and a plugin second-guessing them adds confusion rather than
+  safety.
 - **A false denial is worse than a false prompt.** A prompt costs a keystroke;
   a denial cannot be clicked through and blocks the work outright. This is why
-  the framework now prefers stating a boundary to enforcing one: a wrong
-  standard is argued with, a wrong rule is a wall. The guard that shipped
-  `*.key` — matching the empty string, so jq's `.key` accessor was denied in
-  every installed repository — is the case that made this concrete.
-- **Efficiency work here has one asymmetry, and it decides every judgement
-  call.** Overspending is visible: a system-wide map for a comment fix reads as
-  waste to anyone who scrolls the transcript. Underspending is not — a change
-  misclassified downward produces a *shorter, tidier, more confident* output
-  than the correct run, which is the exact shape of the failure this framework
-  exists to prevent. So every default in the efficiency policy fails toward
-  spending more: Standard depth rather than Targeted, `model: inherit` rather
-  than a cheap default, an uncertain lens launched rather than skipped, a
-  generous turn ceiling rather than a tight one. A saving that has to be argued
-  for is not a saving worth taking.
+  the framework states a boundary rather than enforcing one: a wrong standard is
+  argued with, a wrong rule is a wall. A guard pattern of `*.key` matches the
+  empty string, so jq's `.key` accessor is denied in every repository that has
+  it — that is the shape of the failure, and it is silent from here.
+- **Efficiency work here has one asymmetry, and it decides the judgement calls
+  that are genuinely uncertain — only those.** Underspending is invisible: a
+  change misclassified downward produces a *shorter, tidier, more confident*
+  output than the correct run, which is the exact shape of the failure this
+  framework exists to prevent. So where a call is close, every default fails
+  toward spending more: Standard depth rather than Targeted, `model: inherit`
+  rather than a cheap default, an uncertain lens launched rather than skipped,
+  a generous turn ceiling rather than a tight one.
+
+  **That default settles close calls and nothing else.** Applied to calls that
+  are not close it stops being a tie-breaker and becomes a ratchet — the higher
+  tier on every boundary, Standard as the only default, a band that must be
+  earned, a Low tier that still runs the full panel — and a framework with a
+  floor and no ceiling has no low end at all. A one-line fix then gets mapped,
+  planned, panelled and reported on, and the person paying for it cannot decline
+  it by asking.
+
+  **Overspending is not merely an aesthetic cost.** It is charged to the same
+  person every time, on the work least able to absorb it, until they stop
+  routing anything through the framework. **A framework routed around protects
+  nothing**, so the ceremony a High-risk change gets is only affordable if a
+  trivial change does not get it too. The exit is
+  `standards/execution-efficiency.md` §3's Direct band and the charter's "Below
+  Low there is no tier", both bounded to the same sensitive-area list rather
+  than left general. **The bound is what makes the exit safe.** Widening it past
+  that list, or restoring the ratchet by making Direct something a map has to
+  earn, is the change this note exists to stop — in both directions.
 - **A host feature may be used and may never be required.** The framework runs
-  inside an application it does not version. Claude Code stopped providing the
-  task-list tools to current models by default in v2.1.233, and `work-item` had
-  kept both its visible progress and its approval trace in them: the first
-  failure was merely confusing, the second meant an approved design could no
-  longer prove it was approved, and no test here could have caught either
-  because the thing that disappeared was not in this repository. So the ledger
-  is written into the message, durable state is a file outside the consuming
-  repository, and the task list is mirrored into when it exists. Anything a
+  inside an application it does not version, and a feature it depends on can
+  disappear without warning — Claude Code does not provide the task-list tools
+  to current models by default. A pipeline holding its visible progress there is
+  merely confusing when they are absent; one holding its approval trace there
+  cannot prove an approved design was approved, and no test here catches either,
+  because the thing that vanished is not in this repository. So the ledger is
+  written into the message, durable state is a file outside the consuming
+  repository, and the task list is mirrored into only when it exists. Anything a
   guarantee depends on has to be something this repository ships.
   `validate-plugin.mjs` fails a shipped file that names a task tool without
   saying what happens when there is none; `docs/constraints.md` C21 has the
@@ -216,8 +233,8 @@ A change to a standard, an agent, a gate or the charter reaches every one of
 them on their next `/plugin update`, and only when `version` in `plugin.json`
 changes.
 
-**From 2.0.0 `ef-install-settings` writes `"autoUpdate": true`, so this is the
-default rather than an opt-in** — `docs/constraints.md` C20 for what that key
+**`ef-install-settings` writes `"autoUpdate": true`, so this is the default
+rather than an opt-in** — `docs/constraints.md` C20 for what that key
 scopes to and why. A configured repository receives that release without anyone
 typing an update command, on its next session. A team can opt out and which ones
 did is not visible from here, so assume none of them did. **The version bump is
