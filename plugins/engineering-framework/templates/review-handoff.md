@@ -20,12 +20,19 @@ a blocker for the human, not something to backfill here.
 
 ## Lenses
 
-| Lens | Ran | Why this set |
-|---|---|---|
-| | | |
+| Lens | Ran | What it did not reach | Why this set |
+|---|---|---|---|
+| | | | |
 
 State the tier's required set and any deviation from it. A tier that got fewer
 lenses than it calls for is a finding about the review, not a detail.
+
+The third column is each lens's coverage line —
+`${CLAUDE_PLUGIN_ROOT}/standards/finding-report.md`. A lens that ran but did not
+reach part of its own remit is not the same as one that examined it and found
+nothing, and this is the only column that can tell the reader which happened. A
+lens that returned no report at all is recorded here as exactly that, never as
+`No findings.`
 
 ## Findings
 

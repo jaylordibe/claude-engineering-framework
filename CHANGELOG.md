@@ -12,6 +12,158 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 2.6.0 — 2026-08-26
+
+**Agents now converge and report; they no longer investigate until they are cut
+off.** In controlled runs of one work item at two reasoning-effort settings,
+four delegated agents reached their turn ceilings without returning a report at
+all — the context mapper and three review lenses, in both runs. Not a shallow
+report: nothing. Everything each of them had established was lost, the
+conductor re-established it by hand, and each had to be prompted again before it
+would write anything down.
+
+The framework already contained every idea needed to prevent that — bounded
+investigation, evidence sufficiency, reserving room to report — and none of it
+was reachable by the agents that needed it. Seven of the eight agents referenced
+no efficiency policy at all. The eighth was told to read the sections either
+side of the one that governs it.
+
+**No rigor was removed to fix this.** The independent lenses are what found the
+real defects; every one of them still runs, at the same effort, on the same
+model policy, with the same review independence and the same adversarial
+refutation pass. What changed is that an investigation now has a stopping
+condition and a report it owes, and that a specialist is told which decision it
+owns rather than being pointed at a repository.
+
+### The convergence contract
+
+- **`standards/execution-efficiency.md` §8 is now the convergence contract**,
+  and it owns four things that were previously stated nowhere. **§8.1 the
+  sufficiency test**: before each further search or read, name what its result
+  could change — a finding, the classification, the implementation shape, an
+  authorization, persistence or contract conclusion, a required test, or an
+  `UNKNOWN` that would otherwise stand. If it could change none of them, the
+  answer is already held, and the step is confirmatory. §4's widening triggers
+  **outrank the test outright**, so it never argues against following evidence.
+- **§8.2 synthesis is part of the task.** The report is owed from the first
+  turn, not attempted once the evidence runs out. The moment the assigned
+  decision is answerable, the remaining room belongs to the report.
+- **§8.3 the bounded report.** A report carrying verified findings and explicit
+  `UNKNOWN`s outranks an exhausted investigation that returned nothing. It is
+  never a way to keep a report short: an investigation that stopped while the
+  sufficiency test was still returning answers has under-investigated, and
+  labelling the hole `UNKNOWN` does not make it one.
+- **§8.4 continuation.** A continued agent synthesises what it holds rather than
+  restarting, and the delegating stage continues it rather than launching a
+  fresh one over the same ground. Two attempts is the limit.
+- **§8.5 the brief.** Each launch gets the decision it owns, the band and the
+  tier, and `path:line` pointers into its area — and **locations, never
+  conclusions.** A specialist handed the parent's verdict on its own concern has
+  lost the independence the launch was paying for, and one briefed at a
+  repository rather than at a decision has no stopping point to converge on.
+
+### Every lens now says what it did not reach
+
+- **`standards/finding-report.md` gains a coverage line**, returned before the
+  findings table and before `No findings.` as well. `No findings.` had two
+  meanings — *examined and clean*, and *ran out of room before looking* — and
+  nothing in the report told them apart.
+- It is also what makes the reader's verification **targeted**. The parent still
+  re-opens the source behind any load-bearing claim; what it should never have
+  to do is repeat the investigation to work out where to look.
+- Findings now separate what the cited line **says** from what was concluded
+  from it, so one file settles a row instead of a reconstruction of the
+  reasoning, and a citation is stated **repository-relative** — an absolute path
+  carries the reader's directory layout into a pull-request body, where it means
+  nothing to anyone else.
+- **All eight agents read that contract first**, before their first search
+  rather than after their last one.
+- `templates/review-handoff.md`'s lens table gains a *what it did not reach*
+  column, and records a lens that returned no report as exactly that — never as
+  `No findings.`
+
+### The mapper
+
+- `context-mapper` reads §8 as well as §3, §4 and §9. It was previously told the
+  rest of that file governed stages it was not running; §8 governs it directly.
+- **Full depth is now a property of the answer, not of the reading.** Every row
+  of the stack ledger is still answered from evidence in every band — a row this
+  change cannot reach is answered *as unreachable*, in one line, with the search
+  that establishes it. Studying a subsystem the change never touches was
+  consuming the room Stages 4 to 9 needed.
+- The same rule bounds Stage 5 to the flow Stage 4 traced, and Stage 6 to the
+  resolution the change needs. Stage 3's enumeration is complete when the search
+  forms stop returning anything new.
+- **Stage 9 no longer argues against its own bounded report.** It previously
+  said an `Incomplete` map costs the pipeline more than finishing would have,
+  which left exhaustion looking like the diligent option. The three outcomes are
+  now ranked explicitly, and the ceiling reached with nothing returned is the
+  only one that helps nobody.
+
+### Orchestration
+
+- `work-item` Stage 1 and `gate-review` §2 construct briefs on §8.5, and both
+  state that verification re-opens the cited lines rather than repeating the
+  investigation behind them.
+- Both, and `gate-design`, now handle an agent that returned no report: it is
+  continued report-first rather than relaunched, at most twice, and never
+  recorded as a clean lens.
+- The three lenses with an inventory obligation — `security`'s control table,
+  `contract`'s surface inventory, `data`'s storage model — are bounded to what
+  this change reaches, each in one sentence in its own vocabulary.
+
+### Effort policy, clarified
+
+- **§7 and §12 looked contradictory and were not.** A component's effort is set
+  by what it decides; a launch is decided by whether there is anything to decide.
+  A lens reasoning about correctness runs at high effort whenever it runs at
+  all — reducing it there buys tokens with the finding nobody made. What §12
+  rejects is convening such a component over bounded or mechanical work: the
+  saving is the launch that does not happen, never a weaker version of one that
+  does.
+
+### Enforcement
+
+- `validate-plugin.mjs` **fails any agent that declares a `maxTurns` ceiling and
+  cites neither file carrying the convergence contract.** The frontmatter field
+  is the trigger, so this is structural rather than prose-grepping: an agent with
+  a backstop must be told how to stop before it.
+- Six new normative anchors fail either file that stops stating the contract, and
+  the convergence vocabulary joins the single-source policies — a second unlinked
+  statement of "when have I gathered enough" is the one that drifts loosest.
+- Two eval cases (`efficiency-specialist-returns-bounded-report`,
+  `efficiency-brief-is-decision-scoped`) and two new criteria in
+  `efficiency-discipline`, including a **0.3** row for a delegated agent that
+  returned nothing — below ordinary waste, because waste at least produces the
+  finding expensively.
+- **Those two cases open with the gate command, and no other case does.** A
+  delegated agent exists only inside a gate, and the gates are human-invocable
+  by construction — so a plain request reaches neither the mapper nor a lens,
+  and a case written as one grades the main conversation while appearing to
+  grade the panel. `evals/README.md` records the exception and its reason.
+- **Neither case can demonstrate the failure that motivated this release, and
+  both say so.** No fixture is large enough to exhaust a turn ceiling: a run
+  against one converges in roughly a dozen turns against ceilings of 25 and 40,
+  with or without the convergence contract. What they measure is the contract's
+  observable consequences — the coverage line, the explicit `UNKNOWN`, the brief
+  that names a decision. Evidence about ceilings can only come from a repository
+  large enough to produce one.
+
+### What deliberately did not change
+
+- No turn ceiling was raised or lowered. Raising one hides ceiling exhaustion
+  instead of fixing it; lowering one truncates the deepest legitimate run. The
+  value was never the lever.
+- No lens was merged, dropped, downgraded or moved to a cheaper model, and no
+  token quota of any kind was introduced. The quality floor in §1 is untouched.
+- `gate-validate`'s narrow asks to individual lenses were left alone: each
+  already names one decision, which is what §8.5 requires.
+- The always-on charter is unchanged. Convergence is a property of a delegated
+  investigation, and the charter's budget is for what arrives before anything
+  has loaded.
+
+---
+
 ## 2.5.0 — 2026-08-25
 
 **A one-line change now costs a one-line change.** Until this release the

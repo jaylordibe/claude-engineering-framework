@@ -389,12 +389,42 @@ longest, deepest, highest-risk investigations. That is the worst available place
 to economise, and the resulting output is a partial map that looks like a
 complete one.
 
-**What we do about it.** Ceilings are treated as runaway backstops rather than
-budgets, and `validate-plugin.mjs` asserts every agent declares one while
-deliberately asserting nothing about its value. The mitigations that matter are
-behavioural: `context-mapper` reserves room to report, and returns an explicitly
-`Incomplete` map naming what it could not establish, which the conductor treats
-as a stop condition rather than a caveat.
+**The failure this actually produces, observed.** In controlled runs of the same
+work item at two reasoning-effort settings, four delegated agents reached their
+ceilings without returning a report at all — the mapper and three lenses, in both
+runs. Not a shallow report: nothing. Everything each had established was lost,
+the conductor re-established it by hand, and the agents had to be prompted again
+before they would write anything down.
+
+That is what "not a budget" means from the agent's side, and the earlier
+mitigation was too weak for it. A single sentence in `context-mapper` telling it
+to reserve room to report was the only thing in the framework addressing this,
+and it was aspirational: seven of the eight agents referenced no efficiency
+policy at all, and the eighth was pointed at the sections either side of the one
+that governed it.
+
+**What we do about it.** Ceilings are still treated as runaway backstops, and
+`validate-plugin.mjs` still asserts every agent declares one while deliberately
+asserting nothing about its value. The mitigation that carries the weight is now
+`standards/execution-efficiency.md` §8, the convergence contract:
+
+- convergence is decided by **evidence sufficiency**, never by watching the
+  clock — because there is no clock to watch;
+- **synthesis is part of the task**, so the report is owed from the first turn
+  rather than attempted after the evidence runs out;
+- a **bounded report** carrying verified findings and explicit `UNKNOWN`s
+  outranks an exhausted investigation that returned nothing, and every agent has
+  a sanctioned shape for one — the coverage line in
+  `standards/finding-report.md`, and `Incomplete` for the map;
+- a **continued** agent synthesises what it holds rather than restarting, and
+  the delegating stage continues it rather than launching a fresh one over the
+  same ground;
+- a **brief** names the decision the agent owns and hands over locations rather
+  than conclusions, because an unbounded brief has no stopping point at all.
+
+`validate-plugin.mjs` now fails any agent that declares a ceiling and cites
+neither file that carries that contract, and the normative anchors fail either
+file that stops stating it.
 
 Changing a ceiling downward is a measurement question, not a taste question. The
 repository has no transcript corpus to measure against, and guessing at it is

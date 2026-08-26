@@ -34,6 +34,24 @@ and score the transcript against the named graders. The rubrics are written to
 be applied by a person as readily as by a judge model — that is deliberate, not
 a stopgap.
 
+## Two cases type the command, and the rest do not
+
+Every prompt here is a plain user request — that is the convention, and it is
+what makes the corpus measure behaviour rather than obedience.
+
+`efficiency-specialist-returns-bounded-report` and
+`efficiency-brief-is-decision-scoped` are the exceptions. Both grade what a
+**delegated agent** does — whether it converges and returns a bounded report,
+and whether the brief it received named a decision — and delegation happens only
+inside a gate. The gates are human-invocable by construction, so Claude cannot
+start one: a plain request reaches neither the mapper nor a lens, and a case
+written as one would grade the main conversation while looking like it graded
+the panel. Those two therefore open with
+`/engineering-framework:gate-design`, exactly as a developer would type it.
+
+`gate-design` stops at the approval boundary on its own, so this is not the
+full-pipeline run excluded below.
+
 ## The ablation arm matters more than the score
 
 `plugin eval` runs a no-plugin baseline and reports the delta. **That delta is
@@ -58,7 +76,7 @@ disabled and compare. It is the only honest way to tell guidance from decoration
 
 ## The efficiency cases are graded in both directions
 
-The nine `efficiency-*` cases exist because *adaptive rigor* has two failure
+The eleven `efficiency-*` cases exist because *adaptive rigor* has two failure
 modes and only one of them is visible.
 
 Overspending is obvious in a transcript: a system-wide map for a comment fix

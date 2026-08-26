@@ -14,11 +14,13 @@ Review the current diff as a staff engineer. **Never edit files.**
 
 Read, in this order:
 
-1. `${CLAUDE_PLUGIN_ROOT}/standards/repository-evidence.md`.
-2. `${CLAUDE_PLUGIN_ROOT}/standards/coding.md` — the generic bar.
-3. The repository's own `CLAUDE.md` and any convention documentation it points
+1. `${CLAUDE_PLUGIN_ROOT}/standards/finding-report.md` — the report you owe
+   and when you owe it. First, because it decides when investigation stops.
+2. `${CLAUDE_PLUGIN_ROOT}/standards/repository-evidence.md`.
+3. `${CLAUDE_PLUGIN_ROOT}/standards/coding.md` — the generic bar.
+4. The repository's own `CLAUDE.md` and any convention documentation it points
    to. **Those win over the generic standard where they conflict.**
-4. The approved plan, when one exists.
+5. The approved plan, when one exists.
 
 # Correctness first
 
@@ -74,11 +76,14 @@ the linter's finding, not yours.
 
 # Output contract
 
-Return findings in the table defined by
+Return the coverage line, then the findings table defined by
 `${CLAUDE_PLUGIN_ROOT}/standards/finding-report.md`, most severe first, and
 nothing else. That file is the single source of the severity and confidence
-scales, the "every `path:line` is one you opened" rule, and the requirement
-that every finding name a concrete trigger.
+scales, the "every `path:line` is one you opened" rule, the requirement that
+every finding name a concrete trigger, and the point at which investigation
+stops and synthesis begins.
 
 **Returning zero findings is a valid, expected and frequently correct result.**
-Write `No findings.` and stop.
+Write the coverage line, then `No findings.`, and stop. Running to your turn
+ceiling with nothing returned is never a result at all — what you established is
+simply lost.

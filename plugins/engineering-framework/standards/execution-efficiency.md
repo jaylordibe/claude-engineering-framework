@@ -2,8 +2,8 @@
 
 How much computation a stage is entitled to spend, and what it may never spend
 less than. This is the framework's single source for investigation depth, model
-choice, reasoning effort, fan-out and output size. Skills and agents cite it;
-none of them restate it.
+choice, reasoning effort, fan-out, convergence and output size. Skills and
+agents cite it; none of them restate it.
 
 > **Adaptive rigor, fixed quality floor.**
 
@@ -153,7 +153,8 @@ material uncertainty.
 | A Critical or High finding can be neither verified against source nor put to the lens that owns it | A second independent reader on that one claim. The refutation contract belongs to the review gate and this does not amend it — what escalates is being unable to reach a determination at all |
 | Validation evidence is contradictory | `BLOCKED`, naming the two results that disagree |
 | A cheaper reasoning path could not establish correctness | A higher-capability model, more investigation, or the human |
-| Investigation ran out of room before the §3.1 floor was met | Report the map incomplete, naming what is missing |
+| Investigation ran out of room before the §3.1 floor was met | Report bounded per §8.3, naming exactly what is unestablished |
+| A delegated agent stopped without returning its report | Continue it report-first per §8.4. Never a fresh launch over the same ground |
 
 Escalation may mean broader mapping, higher effort, an additional lens, a
 higher-capability model, more turns, a return to design, or a question for the
@@ -204,18 +205,150 @@ component at high effort and takes its savings where they are expressible:
 write. A lens that runs only when the diff intersects its concern already costs
 nothing on the changes that do not.
 
-## 8. Investigation ceilings
+That is not in tension with §12's entry on high effort applied to everything,
+and the difference is which decision each one is about. **A component's effort
+is set by what it decides; a launch is decided by whether there is anything to
+decide.** A lens reasoning about correctness runs at high effort whenever it
+runs at all — reducing it there buys tokens with the finding nobody made. What
+§12 rejects is convening such a component over bounded or mechanical work that
+decides nothing: the saving is the launch that does not happen, never a weaker
+version of the one that does.
+
+Neither is a claim about which model or setting actually resolved. §6.1's last
+paragraph holds here unchanged: guarantees rest on evidence, gates and
+independent readers.
+
+## 8. Convergence, and the briefs that make it possible
 
 An agent's turn ceiling is a **runaway backstop, not a budget.** An agent that
 finishes in eight turns costs eight turns whatever its ceiling says, so lowering
 one saves nothing on the runs that were already short and truncates the one run
 that needed the room — the deepest, highest-risk investigation there is.
 
-- **Reserve room to report.** An investigation running long returns the evidence
-  it has, with the §3.1 floor marked complete or incomplete, rather than being
-  cut off mid-sweep with nothing written.
-- **An incomplete investigation is reported as incomplete**, naming what remains
-  unestablished, and escalated per §5 — never rounded up to a finished one.
+It is also not a warning. A ceiling stops a delegated agent where it stands,
+with no turn left in which to write anything up, so **an agent cannot converge
+by watching how much room it has left.** Convergence is a property of the
+evidence, and the rest of this section is how it is decided.
+
+**Reaching a ceiling without returning a report is a failed execution, not a
+thorough one.** Everything that run established is lost, the delegating stage
+has to establish it again, and the change is scrutinised by whoever pays for the
+second attempt rather than by the lens that was launched for it. It is the only
+investigation outcome that produces no evidence at all — worse than a narrow
+report, because a narrow report can be widened and a missing one cannot.
+
+### 8.1 The sufficiency test
+
+Before each further search, read or command, name what its result could change:
+
+- a finding, or its severity;
+- the risk tier or the depth band;
+- the shape the implementation has to take;
+- an authentication, authorization or tenancy conclusion;
+- a persistence, migration or concurrency conclusion;
+- a public-contract or consumer conclusion;
+- a test that would become required;
+- an `UNKNOWN` that would otherwise stand in the report.
+
+If it could change one of those, take the step. **This test never argues against
+following evidence**, and §4's widening triggers outrank it outright: a step that
+would settle a widening trigger always passes it. Where you genuinely cannot
+tell whether a step could change one of them, §13.1 settles it — that is a close
+call, and close calls spend more.
+
+If it could not, the step is confirmatory, duplicative or merely adjacent, and
+what it would return is already held. **Stop expanding and write.** Two
+consecutive steps that changed none of the above are the signal that
+investigation has converged, whatever quantity of repository remains unread.
+
+### 8.2 Synthesis is part of the task
+
+The report is owed from the first turn, not attempted once the evidence runs
+out. An investigation that continues until it can continue no further has spent
+its entire allowance on the half of the task nobody can read.
+
+So: **the moment the assigned decision is answerable from what is held, the
+remaining room belongs to the report** — not to one more confirmation of
+something already established.
+
+### 8.3 The bounded report
+
+However investigation ends — by §8.1, by §4 having been satisfied, or by being
+cut short — what is returned is written from what is held:
+
+- every established claim labelled and cited per
+  `standards/repository-evidence.md` §2;
+- every unresolved item as `UNKNOWN`, naming what would settle it, rather than
+  as a plausible answer or as silence;
+- what was examined and what was not reached, so a reader can tell a lens that
+  found nothing from one that never looked.
+
+**A bounded report carrying verified findings and explicit `UNKNOWN`s outranks
+an exhausted investigation that returned nothing.**
+
+It is not the preferred outcome — §8.1 is — and it is never a way to keep a
+report short. An investigation that stopped while the sufficiency test was still
+returning answers has under-investigated, and labelling the hole `UNKNOWN` does
+not make it one. Escalate per §5: an incomplete result is reported as incomplete
+and named, never rounded up to a finished one.
+
+### 8.4 Continuation
+
+An agent continued after a partial run **does not restart its investigation.**
+It synthesises what it already holds, fills only the gaps the assigned decision
+actually turns on, and returns the report. Re-deriving evidence that is already
+in front of it spends the continuation exactly the way the first run was spent.
+
+**The delegating stage owns the other half of this.** An agent that stopped
+without its report has not returned a null result — nothing it established is in
+anyone's hands. Continue that agent where the session can, asking for the
+bounded report first and further evidence only after it; launching a fresh one
+over the same ground repeats the investigation that just ran. Where continuation
+is not available, the next launch carries a narrower brief and asks for the
+report first.
+
+**Two attempts is the limit.** A third says the brief rather than the agent is
+what needs changing, and by then the bounded work is cheaper done directly —
+§12's entry on spawning an agent for work cheaper than briefing one.
+
+**Except where the launch existed to supply independence, and then doing the
+work directly is not the fallback.** A review panel on High or Critical work is
+the only independent reader that diff will get, so a conductor substituting its
+own reading of code it wrote has skipped the gate rather than economised on it.
+There the answer is a narrower brief, a different lens, or §5 — never absorbing
+the work.
+
+### 8.5 The brief a delegated agent is given
+
+An agent converges on the decision it was given. A brief naming no decision is a
+brief to investigate the repository, and that has no stopping point at all — so
+a specialist that spends its whole allowance investigating is frequently
+reporting a defect in what it was asked, not in how it works.
+
+Give each launch:
+
+- **the decision it owns**, in one sentence;
+- **the depth band and the risk tier** it is working in;
+- **the paths and symbols already established as in scope**, as `path:line`
+  pointers;
+- the name of the authoritative source for its lens — never a paste of it.
+
+**Hand over locations, never conclusions.** A pointer says where to look and
+costs nothing to re-open; a conclusion about the agent's own concern is the one
+thing that can stop it finding the defect sitting there. *"Access control for
+this operation is decided at `path:line`"* is a brief. *"Access control here is
+fine"* is a brief that has already decided what the lens was launched to decide.
+
+A specialist is never told what to find, never told its own area is already
+cleared, and never asked to re-establish what the map established. The first two
+remove the independence the launch was paying for; the third is the duplicated
+acquisition this section exists to end. It stays free to contradict every
+pointer it was given, and when it does, that is a finding about the map as much
+as about the code.
+
+**A brief that cannot be stated in a few lines has a scope nobody has decided
+yet.** Deciding it once, here, costs less than each agent deciding it separately
+and differently.
 
 ## 9. Bounded output
 
@@ -269,7 +402,9 @@ source is still there. Re-read it wherever correctness depends on it.
   afterwards how much rigor was preserved;
 - launching the strongest available model for mechanical discovery because the
   session happens to use it;
-- high effort applied to everything without regard to what is being decided;
+- launching a high-effort reasoning component over bounded or mechanical work
+  that decides nothing — the saving is the launch that does not happen, never a
+  weaker version of one that does (§7);
 - mapping the whole repository for an obviously localized change with no
   evidence requiring it;
 - fanning out every specialist lens for every review;
@@ -279,6 +414,12 @@ source is still there. Re-read it wherever correctness depends on it.
 - returning a long narrative where a table of findings was asked for;
 - spawning an agent for work cheaper than briefing and reading one;
 - investigating indefinitely without naming the uncertainty that remains;
+- **reaching a turn ceiling with the investigation still expanding**, so the run
+  returns nothing and its evidence is lost — §8;
+- restarting an investigation on continuation instead of synthesising what is
+  already held;
+- briefing a specialist to investigate an area rather than to decide a question,
+  or making it re-establish what the brief already supplied as a pointer;
 - **and the one that outranks every other line here** — reducing tests, review
   independence, security analysis or evidence to hit an efficiency target.
 

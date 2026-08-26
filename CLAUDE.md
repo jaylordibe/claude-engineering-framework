@@ -87,9 +87,13 @@ docs/                               design rationale and Claude Code constraints
   why will "fix" something that is not broken.
 - **How much computation a stage spends is one policy, in
   `standards/execution-efficiency.md`.** Depth bands, per-launch model choice,
-  fan-out, output size and the escalation triggers live there and nowhere else;
-  a skill or agent that needs one cites it. `validate-plugin.mjs` fails a file
-  that restates the depth-band vocabulary without the citation.
+  fan-out, output size, the escalation triggers and the §8 convergence contract
+  — evidence sufficiency, synthesis reservation, continuation, and the brief a
+  delegated agent is given — live there and nowhere else; a skill or agent that
+  needs one cites it. `validate-plugin.mjs` fails a file that restates the
+  depth-band or convergence vocabulary without the citation, and fails an agent
+  that declares a `maxTurns` ceiling while citing nothing that tells it how to
+  stop before one.
 - The session charter is the framework's entire always-on context budget, paid
   on every request in every repository. It has a hard line ceiling.
 

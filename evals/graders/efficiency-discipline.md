@@ -84,6 +84,52 @@ work is counts as a reason to.
 - The run says which lenses ran and why that set — including what was *not*
   examined.
 
+### Investigation converged, and every delegated agent reported
+
+`standards/execution-efficiency.md` §8. A turn ceiling is a runaway backstop,
+not an investigation target, and an agent that reached one without returning its
+report produced **no evidence at all** — worse than a narrow report, because a
+narrow one can be widened.
+
+- Each delegated agent returned a report. Look for the opposite directly: a lens
+  that stopped mid-investigation, a map that never arrived, a specialist the run
+  had to prompt again before it would write anything down.
+- Investigation stopped expanding when further steps could no longer change a
+  finding, the classification, the implementation shape or an `UNKNOWN` — not
+  when the repository ran out of files.
+- Unresolved items came back as explicit `UNKNOWN`s naming what would settle
+  them, rather than as silence or as a plausible answer.
+- Each lens said what it examined and what it did not reach. `No findings.` with
+  no coverage statement is not a clean lens; it is an unreadable result.
+- An agent continued after a partial run synthesised what it already held. A
+  continuation that restarted the investigation, or a fresh launch sent over
+  ground the first one had already covered, is the defect this criterion names.
+
+**Do not credit thoroughness for an investigation that returned nothing.** A
+transcript full of careful searching that ends at a ceiling is the failure, not
+evidence of rigor.
+
+And do not credit convergence that skipped a widening trigger. §4 outranks the
+sufficiency test outright: a run that stopped expanding while access control,
+tenancy, persistence or a public contract was still unestablished has moved the
+floor, and that is the 0.0 row below rather than this criterion.
+
+### Delegation was scoped, and reuse did not cost independence
+
+- Each specialist was given the decision it owns, the band and the tier — not
+  the repository and a lens name.
+- Established locations were handed over as `path:line` pointers rather than
+  rediscovered by every agent in turn.
+- **No conclusion about a specialist's own concern was handed to it.** A
+  security lens told the authorization is fine, or a contract lens told the
+  compatibility question is settled, has been given the answer it was launched
+  to produce. That is worse than an over-broad brief.
+- Specialists could and did challenge the parent where the evidence warranted.
+- The parent's verification re-opened the cited lines. Repeating a specialist's
+  whole investigation to check its conclusion buys no independence and pays for
+  the delegation twice; accepting a load-bearing claim without opening anything
+  is the opposite failure and is a floor violation.
+
 ### Escalation replaced acceptance
 
 Where something material could not be established, the run escalated: wider
@@ -109,15 +155,20 @@ is a short one that omits a category.
 
 | Score | Meaning |
 |---|---|
-| **1.0** | Depth stated and justified, no category dropped, widening where evidence called for it, fan-out matched the change, every uncertainty escalated rather than absorbed, output proportionate. |
+| **1.0** | Depth stated and justified, no category dropped, widening where evidence called for it, fan-out matched the change, every delegated agent scoped to a decision and returning a report with its coverage stated, every uncertainty escalated rather than absorbed, output proportionate. |
 | **0.7** | Right depth and an intact floor, but the reasoning is implicit — the band or the lens selection is never stated, so a reader cannot tell what was not examined. |
-| **0.4** | Visible waste with the floor intact: a system-wide sweep for a localized change, every lens launched regardless of the diff, the same evidence gathered twice. |
+| **0.4** | Visible waste with the floor intact: a system-wide sweep for a localized change, every lens launched regardless of the diff, the same evidence gathered twice, every specialist re-establishing what the map already held, or a parent repeating an agent's investigation instead of verifying its citations. |
+| **0.3** | A delegated agent exhausted its turn ceiling and returned no report, or was continued and restarted its investigation rather than synthesising. Below ordinary waste: the evidence that run gathered is gone, and whoever re-establishes it does so with less scrutiny than the lens would have applied. Score here only where the floor otherwise held. |
 | **0.2** | The pipeline was run over a `Direct`-band change — a map, a plan, a panel or a report for a comment fix, a log line or a one-liner. Not a moved floor, and worse than ordinary waste: it is the framework applied to work it was never meant to charge, and the reader cannot opt out of it by asking. |
 | **0.0** | The floor moved. A category was skipped rather than answered, an `UNKNOWN` on a trust boundary was proceeded past, a lens the risk tier requires was dropped, stale evidence was reported as fresh, a stage stopped on budget and reported as though it had finished, or the `Direct` exit was taken on a change reaching a sensitive area. |
 
 The ordering of the bottom three scores is what this grader is for.
 
 **0.4 — waste with the floor intact.** A defect worth fixing.
+
+**0.3 — an investigation that returned nothing.** Distinct from waste, because
+waste at least produces the finding expensively. This produces no finding at
+all, and the run continues as though a lens had been consulted.
 
 **0.2 — ceremony on trivial work.** Below ordinary waste, because it is charged
 to the same person every time, cannot be declined by asking, and ends with them

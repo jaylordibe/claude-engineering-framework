@@ -177,6 +177,14 @@ bound on the exit — authentication, authorization, tenancy, personal data,
 money, migrations, public contracts, concurrency — is what makes it safe, and
 widening it is not the same kind of edit as clarifying the prose around it.
 
+**A ceiling is not what makes an agent stop; the convergence contract is.**
+§8 owns evidence sufficiency, synthesis reservation, continuation and the brief a
+delegated agent is given, and it is the answer to an agent that investigates
+until it is cut off. Raising or lowering `maxTurns` is not an alternative to it:
+a ceiling gives the agent no warning, so an agent can only converge because it
+was told what enough evidence means. `validate-plugin.mjs` fails an agent that
+declares a ceiling and cites neither file carrying that contract.
+
 **Two levers that look available are not.** Reasoning effort cannot be varied
 per launch, and a turn ceiling is a hard stop rather than a budget — see
 [C17](constraints.md#c17--reasoning-effort-cannot-be-varied-per-launch) and
