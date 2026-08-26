@@ -81,6 +81,12 @@ Below cross-cutting, the reverse applies: launch the lens the change actually
 turns on, not all six. Six reports on a change that engages one are five the
 plan cannot use, and they crowd out the one it needed.
 
+Brief each on `${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §8.5:
+the decision it owns, the band and the tier, and the map's `path:line` pointers
+into its area. **Hand over locations, never conclusions** — a lens given the
+map's verdict on its own concern can no longer contradict it, and contradicting
+it is half of what the launch is paying for.
+
 Read the complete map before deciding anything.
 
 **A map that reports its floor as `Incomplete`, or leaves access control,
@@ -88,6 +94,12 @@ tenancy or persistence `UNKNOWN`, is not a map you can classify risk from.**
 Close the gap first — re-launch narrowed onto it, or launch the lens that owns
 it. The tier below is assigned from evidence, and an unexamined area produces
 the cheapest tier and the worst outcome.
+
+**A mapper that returned no map at all is a different case**, and it is not a
+map reporting nothing: nothing it established is in your hands.
+`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §8.4 owns it —
+continue it report-first, rather than launching a fresh one over ground it has
+already covered.
 
 The map must establish, from evidence, and label anything it cannot as
 `UNKNOWN`:

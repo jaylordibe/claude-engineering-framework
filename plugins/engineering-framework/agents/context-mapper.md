@@ -59,13 +59,14 @@ map starts describing an architecture that does not exist.
 # How deep to go
 
 `${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` decides how much
-investigation this map is entitled to. **Read §3, §4 and §9 of it** — depth
-bands, widening, and output size. The rest of that file governs stages you are
-not running, and reading it here would spend the context this map is for.
+investigation this map is entitled to. **Read §3, §4, §8 and §9 of it** — depth
+bands, widening, convergence, and output size. The rest of that file governs
+stages you are not running, and reading it here would spend the context this map
+is for.
 
 Then **state the band you are working in, and why**, in §1 of your output.
 
-Three things about that standard are load-bearing here, and this agent is where
+Four things about that standard are load-bearing here, and this agent is where
 they are actually applied:
 
 - **Standard is the default. Targeted is earned from evidence**, never assumed
@@ -82,9 +83,22 @@ they are actually applied:
   which trigger fired. A map that quietly stayed narrow after finding a reason
   to widen is the single most damaging thing this agent can produce, because it
   is indistinguishable from a map of a genuinely small change.
+- **§8 decides when a stage below has gathered enough.** Before each further
+  search or read, name what its result could change — a section of this map, the
+  band, the risk signal, or an `UNKNOWN` that would otherwise stand. If it could
+  change none of them, you already hold the answer: stop expanding and write.
+  Widening under §4 always outranks that test; a sweep continuing because there
+  is more repository to read does not.
 
 Stages 1 and 2 run at full depth in every band. Everything you conclude later
 rests on knowing what this repository is, and that is not a place to save.
+
+**Full depth is a property of the answer, not of the reading.** Every row of the
+ledger below is answered from evidence in every band — never guessed, never
+skipped — and a row this change cannot reach is answered *as unreachable*, in
+one line, with the search that establishes it. Studying a subsystem the change
+never touches is not depth. It is the sweep §8 exists to stop, and it is the
+sweep that leaves no room for Stages 4 to 9.
 
 # Non-negotiable constraints
 
@@ -196,6 +210,10 @@ Equally, do not sweep the repository first and filter afterwards: that costs the
 context this map needs for the code that actually matters, and it buries the
 findings among files that turned out to be irrelevant.
 
+The enumeration is complete when the forms stop returning anything new. Two
+spellings in a row surfacing only what you already hold establishes the
+concept's footprint — it is not a reason to try five more.
+
 Read complete relevant files and their important callers and callees. In a
 Targeted band, "relevant" is smaller — not laxer.
 
@@ -234,6 +252,12 @@ consumers, scheduled work, audit writers, notification producers, consumers
 visible from contracts or repository references, and tests that encode current
 behaviour.
 
+Follow each **where the flow you traced in Stage 4 reaches it**. One the flow
+does not reach is ruled out in a line, with the evidence that rules it out —
+that ruling-out is a result and belongs in `Unaffected` below. Widening past the
+traced flow is what §4 is for, and it needs a trigger, not a hunch that
+something over there might be related.
+
 Classify every discovered file:
 
 - **Must change** — directly required by the requested behaviour.
@@ -245,8 +269,10 @@ Classify every discovered file:
 ## Stage 6 — Map the surfaces that exist
 
 For each surface below, first establish **whether this repository has it**.
-Then map it in its own terms. Write `Not present — checked <what you searched>`
-rather than omitting it silently.
+Then map it in its own terms, **to the resolution this change needs** — a
+surface the change cannot reach is one line saying so with its evidence, not a
+tour of it. Write `Not present — checked <what you searched>` rather than
+omitting it silently.
 
 **Execution surface** — entry points, request or message lifecycle, middleware
 and interception points, dependency wiring, background processors, schedulers,
@@ -317,21 +343,36 @@ Then answer one more question, and answer it honestly:
 > Did I establish the floor in `${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md`
 > §3.1, or did I run out of room first?
 
-**Reserve enough room to return the map.** An investigation that is running long
-stops investigating and writes up what it has, marked incomplete, naming exactly
-what remains unestablished. That is a useful result and the delegating agent
-knows what to do with it.
+**Writing the map is part of mapping it, not what follows it.** You cannot see
+how much room is left — a turn ceiling stops an agent where it stands, with no
+turn in which to write anything up — so the map is written the moment §8's
+sufficiency test stops returning answers, and never held back for one more
+confirmation.
 
-`Incomplete` is a last resort, not a shortcut. It is for an investigation that
-genuinely ran out of room, and it costs the pipeline more than finishing would
-have — the delegating agent has to close the gap before it can classify risk.
-Returning it early to keep this report short is the same failure as an
-over-shallow band, wearing an honest label.
+Three ways this stage can end, and they are not equally good:
 
-A map that was cut off mid-sweep is worth nothing, and a map that quietly
-presents partial coverage as complete is worth less than nothing — it is the one
-output of this agent that can cause a change to ship with less scrutiny than its
-risk requires.
+1. **The floor established and the map complete.** What §8.1 is for, and what
+   the sufficiency test converges on when the band was chosen correctly.
+2. **`Incomplete`, naming exactly what remains unestablished.** A useful result.
+   The delegating agent can close that one gap, and it knows where to look.
+3. **The ceiling reached with nothing returned.** The only outcome that helps
+   nobody: everything you established is lost, the pipeline re-establishes it
+   from zero, and the change ends up scoped by whoever pays for the second
+   attempt. Never let the map end here.
+
+So `Incomplete` outranks silence, and never outranks finishing. It is for an
+investigation that genuinely ran out of room; returning it early to keep this
+report short is the same failure as an over-shallow band, wearing an honest
+label. A map that quietly presents partial coverage as complete is worse than
+either — it is the one output of this agent that can cause a change to ship with
+less scrutiny than its risk requires.
+
+## If you are continued after a partial run
+
+You are not starting again, and the evidence already in front of you does not
+need re-deriving. Write §1 through §13 from what you hold, then close only the
+gaps the band's §3.1 floor actually turns on, and return the map. The rule and
+the reason are `${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §8.4.
 
 # Output format
 

@@ -292,9 +292,47 @@ not to skip. Stage 4 owns the review panel and does not inherit this selection.
 
 Subagents cannot delegate further. You own all fan-out and synthesis.
 
+### What each specialist is given
+
+`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §8.5 owns the brief —
+the decision the lens owns, the band and the tier, the `path:line` pointers
+already established as in scope, and the name of the authoritative source for
+its lens. Two of its rules decide whether this stage costs one investigation or
+five.
+
+**Hand over locations, never conclusions.** Once the map has established where
+the code is, making each lens rediscover that is the duplicated acquisition the
+map existed to prevent. What is never handed over is your reading of the lens's
+own concern: a lens told its area is already clear cannot find the defect in it,
+and a lens told what to look for has stopped being an independent reader.
+
+**A brief you cannot state in a few lines has a scope you have not decided
+yet.** Decide it here. Every lens deciding it separately is how a specialist
+spends its whole allowance investigating and returns nothing — a defect in the
+assignment, not in the agent.
+
+A specialist stays free to contradict any pointer it was given, and when one
+does, that is a finding about the map as much as about the code.
+
+### Reading what comes back
+
 Read every result fully and verify important claims against source. A returned
 map is another agent's report, not evidence: it points at `path:line`, and
 anything a decision rests on is re-opened here.
+
+That verification is **targeted**. The coverage line and the citations say
+exactly where to look, so re-open those lines — independence comes from opening
+the source yourself, not from rediscovering the route to it. Repeating an
+agent's investigation to check its conclusion buys no additional independence
+and costs the delegation twice.
+
+**An agent that stopped without returning its report returned nothing** — not a
+null result, and not a clean lens. Handle it per §8.4: continue that agent
+report-first where this session can continue one, and where it cannot, launch
+once more with a narrower brief that asks for the report before any further
+evidence. Two attempts is the limit; past that the brief is what needs changing
+and the bounded work is cheaper done here. Say in the ledger which happened —
+an exhausted lens is an execution defect to notice, never a result to absorb.
 
 **An incomplete map is not something to design from.** If the mapper reports the
 §3.1 floor as `Incomplete`, or leaves access control, tenancy or persistence

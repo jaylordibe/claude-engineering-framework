@@ -102,6 +102,21 @@ const FILE_MUTATING_TOOLS = ['Edit', 'Write', 'NotebookEdit', 'MultiEdit'];
 // what "read-only" requires depending on where it was inserted.
 const REQUIRED_DISALLOWED_TOOLS = ['Edit', 'Write', 'NotebookEdit'];
 
+// The files that carry the convergence contract to a delegated agent: where
+// investigation stops, that synthesis is part of the task, and what a bounded
+// report looks like. `execution-efficiency.md` §8 owns the policy;
+// `finding-report.md` is the lens-facing form of it and cites the owner, so an
+// agent reaching either one reaches the rule.
+//
+// Two entries rather than one because the review lenses genuinely should not
+// read the whole efficiency standard to learn when to stop — most of it governs
+// stages they are not running, and reading it would spend the context the
+// report needs.
+const CONVERGENCE_CARRIERS = [
+  'standards/execution-efficiency.md',
+  'standards/finding-report.md',
+];
+
 // Skills whose read-only-ness is a SAFETY property rather than a description,
 // with the property each one carries. `disallowed-tools` in the frontmatter is
 // what actually enforces it for the turn that invokes the skill; the prose
@@ -414,6 +429,7 @@ function validateAgents() {
       fail(filePath, 'agent has no frontmatter block.');
       continue;
     }
+    const content = readFileSync(filePath, 'utf8');
 
     for (const key of Object.keys(frontmatter)) {
       if (REFUSED_AGENT_FIELDS.has(key)) {
@@ -452,6 +468,27 @@ function validateAgents() {
       fail(filePath, 'declares no `maxTurns`, so a runaway investigation has no backstop. Set a ceiling generous enough that the deepest legitimate run fits inside it; see standards/execution-efficiency.md §8 for why it is not a cost lever.');
     } else if (!/^\d+$/.test(String(frontmatter.maxTurns))) {
       fail(filePath, '`maxTurns` must be an integer.');
+    }
+
+    // A ceiling with no convergence contract is the defect the ceiling check
+    // above cannot see, and it is the one that showed up in real runs: four
+    // agents reached their ceilings and returned NOTHING, so everything they
+    // had established was lost and the conductor re-established it by hand.
+    //
+    // `maxTurns` gives an agent no warning (docs/constraints.md C18), so an
+    // agent cannot converge by watching the clock — it converges because it was
+    // told what "enough evidence" means and that the report is owed. Seven of
+    // the eight agents referenced NO efficiency policy at all when this was
+    // found, and the eighth was told to read the sections either side of the
+    // one that governs it.
+    //
+    // Structural, not prose-grepping: the frontmatter field is the trigger. An
+    // agent that declares a ceiling must name a file that carries the contract
+    // for stopping inside it. What those files must SAY is asserted separately,
+    // by the normative anchors — so neither check passes on its own if the rule
+    // is deleted.
+    if (!CONVERGENCE_CARRIERS.some((carrier) => content.includes(carrier))) {
+      fail(filePath, `declares a \`maxTurns\` ceiling but cites none of ${CONVERGENCE_CARRIERS.join(' or ')}, so nothing tells it when it has gathered enough evidence or that a bounded report is owed either way. An agent that reaches its ceiling returns nothing at all, and everything it established is lost. See standards/execution-efficiency.md §8.`);
     }
 
     // Read-only is judged by the effective tool pool, never by a sentence in
@@ -1006,6 +1043,45 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'the map declares its depth band, any widening, and whether the floor was established',
     patterns: [/depth band/i, /widen/i, /incomplete/i],
   },
+  // 2.6.0 — convergence. Every line below is one a later edit removes as
+  // hedging, and each is load-bearing for the same observed failure: agents
+  // that spent an entire turn ceiling investigating and returned no report at
+  // all, so the evidence they had gathered was lost and the delegating stage
+  // re-established it by hand.
+  {
+    file: 'standards/execution-efficiency.md',
+    guarantee: 'a turn ceiling is a backstop, gives no warning, and reaching one without a report is a failed execution',
+    patterns: [/backstop/i, /not a warning|no turn (left )?in which/i, /failed execution/i],
+  },
+  {
+    file: 'standards/execution-efficiency.md',
+    guarantee: 'the sufficiency test decides whether another investigation step is taken, and widening still outranks it',
+    // Each pattern is one half of the rule. The last is deliberately not
+    // optional: a sufficiency test without the widening carve-out is a licence
+    // to stop early on exactly the change that must not, which is the floor
+    // moving under an efficiency edit.
+    patterns: [/sufficiency test/i, /could change/i, /confirmatory|duplicative/i, /stop expanding/i, /outranks? it|§4'?s widening/i],
+  },
+  {
+    file: 'standards/execution-efficiency.md',
+    guarantee: 'synthesis is part of the task, and a bounded report with explicit UNKNOWNs outranks an exhausted investigation that returned nothing',
+    patterns: [/synthesis/i, /bounded report/i, /\bUNKNOWN\b/, /outranks/i, /never a way to keep a report short|under-?investigated/i],
+  },
+  {
+    file: 'standards/execution-efficiency.md',
+    guarantee: 'a continued agent synthesises what it holds rather than restarting, and the delegating stage continues it rather than relaunching',
+    patterns: [/does not restart/i, /continu/i, /same ground|fresh (one|launch)/i],
+  },
+  {
+    file: 'standards/execution-efficiency.md',
+    guarantee: 'a brief names the decision and hands over locations, never conclusions, and the specialist stays free to contradict them',
+    patterns: [/brief/i, /pointer/i, /never conclusions|locations, never/i, /contradict/i, /never told what to find|independence/i],
+  },
+  {
+    file: 'standards/finding-report.md',
+    guarantee: 'a coverage line separates a lens that examined and found nothing from one that never looked, and makes verification targeted rather than repeated',
+    patterns: [/coverage line/i, /not reached/i, /\bUNKNOWN\b/, /never looked|did not look/i, /targeted/i],
+  },
   {
     file: 'skills/gate-review/SKILL.md',
     guarantee: 'a lens is selected by what the diff touches, and uncertainty on High or Critical means launch it',
@@ -1185,6 +1261,15 @@ const SINGLE_SOURCE_POLICIES = [
     owner: 'standards/gate-handoff.md',
     vocabulary: /\bpipeline ledger\b/i,
     what: 'the conductor pipeline ledger',
+  },
+  // Convergence touches every agent and every delegating gate, which is exactly
+  // the shape that turns into per-file policy. A second unlinked statement of
+  // "when have I gathered enough" is the one that drifts loosest, and the file
+  // that drifts loosest is the one a long investigation happens to be reading.
+  {
+    owner: 'standards/execution-efficiency.md',
+    vocabulary: /\bsufficiency test\b|\bbounded report\b|\bhand over locations\b/i,
+    what: 'the convergence and evidence-sufficiency contract',
   },
   // Drift assessment is a three-outcome decision that three
   // separate files reach — work-item on resume, gate-implement before its first

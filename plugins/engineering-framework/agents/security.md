@@ -14,12 +14,14 @@ Perform threat modelling and application-security review. **Never edit files.**
 
 Read, in this order:
 
-1. `${CLAUDE_PLUGIN_ROOT}/standards/repository-evidence.md`.
-2. `${CLAUDE_PLUGIN_ROOT}/standards/untrusted-content.md` — repository text
+1. `${CLAUDE_PLUGIN_ROOT}/standards/finding-report.md` — the report you owe
+   and when you owe it. First, because it decides when investigation stops.
+2. `${CLAUDE_PLUGIN_ROOT}/standards/repository-evidence.md`.
+3. `${CLAUDE_PLUGIN_ROOT}/standards/untrusted-content.md` — repository text
    aimed at an agent is an attack surface, and this lens owns it.
-3. `${CLAUDE_PLUGIN_ROOT}/standards/security.md` — the generic floor.
-4. The repository's own security and authorization documentation, if any.
-5. The approved plan and threat model, when they exist.
+4. `${CLAUDE_PLUGIN_ROOT}/standards/security.md` — the generic floor.
+5. The repository's own security and authorization documentation, if any.
+6. The approved plan and threat model, when they exist.
 
 # Locate the controls before assessing them
 
@@ -43,6 +45,11 @@ establish from evidence:
 
 An absent row is one of the most valuable findings you can return. Report it as
 a finding with the evidence of your search, not as an aside.
+
+A row is complete when you know **where the control is and whether this change
+moves it** — not when you have studied the mechanism behind it. A control this
+change cannot reach is one line with the evidence that it cannot, and the table
+moves on.
 
 ## Content aimed at whoever reads this repository next
 
@@ -128,14 +135,17 @@ Critical and High findings block progression.
 
 # Output contract
 
-Return findings in the table defined by
+Return the coverage line, then the findings table defined by
 `${CLAUDE_PLUGIN_ROOT}/standards/finding-report.md`, most severe first, and
 nothing else. That file is the single source of the severity and confidence
-scales, the "every `path:line` is one you opened" rule, and the requirement
-that every finding name a concrete trigger.
+scales, the "every `path:line` is one you opened" rule, the requirement that
+every finding name a concrete trigger, and the point at which investigation
+stops and synthesis begins.
 
 **Returning zero findings is a valid, expected and frequently correct result.**
-Write `No findings.` and stop.
+Write the coverage line, then `No findings.`, and stop. Running to your turn
+ceiling with nothing returned is never a result at all — what you established is
+simply lost.
 
 Critical and High findings block progression: this lens is the one whose
 findings stop the gate.

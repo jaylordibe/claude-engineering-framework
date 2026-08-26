@@ -96,11 +96,23 @@ fan-out, model choice per launch and output size is
 `${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md`; it does not change
 anything this section requires.
 
-Launch the selected agents **in parallel**. Give each: the approved plan, the
-exact diff, the changed-file scope, and the name of the authoritative source
-for its lens. **Do not paste contract text into the prompt** — name the file
-and let the agent read it, so it reviews against the current rule rather than
-your summary of it.
+Launch the selected agents **in parallel**, on the brief
+`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §8.5 defines: the
+decision the lens owns, the tier, the approved plan, the exact diff, the
+changed-file scope as `path:line` pointers, and the name of the authoritative
+source for its lens.
+
+**Do not paste contract text into the prompt** — name the file and let the agent
+read it, so it reviews against the current rule rather than your summary of it.
+The same rule generalises, and §8.5 is where it lives: **hand over locations,
+never conclusions.** A pointer costs the lens nothing to re-open and saves it
+the search; your reading of the lens's own concern removes the independence you
+launched it for. A lens told an area is already clear cannot find the defect in
+it.
+
+A brief you cannot state in a few lines has a scope you have not decided yet,
+and a specialist that spends its whole allowance investigating is usually
+reporting that rather than a defect in itself.
 
 Bundled skills supplement the panel; they never replace it. Run a
 simplification pass only after correctness and security findings are resolved,
@@ -122,6 +134,16 @@ you fill in at §6 — so the list lives there, once, and cannot drift from the
 report that asks for it.
 
 ## 4. Verify every finding
+
+Verification is **targeted, not repeated**. Each lens returns a coverage line
+and a `path:line` for every claim — `${CLAUDE_PLUGIN_ROOT}/standards/finding-report.md`
+— so re-open those lines. Independence comes from reading the source yourself,
+never from rediscovering the route the lens took to it.
+
+A lens that stopped without returning its report returned nothing, not a clean
+result. `${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §8.4 owns what
+happens next: continue it report-first rather than launching a fresh one over
+the same ground, at most twice, and never record it as `No findings.`
 
 For each candidate, before it becomes a finding:
 

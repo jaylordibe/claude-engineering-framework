@@ -343,7 +343,7 @@ paid it on a comment fix and a tenancy change alike.
 > independence or review depth required to establish correctness for the
 > classified risk level.
 
-What adapts is everything above that line. Mapping runs in one of three depth
+What adapts is everything above that line. Mapping runs in one of four depth
 bands; review lenses are launched because the diff intersects their concern; a
 model may be chosen per launch. What is spent is the **minimum sufficient
 computation to establish production-grade confidence for the actual risk and
@@ -356,6 +356,32 @@ The risk tier decides both what a change must *produce* — a plan, a threat
 model, negative tests, a wider review panel — and what it is investigated
 *with*. Both directions matter: a Low change does not pay for a system-wide
 map, and a High change cannot buy its way out of one by having a small diff.
+
+### Convergence — why an agent stops
+
+An agent's turn ceiling is a runaway backstop, and it gives no warning: it stops
+a delegated agent where it stands, with no turn in which to write anything up.
+So an agent that treats investigation as the task reaches the ceiling and
+returns **nothing** — the one outcome that produces no evidence at all, and the
+one observed in practice.
+
+§8 of that standard is the answer, and it is deliberately not a turn count.
+Convergence is a property of the evidence: before each further step, name what
+its result could change — a finding, the classification, the implementation
+shape, an authorization or persistence or contract conclusion, a required test,
+or an `UNKNOWN` that would otherwise stand. If it could change none of them, the
+answer is already held. Widening under §4 outranks that test outright, so it
+never argues against following evidence.
+
+Two things make it operational rather than aspirational. **Synthesis is part of
+the task**, so the report is owed from the first turn rather than attempted
+afterwards — and every agent has a sanctioned shape for a bounded one, so
+returning verified findings plus explicit `UNKNOWN`s is a legitimate output
+rather than an admission. **A brief names the decision the agent owns** and
+hands over locations rather than conclusions, because an agent briefed at a
+repository rather than at a decision has no stopping point to converge on, and
+because a specialist handed the parent's verdict on its own concern has lost the
+independence the launch was paying for.
 
 ### The four properties that keep it safe
 
