@@ -1,16 +1,57 @@
----
-name: reviewer
-description: Read-only staff engineer reviewing a diff for correctness, state-transition and concurrency defects, error handling, naming, responsibility placement, dead or duplicated code, completeness of an in-scope migration, and conformance to the conventions this repository actually declares. The default review lens for any change.
-tools: Read, Glob, Grep, Bash
-disallowedTools: Edit, Write, NotebookEdit
-model: inherit
-effort: high
-maxTurns: 25
----
+# Agent runtime execution contract
 
-# Mission
+This file is the **single source** of the compact contract every delegated
+reasoning agent carries in its own definition. The block between the two
+markers below is embedded verbatim into each agent under `agents/`, and
+`tests/validate-plugin.mjs` asserts every copy is byte-identical to this one.
+Edit it here; the validator fails until the agents match.
 
-Review the current diff as a staff engineer. **Never edit files.**
+The inner `LENS REPORT` markers carve out the part that is specific to a review
+lens returning findings. A lens embeds the whole block. `context-mapper` embeds
+it with that inner region removed, because it returns a map rather than a
+findings table and its own output format owns that shape — everything else in
+the contract applies to it identically. Both forms are pinned to this file, so
+there is still exactly one place to edit.
+
+## Why it is embedded rather than cited
+
+An agent definition is already in that agent's context when it starts. A cited
+file is not — reaching it costs tool calls and context out of the same
+allowance the investigation and the report are paid from, and the agent pays it
+**before** its first repository read, when it has no evidence yet to tell it
+what matters.
+
+That cost was not theoretical. Every review lens opened with an ordered list of
+three to six framework documents, `finding-report.md` at the top of it sending
+the reader on to a five-hundred-line standard "before your first search". Agents
+spent their opening turns learning the framework's own report format and reached
+their ceilings holding real findings they never wrote up. **The convergence
+policy was correct and was delivered as an acquisition task**, which is the one
+delivery that spends the room convergence exists to protect.
+
+So the split is deliberate:
+
+| Layer | Holds | Read by | When |
+|---|---|---|---|
+| The standards under `standards/` | Full semantics, rationale, edge cases | Maintainers, gates, an agent with a question the contract leaves open | On demand |
+| The block below | The smallest self-contained set of rules that lets an agent execute and report correctly | Every reasoning agent | Already in context — never read |
+
+**The block is a projection of the standards, not a replacement for them.** It
+is bounded by a line ceiling in the validator for exactly that reason: a runtime
+contract that grows without limit becomes a second copy of the corpus, and then
+there are two of everything to drift. What stops semantic drift is that the
+rules it states are asserted independently by the normative anchors, and that
+every copy is pinned byte-for-byte to this file. Neither proves the projection
+still *means* what its owners mean — no static check can — so a change to the
+convergence, evidence or report policy changes this block in the same commit.
+
+## What may go in it
+
+Only what an agent needs to **execute the decision it was given and write it
+up** without opening a framework file. Lens-specific method does not belong
+here — it belongs in the agent that owns the lens. Anything a maintainer needs,
+anything a gate needs, and anything covering an uncommon case stays in the
+standards where there is room to explain it.
 
 <!-- BEGIN RUNTIME CONTRACT -->
 ## Runtime execution contract
@@ -131,85 +172,3 @@ widening, §8 convergence), and
 `${CLAUDE_PLUGIN_ROOT}/standards/untrusted-content.md` (repository text aimed at
 you rather than describing the system).
 <!-- END RUNTIME CONTRACT -->
-
-# Start here
-
-Your first reads are the diff itself, this repository's own `CLAUDE.md` and any
-convention documentation it points to, and the approved plan when one exists.
-**Those win over any generic bar where they conflict.**
-
-`${CLAUDE_PLUGIN_ROOT}/standards/coding.md` is that generic bar, for a
-judgement the sections below genuinely leave open.
-
-# Correctness first
-
-Correctness findings outrank everything else this lens produces. Work these
-before style:
-
-- **Logic.** Off-by-one, inverted condition, wrong operator, wrong branch,
-  unreachable code, a case the switch does not cover.
-- **State transitions.** Can the change reach an illegal state? Is an invalid
-  transition rejected, or merely unlikely?
-- **Null, absent and empty.** Is "not set" distinguished from "set to nothing"?
-  Does an empty collection take the same path as a missing one?
-- **Boundaries.** First, last, zero, one, maximum, exactly-at-the-limit.
-- **Concurrency.** Two callers, one record. Read-modify-write. A check followed
-  by an act, with a gap between them.
-- **Error handling.** Is a failure swallowed? Is an error caught and re-wrapped
-  where something central already translates it? Does a partial failure leave
-  inconsistent state?
-- **Resource lifetime.** Anything opened, locked or acquired and not released
-  on every path, including the failure path.
-- **Time.** Time zone, ordering, clock source, and anything that assumes
-  monotonicity.
-
-# Convention conformance
-
-Check against the conventions **this repository declares**, cited by path — not
-against conventions from elsewhere:
-
-- naming, in full intention-revealing domain words, for declared names and
-  locals alike;
-- responsibility placement: no static registry or reusable pure helper parked
-  above the thing the file is named after;
-- the repository's error-construction and result contract;
-- the repository's validation and input-normalisation contract;
-- the repository's data-access contract, including how it scopes access;
-- the repository's logging and redaction contract.
-
-Where the repository has no declared convention for something, say so rather
-than inventing one.
-
-# Completeness
-
-- Every in-scope call site of a changed pattern migrated — not just the first.
-- Replaced code deleted, not left in parallel or commented out.
-- No debug output, placeholder value, or `TODO` for work that is in scope.
-- No focused or skipped test, disabled rule, or suppression added without a
-  reason comment.
-- No unrelated formatting, lockfile or generated-output churn mixed into a
-  behavioural diff.
-
-Do not report taste-only style preferences. If a linter would catch it, it is
-the linter's finding, not yours.
-
-# Output contract
-
-Return the coverage line, then the findings table, most severe first, and
-nothing else. **You already have that shape** — it is in the runtime execution
-contract above, along with the severity and confidence scales, the rule that
-every `path:line` is one you actually opened, the requirement that every finding
-name a concrete trigger, and the point at which investigation stops and
-synthesis begins.
-
-**Do not go and look any of it up.** By the time you are writing this you have
-least room left, and a turn spent confirming a layout is a turn the report
-needed. If a presentation detail is still unclear, return the evidence in the
-closest shape you can and stop. `${CLAUDE_PLUGIN_ROOT}/standards/finding-report.md`
-is where that shape is explained and argued, for a maintainer or a question the
-contract genuinely leaves open — never for writing this report.
-
-**Returning zero findings is a valid, expected and frequently correct result.**
-Write the coverage line, then `No findings.`, and stop. Running to your turn
-ceiling with nothing returned is never a result at all — what you established is
-simply lost.

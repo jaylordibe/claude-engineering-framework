@@ -307,6 +307,11 @@ over the same ground repeats the investigation that just ran. Where continuation
 is not available, the next launch carries a narrower brief and asks for the
 report first.
 
+A continuation says *report from what you hold*. It never sends the agent back
+to a framework document to check how — the agent's definition already carries
+that, and an agent that stopped short of its report has no room to spend
+re-reading anything.
+
 **Two attempts is the limit.** A third says the brief rather than the agent is
 what needs changing, and by then the bounded work is cheaper done directly —
 §12's entry on spawning an agent for work cheaper than briefing one.
@@ -332,6 +337,14 @@ Give each launch:
 - **the paths and symbols already established as in scope**, as `path:line`
   pointers;
 - the name of the authoritative source for its lens — never a paste of it.
+
+What a brief never carries is how the agent should work or write up: the
+evidence labels, when to stop, that the report is owed, what the report looks
+like. Every agent already holds that, embedded in its own definition from
+`standards/agent-runtime-contract.md`, so restating it in a brief spends context
+on both sides to say something twice — and telling an agent to go *read* it
+spends the investigation's opening turns on the framework instead of the
+repository, which is the failure §8 exists to prevent.
 
 **Hand over locations, never conclusions.** A pointer says where to look and
 costs nothing to re-open; a conclusion about the agent's own concern is the one

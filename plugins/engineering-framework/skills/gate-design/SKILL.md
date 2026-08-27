@@ -87,6 +87,13 @@ into its area. **Hand over locations, never conclusions** — a lens given the
 map's verdict on its own concern can no longer contradict it, and contradicting
 it is half of what the launch is paying for.
 
+**Never tell an agent to read a framework document.** Every one of them already
+carries the evidence labels, the stopping rule, the report it owes and its
+independence, embedded in its own definition — so an instruction to go and read
+those spends the run's opening turns on this framework instead of the
+repository, which is the one way a briefed agent reliably reaches its ceiling
+with nothing written up.
+
 Read the complete map before deciding anything.
 
 **A map that reports its floor as `Incomplete`, or leaves access control,

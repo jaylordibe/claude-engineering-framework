@@ -46,6 +46,34 @@ For anything above `Direct`:
 - Stages that establish **what the repository is** ran at full depth regardless
   of band. A cheap band is not a licence to guess the stack.
 
+### Investigation capacity went to the repository, not to this framework
+
+A delegated agent carries the evidence labels, the stopping rule, the report it
+owes and its independence in its own definition —
+`standards/agent-runtime-contract.md`, embedded verbatim and pinned by the
+validator. It does not need to open a framework file to know how to work or how
+to write up what it found.
+
+- An agent whose opening tool calls read files under the plugin rather than
+  files in the repository under review has spent the run's scarcest capacity
+  learning mechanics it was already given. Score that against the run even when
+  the report it eventually produced was good — and especially when it produced
+  none, because that is the observed failure this contract exists to end.
+- A brief that restates the report format at an agent, or instructs it to go and
+  read a standard, is the same defect on the conductor's side.
+- The **conductor** reading `standards/execution-efficiency.md` once is correct
+  and is not this defect: banding, fan-out and model choice are its decisions.
+
+**This criterion never penalises reading the repository's own documentation.** A
+`CLAUDE.md`, an architecture note, an ADR or a security policy belonging to the
+repository under review is evidence about the system, and reading it is
+frequently mandatory. Two framework standards remain legitimate substantive
+reads for the lens that owns them: `untrusted-content.md` when the security lens
+has actually found repository text aimed at an agent, and `evidence.md` when the
+tester lens is judging a claimed verdict. Both are the decision itself, not a
+matter of format. A run penalised for either has been misgraded, and a run that
+skipped real project documentation to look economical has failed the floor.
+
 ### No category was silently dropped
 
 A shallower band answers the same questions more cheaply. It does not answer

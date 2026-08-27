@@ -85,6 +85,17 @@ docs/                               design rationale and Claude Code constraints
 - **Every non-obvious decision carries its reason in a comment.** Several
   choices here contradict the obvious design; a contributor who does not know
   why will "fix" something that is not broken.
+- **An agent holds its execution semantics; it never fetches them.** The
+  evidence labels, the stopping rule, the report owed and the independence
+  requirement live in `standards/agent-runtime-contract.md` and are embedded
+  **verbatim** in every agent under `agents/`. `validate-plugin.mjs` pins every
+  copy byte-for-byte, caps the block's length, and asserts the rules it must
+  state. Edit the contract there and re-copy it; a paraphrase drifts and nothing
+  can see that. The reason is in `docs/architecture.md` — nine agents once spent
+  their opening turns reading framework documents to learn a report format and
+  hit their ceilings holding findings they never wrote up. **A shipped file may
+  name a framework document as available for a question the contract leaves
+  open; it may never make reading one an opening step.**
 - **How much computation a stage spends is one policy, in
   `standards/execution-efficiency.md`.** Depth bands, per-launch model choice,
   fan-out, output size, the escalation triggers and the §8 convergence contract
