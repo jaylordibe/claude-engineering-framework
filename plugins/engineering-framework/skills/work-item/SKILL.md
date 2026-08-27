@@ -306,6 +306,13 @@ map existed to prevent. What is never handed over is your reading of the lens's
 own concern: a lens told its area is already clear cannot find the defect in it,
 and a lens told what to look for has stopped being an independent reader.
 
+**Never tell an agent to read a framework document.** Every one of them already
+carries the evidence labels, the stopping rule, the report it owes and its
+independence, embedded in its own definition — so an instruction to go and read
+those spends the run's opening turns on this framework instead of the
+repository, which is the one way a briefed agent reliably reaches its ceiling
+with nothing written up.
+
 **A brief you cannot state in a few lines has a scope you have not decided
 yet.** Decide it here. Every lens deciding it separately is how a specialist
 spends its whole allowance investigating and returns nothing — a defect in the

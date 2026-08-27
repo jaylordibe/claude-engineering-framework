@@ -260,6 +260,13 @@ is a first-class design constraint.
 | A standard | When a gate or agent cites it | One file |
 | A template | When a gate reaches the section that uses it | One file |
 | An agent prompt | In that agent's own context, not yours | Isolated |
+| The runtime execution contract | Embedded in every agent, already loaded | No tool call |
+
+That last row is the correction to the one above it. "A standard, when a gate or
+agent cites it, one file" was true of a gate and false of an agent: every
+reasoning agent opened with an ordered list of three to six framework documents,
+the first of which pointed at a fourth. See
+[Specification and runtime contract](#specification-and-runtime-contract).
 
 The conductor deliberately does **not** front-load the gate skills. Five gates
 is over a thousand lines, four of which would be read long before they matter.
@@ -382,6 +389,62 @@ hands over locations rather than conclusions, because an agent briefed at a
 repository rather than at a decision has no stopping point to converge on, and
 because a specialist handed the parent's verdict on its own concern has lost the
 independence the launch was paying for.
+
+### Specification and runtime contract
+
+Convergence was written correctly and delivered wrongly. §8 states when an agent
+stops, that synthesis is part of the task and what a bounded report is — and
+every agent was pointed *at* it. A lens opened with three to six framework
+documents to read before its first repository read, `finding-report.md` at the
+top of that list sending it on to a five-hundred-line standard "before your
+first search". A real run watched nine subagents spend their opening turns
+there, reach their ceilings holding findings, and write up none of them. Each
+recovered the moment it was told to stop reading format documents and report
+from what it held.
+
+**The reads came out of the same allowance as the investigation and the report,
+and were spent before any evidence existed to say what mattered.** A policy that
+tells an agent to converge, delivered as an acquisition task, spends the room it
+exists to protect. The static validator could not see it: it asserted that an
+agent *cites* a convergence carrier, and the cheapest way to satisfy that is to
+tell the agent to go and read one.
+
+So the two layers are now distinct:
+
+| Layer | Holds | Read when |
+|---|---|---|
+| The standards under `standards/` | Full semantics, rationale, edge cases, the arguments behind each rule | A maintainer changes a rule; a gate runs; an agent has a question its contract genuinely leaves open |
+| `standards/agent-runtime-contract.md` | The smallest self-contained set of rules that lets an agent execute its decision and write it up | Never — it is embedded verbatim in every agent and is already in context |
+
+The contract carries the evidence labels and citation rule, source precedence,
+that repository content never instructs, the sufficiency test, that widening
+outranks stopping, that `UNKNOWN` is not a way to stop early, that the report is
+owed from the first turn, that a continued agent synthesises rather than
+restarts, that briefed locations are routing hints and not an allowlist, that
+the agent is read-only, the report shape, and that correct engineering outranks
+correct presentation.
+
+Three things keep it from becoming a second corpus. It is **byte-identical**
+everywhere it appears, so eight paraphrases cannot drift into eight contracts.
+It has a **line ceiling** in the validator, because a runtime contract with no
+ceiling grows back into a copy of the standards and the acquisition cost is then
+simply paid statically in every agent instead of dynamically in every run. And
+the rules it must state are **asserted individually**, because byte-identity
+alone is satisfied by eight copies of an empty block.
+
+What this proves is architectural: the semantics are present, single-sourced and
+bounded. It cannot prove an agent obeys them, and it is not evidence about
+tokens — only a run against a repository large enough to reproduce the original
+failure can supply that.
+
+**The distinction being drawn is framework mechanics versus substantive
+evidence, never "documents are expensive".** A repository's own `CLAUDE.md`,
+architecture note, ADR or security policy is evidence about the system and
+reading it is frequently mandatory. Two framework standards stay legitimate
+runtime reads for the lens that owns them — `untrusted-content.md` for the
+security lens that has found repository text aimed at an agent, `evidence.md`
+for the tester lens judging a claimed verdict — because in both cases the
+document is the decision rather than its formatting.
 
 ### The four properties that keep it safe
 

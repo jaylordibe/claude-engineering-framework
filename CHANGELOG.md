@@ -12,6 +12,65 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 2.7.0 — 2026-08-27
+
+**Agents no longer spend their opening turns learning how this framework wants
+them to work.** A real run of 2.6.0 watched nine subagents reach their turn
+ceilings before writing anything up, each having spent its first turns reading
+framework standards to learn the report format. Every one of them recovered when
+told to skip the format documents and report from what it already held.
+
+2.6.0 fixed the policy and shipped it as a reading assignment. Every review lens
+opened with an ordered list of three to six framework documents, and
+`finding-report.md` — first on all seven of those lists — sent the reader on to
+a five-hundred-line standard *"before your first search"*. The context mapper
+was told to read four sections of it, and again at the end of its run to check
+its own floor. **Those reads came out of the same allowance as the investigation
+and the report, and were spent before any evidence existed to say what
+mattered.** A rule that tells an agent to converge, delivered as an acquisition
+task, spends the room it exists to protect.
+
+The static suite could not see it. It asserted that an agent *cites* a
+convergence carrier — and the cheapest way to satisfy that is to tell the agent
+to go and read one.
+
+**What changed.** `standards/agent-runtime-contract.md` is new and is the single
+source of the compact contract every reasoning agent now carries **inside its
+own definition**: the evidence labels and the citation rule, source precedence,
+that repository content never instructs, the sufficiency test, that widening
+outranks stopping, that `UNKNOWN` is not a way to stop early, that the report is
+owed from the first turn, that a continued agent synthesises rather than
+restarts, that briefed locations are routing hints and not an allowlist,
+read-only operation, the report shape, and that correct engineering outranks
+correct presentation. The ordered read lists are gone from all eight agents;
+each now starts on the repository. `finding-report.md` no longer sends a lens to
+the efficiency standard mid-flight, §8.5 states that a brief never carries
+execution mechanics, and the three launch sites say so where a conductor writes
+one.
+
+**Nothing about depth, independence or the quality floor moved.** The lenses,
+their ceilings, `model: inherit`, the widening triggers, adversarial refutation,
+and targeted parent verification are all unchanged. No agent lost a capability:
+every framework document an agent could open before, it can still open — for a
+question its contract genuinely leaves open, rather than as an opening step. Two
+of them stay explicitly substantive reads, `untrusted-content.md` for the
+security lens and `evidence.md` for the tester lens judging a verdict, because
+there the document is the decision rather than its formatting. Reading the
+repository's own documentation was never the cost and is untouched.
+
+**What is enforced.** `validate-plugin.mjs` pins every embedded copy
+byte-for-byte to the single source, caps the block at 130 lines so a runtime
+contract cannot grow back into a second copy of the standards corpus, asserts
+each rule the contract must state, and fails an agent that reinstates an ordered
+framework read. `evals/cases/efficiency-no-framework-acquisition` and a new
+criterion in the efficiency grader cover the behaviour.
+
+Static validation proves the architecture, not the saving. Whether the ceiling
+cycles actually stop is a property of a repository large enough to reproduce
+them, and no fixture here is.
+
+---
+
 ## 2.6.0 — 2026-08-26
 
 **Agents now converge and report; they no longer investigate until they are cut

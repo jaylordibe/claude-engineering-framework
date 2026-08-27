@@ -110,6 +110,13 @@ the search; your reading of the lens's own concern removes the independence you
 launched it for. A lens told an area is already clear cannot find the defect in
 it.
 
+**Never tell an agent to read a framework document.** Every one of them already
+carries the evidence labels, the stopping rule, the report it owes and its
+independence, embedded in its own definition — so an instruction to go and read
+those spends the run's opening turns on this framework instead of the
+repository, which is the one way a briefed agent reliably reaches its ceiling
+with nothing written up.
+
 A brief you cannot state in a few lines has a scope you have not decided yet,
 and a specialist that spends its whole allowance investigating is usually
 reporting that rather than a defect in itself.

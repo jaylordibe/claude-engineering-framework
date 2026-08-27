@@ -1,8 +1,14 @@
 # Finding report contract
 
-Every review lens returns its report in this shape. Each agent references this
-file rather than restating it, so the contract can only be changed in one
-place — the same discipline `gate-handoff.md` applies to the gate sequence.
+Every review lens returns its report in this shape.
+
+**A lens does not read this file to write its report.** The part of it a lens
+needs at runtime is embedded in that lens's own definition, byte-identical, from
+`${CLAUDE_PLUGIN_ROOT}/standards/agent-runtime-contract.md`. This file is where
+the shape is explained and argued — for a maintainer, for a gate reading a
+report, and for an agent with a question its embedded contract genuinely leaves
+open. Reaching it as a routine step is the acquisition that costs an
+investigation the room its report needed.
 
 **A report is two parts: one coverage line, then the findings table.** Nothing
 else, in either direction — a lens that returns only the table has not said
@@ -12,9 +18,10 @@ definition names a deliverable of its own returns it between the two.
 
 ## When you stop investigating and start writing
 
-`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §8 owns that
-decision, and it is worth reading before your first search rather than after
-your last one. Three of its rules decide this report:
+`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §8 owns that decision
+and states it in full. Three of its rules decide this report, and all three are
+already in every lens's embedded contract — so what follows is the explanation,
+not a step in a run:
 
 - **Synthesis is part of this task, not what follows it.** The moment the
   question you were launched to answer is answerable from what you hold, the

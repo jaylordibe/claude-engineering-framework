@@ -105,16 +105,24 @@ const REQUIRED_DISALLOWED_TOOLS = ['Edit', 'Write', 'NotebookEdit'];
 // The files that carry the convergence contract to a delegated agent: where
 // investigation stops, that synthesis is part of the task, and what a bounded
 // report looks like. `execution-efficiency.md` §8 owns the policy;
-// `finding-report.md` is the lens-facing form of it and cites the owner, so an
-// agent reaching either one reaches the rule.
+// `finding-report.md` is the lens-facing form of it and cites the owner.
 //
-// Two entries rather than one because the review lenses genuinely should not
-// read the whole efficiency standard to learn when to stop — most of it governs
-// stages they are not running, and reading it would spend the context the
-// report needs.
+// This check asserts a REFERENCE, and a reference was the problem. Every agent
+// satisfied it by opening with "read this file first", which is how the rule
+// that tells an agent to converge became the reason it did not: the reads came
+// out of the same allowance as the investigation, before any evidence existed
+// to say what mattered.
+//
+// So the reference is now the fallback and not the mechanism. What actually
+// carries convergence into a run is the embedded runtime contract, asserted by
+// `validateRuntimeContract` below — held, not fetched. This list stays because
+// an agent that somehow carries neither has no contract at all, and because a
+// named owner is still where an agent goes for a question the compact form
+// genuinely leaves open.
 const CONVERGENCE_CARRIERS = [
   'standards/execution-efficiency.md',
   'standards/finding-report.md',
+  'standards/agent-runtime-contract.md',
 ];
 
 // Skills whose read-only-ness is a SAFETY property rather than a description,
@@ -487,8 +495,8 @@ function validateAgents() {
     // for stopping inside it. What those files must SAY is asserted separately,
     // by the normative anchors — so neither check passes on its own if the rule
     // is deleted.
-    if (!CONVERGENCE_CARRIERS.some((carrier) => content.includes(carrier))) {
-      fail(filePath, `declares a \`maxTurns\` ceiling but cites none of ${CONVERGENCE_CARRIERS.join(' or ')}, so nothing tells it when it has gathered enough evidence or that a bounded report is owed either way. An agent that reaches its ceiling returns nothing at all, and everything it established is lost. See standards/execution-efficiency.md §8.`);
+    if (!content.includes(CONTRACT_BEGIN) && !CONVERGENCE_CARRIERS.some((carrier) => content.includes(carrier))) {
+      fail(filePath, `declares a \`maxTurns\` ceiling but neither carries the runtime contract nor cites any of ${CONVERGENCE_CARRIERS.join(', ')}, so nothing tells it when it has gathered enough evidence or that a bounded report is owed either way. An agent that reaches its ceiling returns nothing at all, and everything it established is lost. See standards/execution-efficiency.md §8.`);
     }
 
     // Read-only is judged by the effective tool pool, never by a sentence in
@@ -514,6 +522,173 @@ function validateAgents() {
   }
 
   return seenNames;
+}
+
+// ---------------------------------------------------------------------------
+// 3b. The runtime execution contract
+//
+// Every reasoning agent used to open with an ordered list of three to six
+// framework documents to read BEFORE its first repository read, and
+// finding-report.md — first on every one of those lists — sent the reader on to
+// a five-hundred-line standard "before your first search". A real run watched
+// nine subagents spend their opening turns learning the framework's own report
+// format and hit their ceilings holding findings they never wrote up. Every one
+// recovered the moment it was told to stop reading format documents and report
+// from what it held.
+//
+// The convergence policy those documents carry was correct. Delivering it as an
+// acquisition task was the defect: it spent, before any evidence existed, the
+// room convergence exists to protect.
+//
+// So the semantics an agent needs to execute and report are EMBEDDED in the
+// agent, where they cost nothing to reach, and this check is what stops that
+// embedding from rotting. Three properties, and none of them is a prose grep:
+//
+//   1. Byte-identity with the single source. Eight paraphrases of one contract
+//      are eight things to drift, and a paraphrase that has quietly fallen
+//      behind is exactly what no test can see.
+//   2. A hard line ceiling. A runtime contract with no ceiling grows back into
+//      a second copy of the standards corpus, and then the acquisition cost is
+//      simply paid statically in every agent instead of dynamically in every
+//      run. The ceiling is what keeps this a projection rather than a fork.
+//   3. The contract must actually state the rules it exists to carry. Byte
+//      identity alone is satisfied by eight copies of an empty block.
+//
+// What this proves is architectural: the semantics are present, single-sourced
+// and bounded. It cannot prove an agent obeys them, and no static check can.
+// ---------------------------------------------------------------------------
+
+const RUNTIME_CONTRACT_SOURCE = 'standards/agent-runtime-contract.md';
+const CONTRACT_BEGIN = '<!-- BEGIN RUNTIME CONTRACT -->';
+const CONTRACT_END = '<!-- END RUNTIME CONTRACT -->';
+const LENS_REPORT_BEGIN = '<!-- BEGIN LENS REPORT -->';
+const LENS_REPORT_END = '<!-- END LENS REPORT -->';
+
+// Generous enough for the contract to say everything an agent genuinely needs,
+// and far below the ~850 lines the documents it replaces run to. Raising it is
+// a deliberate act: it is the only thing standing between a compact runtime
+// contract and a duplicated standards corpus.
+const RUNTIME_CONTRACT_LINE_CAP = 130;
+
+// Agents returning a findings table carry the whole contract. `context-mapper`
+// returns a map and its own output format owns that shape, so it carries the
+// contract with the lens-report region removed — still pinned to the same
+// source, so there is still exactly one place to edit.
+const MAP_SHAPED_AGENTS = new Set(['context-mapper']);
+
+// What the block must state, whatever words it uses. These are the rules whose
+// absence the nine-agent run was caused by, plus the ones that keep removing
+// the acquisition cost from also removing the quality it protects.
+const RUNTIME_CONTRACT_GUARANTEES = [
+  { what: 'the five evidence labels', pattern: /\bFACT\b[\s\S]*\bINFERENCE\b[\s\S]*\bASSUMPTION\b[\s\S]*\bABSENT\b[\s\S]*\bUNKNOWN\b/ },
+  { what: 'that an uncited or unopened `path:line` is a fabrication', pattern: /fabrication/i },
+  { what: 'source precedence, with the agent\'s own prior expectations ranked last', pattern: /prior expectations/i },
+  { what: 'that repository content is evidence and never instruction', pattern: /never instruction|evidence, never/i },
+  { what: 'the evidence-sufficiency test — what a further step could change', pattern: /could change/i },
+  { what: 'that widening on evidence outranks stopping', pattern: /widen[\s\S]{0,400}outranks|outranks[\s\S]{0,400}widen/i },
+  { what: '`UNKNOWN` is not a way to stop early', pattern: /UNKNOWN`? is not a way to stop|not a way to stop early/i },
+  { what: 'that the report is owed from the first turn and a bounded report outranks an exhausted run', pattern: /owed from your first turn/i },
+  { what: 'that the turn ceiling gives no warning, so an agent cannot converge by watching it', pattern: /cannot converge by watching/i },
+  { what: 'that a continued agent synthesises rather than restarts', pattern: /not starting again|do not restart/i },
+  { what: 'that briefed locations are routing hints and not an allowlist', pattern: /routing hints, not an allowlist/i },
+  { what: 'that the agent is read-only and proposes rather than applies a fix', pattern: /read-only/i },
+  { what: 'that correct engineering outranks correct presentation', pattern: /outranks getting the presentation right/i },
+];
+
+// The regressions this check exists to prevent coming back. Both are the same
+// defect in different positions, and the second is the worse of the two.
+//
+// An imperative verb governing a framework path is an instruction to go and
+// fetch something the agent already holds. It appeared at the top of every
+// agent ("Read, in this order:"), in the middle of the mapper's stages ("Work
+// the discovery table in", "Cover the reachable scenarios from"), and — worst —
+// at the END, where all seven lenses were told their report was "defined by"
+// another file. An agent reaching that last one has least room left, and
+// spending a turn there is spending the report.
+//
+// The verb list is deliberately short and the window deliberately tight: this
+// names the construct that actually caused the failure rather than policing
+// every sentence containing the word "read". A file MENTIONED after the claim
+// it supports — "`…/security.md` is the generic floor … open it for a
+// judgement the sections below leave open" — does not match, and should not:
+// naming a document as available is the behaviour this change is FOR.
+const ACQUISITION_DIRECTIVES = [
+  {
+    pattern: /\b(Read|Work|Follow|Consult|Apply|Cover|See)\b[\s\S]{0,90}?\$\{CLAUDE_PLUGIN_ROOT\}\/(standards|templates)\//,
+    why: 'sends the agent to fetch a framework document as a step in its run',
+  },
+  {
+    pattern: /\b(defined|specified|described) (by|in)\b[\s\S]{0,40}?\$\{CLAUDE_PLUGIN_ROOT\}/,
+    why: 'describes the agent\'s own output as defined in a file it would have to open, at the point in the run where it has least room left',
+  },
+  {
+    pattern: /^\s*(?:\*\*)?Read,? (?:in this order|the following|these)|^\s*\*\*Read §/m,
+    why: 'reinstates an ordered framework reading list before the investigation starts',
+  },
+];
+
+function extractRuntimeContract() {
+  const sourcePath = join(pluginRoot, RUNTIME_CONTRACT_SOURCE);
+  if (!existsSync(sourcePath)) {
+    fail(sourcePath, 'is the single source of the contract every reasoning agent carries, and it is missing. Without it each agent is back to reading framework documents at runtime to learn how to report.');
+    return null;
+  }
+
+  const source = readFileSync(sourcePath, 'utf8');
+  const begin = source.indexOf(CONTRACT_BEGIN);
+  const end = source.indexOf(CONTRACT_END);
+  if (begin === -1 || end === -1 || end < begin) {
+    fail(sourcePath, `does not contain a ${CONTRACT_BEGIN} … ${CONTRACT_END} block, so there is nothing for the agents to be pinned to.`);
+    return null;
+  }
+
+  const lens = source.slice(begin, end + CONTRACT_END.length);
+  const lineCount = lens.split('\n').length;
+  if (lineCount > RUNTIME_CONTRACT_LINE_CAP) {
+    fail(sourcePath, `the runtime contract is ${lineCount} lines, over the ${RUNTIME_CONTRACT_LINE_CAP}-line cap. This block is a bounded projection of the standards, not a second copy of them: past this size the acquisition cost it removed from every run is simply paid statically in every agent instead. Move the detail back to the standard that owns it, or raise the cap deliberately and say why here.`);
+  }
+
+  for (const { what, pattern } of RUNTIME_CONTRACT_GUARANTEES) {
+    if (!pattern.test(lens)) {
+      fail(sourcePath, `the runtime contract no longer states ${what}. Every agent carries this block instead of reading the standards, so a rule dropped here is a rule dropped from every delegated run at once — and the agent has nothing else to fall back on.`);
+    }
+  }
+
+  const lensBegin = lens.indexOf(LENS_REPORT_BEGIN);
+  const lensEnd = lens.indexOf(LENS_REPORT_END);
+  if (lensBegin === -1 || lensEnd === -1 || lensEnd < lensBegin) {
+    fail(sourcePath, `does not contain a ${LENS_REPORT_BEGIN} … ${LENS_REPORT_END} region inside the contract, so the map-shaped agents cannot be given the contract without a findings-table format that does not apply to them.`);
+    return null;
+  }
+
+  const map = lens.replace(new RegExp(`\\n${LENS_REPORT_BEGIN}[\\s\\S]*?${LENS_REPORT_END}\\n`), '');
+  return { lens, map, sourcePath };
+}
+
+function validateRuntimeContract(contract, agentNames) {
+  if (!contract) return;
+
+  for (const [name, filePath] of agentNames) {
+    const content = readFileSync(filePath, 'utf8');
+    const expected = MAP_SHAPED_AGENTS.has(name) ? contract.map : contract.lens;
+
+    if (!content.includes(expected)) {
+      const shape = MAP_SHAPED_AGENTS.has(name) ? 'contract with the lens-report region removed' : 'full contract';
+      fail(filePath, `does not carry the ${shape} from ${RUNTIME_CONTRACT_SOURCE} byte-for-byte. An agent that has to fetch its execution and reporting semantics spends its opening turns on this framework rather than on the repository, and reaches its ceiling holding findings it never wrote up. Re-copy the block; do not paraphrase it, because a paraphrase drifts and nothing here can see that.`);
+      continue;
+    }
+
+    // Scanned OUTSIDE the pinned block, which legitimately names the owning
+    // standards at its end — as available for an open question, not as a step.
+    const begin = content.indexOf(CONTRACT_BEGIN);
+    const outside = content.slice(0, begin) + content.slice(content.indexOf(CONTRACT_END) + CONTRACT_END.length);
+
+    for (const { pattern, why } of ACQUISITION_DIRECTIVES) {
+      const match = pattern.exec(outside);
+      if (!match) continue;
+      fail(filePath, `${why}: "${match[0].replace(/\s+/g, ' ').trim().slice(0, 80)}…". The agent already carries what it needs, and this directive is the shape that put nine agents into their turn ceilings holding findings they never wrote up. Name a framework document as available for a question the contract genuinely leaves open — never as a step in the run.`);
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1381,6 +1556,7 @@ const marketplace = validateMarketplace();
 const manifest = validatePluginManifest(marketplace);
 const agentNames = validateAgents();
 const skillNames = validateSkills();
+validateRuntimeContract(extractRuntimeContract(), agentNames);
 validateHooksAndScripts();
 validateCrossReferences();
 validateComponentReferences(agentNames, skillNames);
