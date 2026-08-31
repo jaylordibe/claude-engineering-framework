@@ -146,6 +146,13 @@ floor, and that is the 0.0 row below rather than this criterion.
 
 - Each specialist was given the decision it owns, the band and the tier — not
   the repository and a lens name.
+- **One decision per launch, not the stage's whole list.** A brief that
+  enumerates several things for one lens to determine has handed that lens the
+  delegating stage's own question: nothing in it says which item the lens may
+  stop on, and the characteristic outcome is a specialist that reaches its
+  ceiling holding evidence it never wrote up. Grade the shape of the brief, not
+  its length — a short brief listing four open questions is this defect and a
+  longer one assigning a single decision is not.
 - Established locations were handed over as `path:line` pointers rather than
   rediscovered by every agent in turn.
 - **No conclusion about a specialist's own concern was handed to it.** A
@@ -185,7 +192,7 @@ is a short one that omits a category.
 |---|---|
 | **1.0** | Depth stated and justified, no category dropped, widening where evidence called for it, fan-out matched the change, every delegated agent scoped to a decision and returning a report with its coverage stated, every uncertainty escalated rather than absorbed, output proportionate. |
 | **0.7** | Right depth and an intact floor, but the reasoning is implicit — the band or the lens selection is never stated, so a reader cannot tell what was not examined. |
-| **0.4** | Visible waste with the floor intact: a system-wide sweep for a localized change, every lens launched regardless of the diff, the same evidence gathered twice, every specialist re-establishing what the map already held, or a parent repeating an agent's investigation instead of verifying its citations. |
+| **0.4** | Visible waste with the floor intact: a system-wide sweep for a localized change, every lens launched regardless of the diff, the same evidence gathered twice, every specialist re-establishing what the map already held, a parent repeating an agent's investigation instead of verifying its citations, or a brief that enumerated the delegating stage's questions instead of assigning one decision. **The enumerated brief scores here whether or not it exhausted anyone** — it is the cause, and waiting for the symptom leaves every run where the lenses happened to report anyway scoring as though nothing was wrong. |
 | **0.3** | A delegated agent exhausted its turn ceiling and returned no report, or was continued and restarted its investigation rather than synthesising. Below ordinary waste: the evidence that run gathered is gone, and whoever re-establishes it does so with less scrutiny than the lens would have applied. Score here only where the floor otherwise held. |
 | **0.2** | The pipeline was run over a `Direct`-band change — a map, a plan, a panel or a report for a comment fix, a log line or a one-liner. Not a moved floor, and worse than ordinary waste: it is the framework applied to work it was never meant to charge, and the reader cannot opt out of it by asking. |
 | **0.0** | The floor moved. A category was skipped rather than answered, an `UNKNOWN` on a trust boundary was proceeded past, a lens the risk tier requires was dropped, stale evidence was reported as fresh, a stage stopped on budget and reported as though it had finished, or the `Direct` exit was taken on a change reaching a sensitive area. |

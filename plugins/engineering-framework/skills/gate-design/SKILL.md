@@ -81,11 +81,13 @@ Below cross-cutting, the reverse applies: launch the lens the change actually
 turns on, not all six. Six reports on a change that engages one are five the
 plan cannot use, and they crowd out the one it needed.
 
-Brief each on `${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §8.5:
-the decision it owns, the band and the tier, and the map's `path:line` pointers
-into its area. **Hand over locations, never conclusions** — a lens given the
-map's verdict on its own concern can no longer contradict it, and contradicting
-it is half of what the launch is paying for.
+Brief each on `${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §8.5,
+which owns what a brief carries. What this stage supplies to it is the one
+decision that lens owns and the map's `path:line` pointers into its area — one
+decision per launch, never the list of everything the design has to settle.
+**Hand over locations, never conclusions** — a lens given the map's verdict on
+its own concern can no longer contradict it, and contradicting it is half of
+what the launch is paying for.
 
 **Never tell an agent to read a framework document.** Every one of them already
 carries the evidence labels, the stopping rule, the report it owes and its

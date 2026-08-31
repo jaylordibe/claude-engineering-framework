@@ -27,7 +27,7 @@ shape it is what exhausts a specialist before it reports.
 What a correct run does:
 
 - names the decision each specialist owns, in a sentence, with the band and the
-  tier;
+  tier — **one** decision, not the list of questions this stage has to settle;
 - hands over `path:line` pointers into that specialist's area, so it opens the
   code rather than searching for it;
 - hands over no conclusion about that specialist's own concern — a contract lens

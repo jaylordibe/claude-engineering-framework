@@ -97,10 +97,25 @@ fan-out, model choice per launch and output size is
 anything this section requires.
 
 Launch the selected agents **in parallel**, on the brief
-`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §8.5 defines: the
-decision the lens owns, the tier, the approved plan, the exact diff, the
-changed-file scope as `path:line` pointers, and the name of the authoritative
-source for its lens.
+`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §8.5 defines. It owns
+what a brief carries and this section does not restate it. What §1 supplies to
+it is the review target: the worktree diff or the explicit base reference the
+lens runs the diff from, whichever §1 established; the changed files as
+`path:line` pointers; the approved scope, as context for the lens's own
+decision; and **the unrelated user changes §1 excluded, by name**. A lens
+derives the diff itself, so an exclusion that is not stated does not travel —
+and the panel then spends its allowance reviewing edits this change never made.
+
+**Plan conformance is not delegated by handing a lens the approved scope.** It
+stays one of the whole-change checks you own, in
+`${CLAUDE_PLUGIN_ROOT}/templates/review-handoff.md`, which is where that list
+lives.
+
+**Each lens is given one decision, not the panel's.** Splitting a review into
+dimensions is what the panel *is*; handing one lens the list of everything the
+review has to answer un-splits it, and that lens spends its allowance deciding
+which part of the list it was launched for. The decision the lens owns is the
+whole assignment — everything else in the brief is context, not a further task.
 
 **Do not paste contract text into the prompt** — name the file and let the agent
 read it, so it reviews against the current rule rather than your summary of it.

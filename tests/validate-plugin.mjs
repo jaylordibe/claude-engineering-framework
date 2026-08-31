@@ -426,6 +426,7 @@ function validateAgents() {
   const agentDirectory = join(pluginRoot, 'agents');
   const agentFiles = listFilesRecursively(agentDirectory, (path) => path.endsWith('.md'));
   const seenNames = new Map();
+  const lensCeilings = new Map();
 
   if (agentFiles.length === 0) {
     warn(agentDirectory, 'no agents found.');
@@ -519,6 +520,29 @@ function validateAgents() {
     if (mutatingAllowed.length > 0) {
       fail(filePath, `agent lists file-mutating tools in \`tools\`: ${mutatingAllowed.join(', ')}. Framework agents find; the main conversation fixes.`);
     }
+
+    if (!MAP_SHAPED_AGENTS.has(basename(filePath, '.md'))) {
+      lensCeilings.set(filePath, frontmatter.maxTurns);
+    }
+  }
+
+  // The panel agents share one ceiling, whatever number it is.
+  //
+  // This deliberately does NOT assert a value — the comment above says why a
+  // ceiling is not a cost lever, and that still holds. What it asserts is
+  // AGREEMENT, because the failure was neither too high nor too low: a bulk
+  // edit raising seven lenses changed six, and `tester` sat a whole tier below
+  // its peers through a full validation run. Presence was asserted, the value
+  // was not, so nothing looked. The panel runs together on one diff, so a lens
+  // that stops earlier than the others is an asymmetry nobody chose; raise or
+  // lower them all and this check stays quiet. `context-mapper` is excluded on
+  // purpose — it runs alone, at another stage, and has always differed.
+  const distinct = new Set(lensCeilings.values());
+  if (distinct.size > 1) {
+    const spread = [...lensCeilings].map(([p, v]) => `${basename(p, '.md')}=${v}`).sort().join(', ');
+    for (const [filePath] of lensCeilings) {
+      fail(filePath, `the review lenses do not agree on a turn ceiling: ${spread}. They are launched together on one diff, so a lens that stops before its peers is an asymmetry nobody chose — and the way that happens is a bulk edit that missed a file, which every other check here passes. Set them all to the same number, or move the odd one out of the panel deliberately.`);
+    }
   }
 
   return seenNames;
@@ -589,6 +613,12 @@ const RUNTIME_CONTRACT_GUARANTEES = [
   { what: '`UNKNOWN` is not a way to stop early', pattern: /UNKNOWN`? is not a way to stop|not a way to stop early/i },
   { what: 'that the report is owed from the first turn and a bounded report outranks an exhausted run', pattern: /owed from your first turn/i },
   { what: 'that the turn ceiling gives no warning, so an agent cannot converge by watching it', pattern: /cannot converge by watching/i },
+  // Added 2.8.0. Two of five lenses in one review reached 25 turns holding
+  // evidence they never wrote up, on single-decision briefs — so the brief
+  // shape was not the whole cause. The ceiling counts TURNS, and nothing told
+  // an agent that: a run issuing one read per turn buys a fraction of the
+  // evidence the same allowance carries when independent steps go out together.
+  { what: 'that the ceiling counts turns, so independent steps go out together', pattern: /counts turns, not tool calls/i },
   { what: 'that a continued agent synthesises rather than restarts', pattern: /not starting again|do not restart/i },
   { what: 'that briefed locations are routing hints and not an allowlist', pattern: /routing hints, not an allowlist/i },
   { what: 'that the agent is read-only and proposes rather than applies a fix', pattern: /read-only/i },
@@ -1252,6 +1282,47 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'a brief names the decision and hands over locations, never conclusions, and the specialist stays free to contradict them',
     patterns: [/brief/i, /pointer/i, /never conclusions|locations, never/i, /contradict/i, /never told what to find|independence/i],
   },
+  // 2.8.0 — the brief assigns ONE decision. The release above fixed how an
+  // agent learns to work; this one fixes what it is asked to do. A real run
+  // lost three subagents to briefs that enumerated six things for one lens:
+  // §8.1 decides convergence against *the decision it was given*, so a launch
+  // given six is a launch given none, and the run ends at the ceiling holding
+  // evidence nobody receives. The rule reads like tidiness and is not.
+  {
+    file: 'standards/execution-efficiency.md',
+    guarantee: 'a brief assigns one decision, everything else in it is context rather than a further task, and a lens owning two decisions is two launches rather than a longer brief',
+    patterns: [/only the first/i, /assignment/i, /allowed to stop\s+on/i, /two launches|never a longer brief/i],
+  },
+  // The three delegating sites. Each previously cited §8.5 *and* restated its
+  // contents, with three different lists — and the citation check below passed
+  // the whole time, because it only asks whether the owner's path appears in
+  // the file. These anchor each site to the sentence that defers instead, so
+  // the drift that shipped for two releases cannot silently return.
+  {
+    file: 'skills/gate-review/SKILL.md',
+    guarantee: 'the review launch site defers to §8.5 for what a brief carries and gives each lens one decision rather than the panel\'s',
+    patterns: [/does not restate it/i, /one decision/i],
+  },
+  {
+    file: 'skills/gate-design/SKILL.md',
+    guarantee: 'the design launch site defers to §8.5 for what a brief carries and briefs one decision per launch',
+    patterns: [/owns what a brief carries/i, /one\s+decision per launch/i],
+  },
+  {
+    file: 'skills/work-item/SKILL.md',
+    guarantee: 'the map launch site defers to §8.5 for what a brief carries and gives each launch one decision rather than the stage\'s list of questions',
+    patterns: [/does not restate it/i, /one decision rather than the\s+list/i],
+  },
+  // The owner half of the turn-economy rule. Pinning only the projection in
+  // agent-runtime-contract.md would leave eight verbatim copies asserting a
+  // rule with no source — and a contributor re-copying the contract with
+  // nothing to re-copy from. This is the green-by-construction shape the
+  // release above exists to close, so it does not get to reappear here.
+  {
+    file: 'standards/execution-efficiency.md',
+    guarantee: "a delegated agent's ceiling counts turns, so independent steps go out together, and that is not the budget-watching §8 rules out",
+    patterns: [/counts\s+turns, not tool calls/i, /batch what does not depend/i, /not the budget-watching/i],
+  },
   {
     file: 'standards/finding-report.md',
     guarantee: 'a coverage line separates a lens that examined and found nothing from one that never looked, and makes verification targeted rather than repeated',
@@ -1443,7 +1514,22 @@ const SINGLE_SOURCE_POLICIES = [
   // that drifts loosest is the one a long investigation happens to be reading.
   {
     owner: 'standards/execution-efficiency.md',
-    vocabulary: /\bsufficiency test\b|\bbounded report\b|\bhand over locations\b/i,
+    // What this check does NOT do, stated because the gap is invisible from
+    // the passing run: the exemption is FILE-level — `content.includes(owner)`.
+    // A file that already cites the owner may append a restatement of it and
+    // still pass. Verified: appending a turn-economy restatement to
+    // gate-review/SKILL.md passes; appending the same line to domain-auth,
+    // which cites nothing, fails. So this binds a NEW delegating site and any
+    // file that cites nothing; an existing launch site is bound instead by its
+    // NORMATIVE_ANCHORS deference sentence. Tightening the exemption to a
+    // proximity rule was considered and rejected: the launch sites legitimately
+    // use this vocabulary a dozen lines from their citation, and a check that
+    // fails legitimate prose is the false-denial failure CLAUDE.md describes.
+    // The brief-list vocabulary is here because the binding used to rest
+    // entirely on "hand over locations": a launch site could restate what a
+    // brief carries, cite nothing, and pass. A reworded sentence would have
+    // removed the citation requirement along with it.
+    vocabulary: /\bsufficiency test\b|\bbounded report\b|\bhand over locations\b|\bthe decision (it|the lens) owns\b|\bwhat a brief carries\b|\bcounts turns, not tool calls\b|\bindependent steps go out\b/i,
     what: 'the convergence and evidence-sufficiency contract',
   },
   // Drift assessment is a three-outcome decision that three

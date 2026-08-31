@@ -12,6 +12,92 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 2.8.0 — 2026-08-31
+
+**A brief now assigns one decision, and the launch sites no longer hand a
+specialist a list.** A real run of 2.7.0 lost three subagents across Stage 1 and
+Stage 4: each reached its turn ceiling without writing anything up, and each had
+been given a six-part enumerated brief rather than the single decision §8.5
+asks for. Continuing them report-first recovered the work, which is the 2.6.0
+mechanism doing its job — but the second attempt was paid for by a briefing
+defect, not by the agents.
+
+2.7.0 removed the reading assignments that were spending an agent's opening
+turns. What it left in place was the other way a brief removes an agent's
+stopping point: **an enumerated brief has no item the agent is allowed to stop
+on.** §8.1 decides convergence against *the decision it was given*, so a launch
+given six is a launch given none, and the run ends at the ceiling with
+everything it established still inside it.
+
+The shipped text was pointing that way. §8.5 owns what a brief carries, and all
+three launch sites restated its contents inline with three different lists —
+three items in `gate-design`, four in `work-item`, and six in `gate-review`, two
+of which asked for pastes rather than pointers. A conductor filling in the
+six-item version wrote the six-part brief the standard forbids two paragraphs
+later. This is the oldest convention in the repository failing in the ordinary
+way: a paraphrase drifted from its source, silently, and nothing could see it.
+
+**What changed.** §8.5 now says that only its first bullet — the decision the
+lens owns — is an assignment and everything under it is context rather than a
+further task; that a lens owning two decisions is two launches and never a
+longer brief, while a lens's *own declared area* is one decision however many
+facets it has; and it names the element the review case needed, the agreed
+scope and its stated non-goals, where a launch judges work against a decision
+already taken. The three launch sites cite it instead of restating it, and each
+supplies only what §8.5 cannot know: the map's pointers in `gate-design`, the
+review target in `gate-review`. `gate-review` no longer asks for the diff and
+the plan document as pastes — a read-only lens is handed the target and reads
+the diff itself — and it now states two things the old list left implicit. The
+unrelated worktree changes §1 excluded travel to the panel **by name**, because
+a lens deriving its own diff cannot otherwise know which edits are not the
+change. And plan conformance stays a whole-change check the conductor owns,
+rather than something delegated by handing a lens the approved scope.
+
+**Why it survived two releases: the check was green by construction.** The
+single-source rule was enforced by asking whether the owner's path appeared
+anywhere in the file — and all three launch sites cited §8.5 *and* restated it,
+so the suite passed for the entire time the drift was live. Restoring the three
+pre-fix files to a 2.8.0 tree now fails `validate-plugin.mjs`, and so does
+deleting the new rule from §8.5; both were green before. Each launch site is
+anchored to the sentence that defers, the one-decision rule is pinned in its
+own source, and the convergence vocabulary is widened so that naming what a
+brief carries requires the citation at all — a fourth delegating site added
+later is bound by the same check. That binding is file-level and the comment
+beside it says so: it catches a new site, or any file that cites nothing, and
+an existing launch site is held instead by the anchor on its deference
+sentence. `evals/` grades the brief's *shape*
+regardless of whether a lens exhausted, since waiting for the symptom scores
+every run where the lenses happened to report anyway as though nothing was
+wrong.
+
+**The brief was not the whole cause, and the rest of it is here too.** Running
+this release's own review surfaced the remainder: two of five lenses reached
+their ceilings holding evidence they never wrote up, on briefs that named a
+single decision each. What separated them from the three that reported was not
+how much they read — one lens that finished and one that did not made the same
+number of tool calls. **The ceiling counts turns, and nothing in this framework
+ever said so.** An agent issuing independent reads one per turn buys a fraction
+of the evidence the same allowance carries when they go out together, and §10's
+tool economy governed only what to read, never how many steps a turn holds.
+
+So the runtime contract every agent carries now states it, in the paragraph
+that already explains why a ceiling cannot be watched — the two are compatible
+and the text says which is which: it governs what a turn buys, never when
+investigation stops. `standards/execution-efficiency.md` §10 owns the policy
+and the contract carries the projection, as with everything else an agent holds
+rather than fetches. The seven review lenses move from `maxTurns: 25` to the
+mapper's `40`, which §8 says costs nothing on the runs that were already short
+and is the difference on the one run that needed the room. The panel's lenses
+must now agree on that number: a bulk edit of seven files that changes six is
+invisible to a check asserting only that a ceiling exists, which is how one
+lens spent a whole validation run a tier below its peers.
+
+**Nothing about panel composition, independence or depth moved.** The tier
+tables, the lens-selection rules, the uncertain-applicability rule on High and
+Critical work, the ceilings and `model: inherit` are all unchanged. A brief
+carrying less is not a lens investigating less: what came out of it was the
+delegating stage's question, which the lens was never launched to answer.
+
 ## 2.7.0 — 2026-08-27
 
 **Agents no longer spend their opening turns learning how this framework wants

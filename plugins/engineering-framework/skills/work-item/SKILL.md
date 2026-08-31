@@ -294,11 +294,9 @@ Subagents cannot delegate further. You own all fan-out and synthesis.
 
 ### What each specialist is given
 
-`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §8.5 owns the brief —
-the decision the lens owns, the band and the tier, the `path:line` pointers
-already established as in scope, and the name of the authoritative source for
-its lens. Two of its rules decide whether this stage costs one investigation or
-five.
+`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §8.5 owns what a
+brief carries, and this section does not restate it. Two of its rules decide
+whether this stage costs one investigation or five.
 
 **Hand over locations, never conclusions.** Once the map has established where
 the code is, making each lens rediscover that is the duplicated acquisition the
@@ -314,8 +312,10 @@ repository, which is the one way a briefed agent reliably reaches its ceiling
 with nothing written up.
 
 **A brief you cannot state in a few lines has a scope you have not decided
-yet.** Decide it here. Every lens deciding it separately is how a specialist
-spends its whole allowance investigating and returns nothing — a defect in the
+yet.** Decide it here, and give each launch one decision rather than the list of
+questions this stage has to answer — a lens working a list has no item it is
+allowed to stop on. Every lens deciding its own scope is how a specialist spends
+its whole allowance investigating and returns nothing: a defect in the
 assignment, not in the agent.
 
 A specialist stays free to contradict any pointer it was given, and when one
