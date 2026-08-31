@@ -259,7 +259,9 @@ call, and close calls spend more.
 If it could not, the step is confirmatory, duplicative or merely adjacent, and
 what it would return is already held. **Stop expanding and write.** Two
 consecutive steps that changed none of the above are the signal that
-investigation has converged, whatever quantity of repository remains unread.
+investigation has converged, whatever quantity of repository remains unread —
+**steps, whatever turn they were issued in.** Batching several into one turn
+gathers evidence faster; it does not make the signal arrive sooner.
 
 ### 8.2 Synthesis is part of the task
 
@@ -336,7 +338,27 @@ Give each launch:
 - **the depth band and the risk tier** it is working in;
 - **the paths and symbols already established as in scope**, as `path:line`
   pointers;
+- **what the work was already agreed to be**, where the launch judges something
+  against a decision already taken — the agreed scope and its stated non-goals,
+  in a line or two, never the document it came from;
 - the name of the authoritative source for its lens — never a paste of it.
+
+**Only the first of those — the decision it owns — is an assignment.** The rest
+is context the agent would otherwise spend its opening turns acquiring, and none
+of it is a second thing to do. A brief that reads as an enumerated list of
+things to determine has handed over the delegating stage's whole question
+instead of one lens's share of it, and **an agent working a list has no item it
+is allowed to stop on** — §8.1's stopping rule removed by the brief rather than
+by the agent.
+Where a lens genuinely owns two decisions, that is two launches or a narrower
+lens. It is never a longer brief.
+
+**A lens's own declared area is one decision, however many facets it has.** The
+thing this forbids is handing over the questions the delegating stage has to
+settle — not asking a specialist to cover the surface its own definition
+already claims. Judge the shape, not the length: a short brief listing four
+open questions is the defect, and a longer one assigning a single decision is
+not.
 
 What a brief never carries is how the agent should work or write up: the
 evidence labels, when to stop, that the report is owed, what the report looks
@@ -386,6 +408,11 @@ second section · prose that changes no decision.
 - During implementation run the focused form of a check. **The validation gate
   still runs the repository's full canonical checks** — that is the gate, and
   the focused runs preceding it never replace it.
+- **Independent steps go out in one turn.** A delegated agent's ceiling counts
+  turns, not tool calls, so steps issued one per turn buy a fraction of the
+  evidence the same allowance would otherwise carry. Batch what does not depend
+  on a previous result; sequence only what does. This is not the budget-watching
+  §8 rules out — it changes what a turn buys, not when investigation stops.
 - Capture the failing evidence, not the entire log.
 - Do not re-run a command whose evidence is still valid, and do re-run it
   whenever relevant code changed. Evidence has a scope and an age:

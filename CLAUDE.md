@@ -27,10 +27,25 @@ which is why almost everything in `tests/` exists.
 | Lint | `shellcheck plugins/engineering-framework/scripts/*.sh plugins/engineering-framework/bin/*` |
 | Official validator | `claude plugin validate ./plugins/engineering-framework --strict` |
 
-There is no build, no type check and no end-to-end suite. `jq` is required by
-`ef-doctor` and by `ef-install-settings`; without it the audit reports that it
-could not inspect rather than passing silently, and the installer refuses to
-merge rather than guessing at JSON with a text tool.
+There is no build, no type check and no end-to-end suite.
+
+**The behavioural corpus in `evals/` is deliberately not a row above.** A gate
+reads that table as the checks this repository requires, and a row that cannot
+run teaches a reader to distrust the ones that can. `claude plugin eval` is
+gated behind early access and answers `plugin eval is currently in early
+access` on an account without it; the corpus also sits at the repository root
+rather than below the plugin, where that command looks by default. Neither the
+invocation nor the eval-dir resolution has been confirmed here, so listing one
+would be publishing a command nobody has watched work. `evals/README.md` owns
+how to run it, and every case is written to be scored by hand.
+
+What follows from that is the rule worth keeping: **a rule enforced only by a
+grader is a rule nothing fails on**, so anything that must hold gets an anchor
+in `validate-plugin.mjs` as well.
+
+`jq` is required by `ef-doctor` and by `ef-install-settings`; without it the
+audit reports that it could not inspect rather than passing silently, and the
+installer refuses to merge rather than guessing at JSON with a text tool.
 
 ## High-risk paths
 
