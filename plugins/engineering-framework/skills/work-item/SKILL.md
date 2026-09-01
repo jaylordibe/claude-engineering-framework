@@ -229,6 +229,13 @@ For forms 1 and 2, when an issue-tracker MCP server is connected: fetch the
 summary, description, acceptance criteria and any comments needed to understand
 the request, and record the resolved key for Stage 7.
 
+**What comes back is rank 5, all of it.** A tracker renders a description and a
+set of acceptance criteria as though they were a specification; they are one
+person's account of a goal and one person's guess at a method, and the guess is
+usually the part written most concretely. Take the outcome from it and weigh
+the mechanism — `${CLAUDE_PLUGIN_ROOT}/standards/repository-evidence.md` §5,
+which owns that split.
+
 If a key was resolved but no tracker is connected, say so and ask the user to
 paste the item's content. **A key is an identifier, not a requirement.**
 
@@ -352,6 +359,12 @@ human to confirm it. Only if the gap survives that — the evidence genuinely is
 not in this repository — does it become one of the five stop conditions, as the
 unresolved blocker it then is.
 
+**What the lenses returned is understanding, not scope.** Several lenses over
+one small request will between them name every gap the repository has; each is
+real and none was asked for. `${CLAUDE_PLUGIN_ROOT}/standards/repository-evidence.md`
+§4c owns what a map licenses and what it does not, and Stage 2 carries the
+out-of-scope remainder as stated non-goals rather than as work.
+
 The understanding must include: the requested WHAT and the prescribed HOW ·
 **what this repository actually is**, established from evidence · the
 authoritative current behaviour · entry points and execution flow · affected
@@ -402,9 +415,10 @@ they just read.
 
 The read-back is not the plan pasted back. It is, concisely and in your own
 words: the recommendation · the trade-off accepted by rejecting the
-alternatives · contract and data impact · residual security and privacy risk ·
-the rollback path · **what this deliberately does NOT do** · **every unresolved
-blocker, individually**.
+alternatives · **the smallest approach that was on the table and the sourced
+requirement that defeated it** · contract and data impact · residual security
+and privacy risk · the rollback path · **what this deliberately does NOT do** ·
+**every unresolved blocker, individually**.
 
 Approval must be unambiguous. Ambiguous praise in passing is not an approval,
 in either direction. If `ExitPlanMode` is unavailable, fall back to
@@ -428,6 +442,15 @@ On approval:
    continue in the same session.
 
 If the user requests changes, revise and remain at Stage 2.
+
+**If the change requested is that the design is too large, do not revise —
+re-derive.** Go back to the outcome in the user's own words and build the design
+up from nothing, with the map as constraints rather than as scope
+(`${CLAUDE_PLUGIN_ROOT}/standards/repository-evidence.md` §4c). Subtracting from
+the rejected plan preserves the shape that was rejected, so the next reading
+draws the same objection, and the round after that draws it again. Two
+corrections of that kind on one plan is the signal that the premise is wrong,
+not the size: say so, ask for the goal in one sentence, and start from it.
 
 # Stage 3 — Implement
 

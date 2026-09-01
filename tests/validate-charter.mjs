@@ -54,8 +54,11 @@ const ADDITIONAL_CONTEXT_CHARACTER_CAP = 10000;
 // before any skill or standard has loaded. A change that raises this constant
 // has to argue for it here.
 //
-// 82 rendered lines against 84. That margin is the whole budget for the next
-// change, and it is meant to be spent by removing something.
+// 84 rendered lines against 84. The margin is spent: the ticket-is-not-a-design
+// clause took the last two, and the next addition here removes something first.
+// Raising this constant instead is the easy move and the wrong one — the cost is
+// paid on every request in every installed repository, by people who never chose
+// to read it.
 const CHARTER_LINE_CEILING = 84;
 
 // Each entry is a guarantee the framework makes in its always-on text, and the
@@ -90,6 +93,13 @@ const REQUIRED_GUARANTEES = [
   // is bounded; a version of it that dropped the sensitive-area list would
   // pass a test that checked for the exit alone, and be worse than no exit.
   { concept: 'the exit below the lowest tier, and the bound on it', patterns: [/below Low|below the line/i, /no map|no plan/i, /authorization/i, /tenancy/i] },
+  // Stated in the always-on text rather than only in gate-design for the same
+  // reason as the quality floor: a ticket is read, and its shape adopted, in
+  // sessions that never invoke a gate. By the time gate-design's stage 5 could
+  // have asked for the smaller option, an ad-hoc session has already built the
+  // larger one. Both halves are load-bearing — "not a spec" alone leaves the
+  // model free to substitute a design of its own that is just as oversized.
+  { concept: 'a ticket proposes a method, and the smallest sufficient one is built', patterns: [/ticket states a goal|not a design/i, /acceptance criteria/i, /smallest/i] },
 ];
 
 if (!existsSync(charterScript)) {

@@ -12,6 +12,71 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 2.9.0 — 2026-09-01
+
+**A ticket proposes a method; the framework now grades it instead of building
+it.** A real 2.8.0 run against a bulk-endpoint ticket produced a plan with a new
+boolean column, two new tables, a migration, a new queue lane, new error codes
+and a new module. The correct design needed none of it: no schema change, no new
+module, one job on the existing lane. It took four rounds of user correction to
+get there, and on each round the run subtracted from the rejected plan rather
+than re-deriving from the one-sentence goal.
+
+Nothing in the shipped text failed. That is the finding. The framework said
+"prefer the smallest coherent complete end state" in one sentence of
+`gate-design` §5 — a preference with no artefact, no grade and no read-back
+behind it, and by this repository's own rule a rule nothing fails on is not a
+rule. Every mechanism that could have caught this was pointed elsewhere:
+
+- **The method grade could not express the failure.** `repository-evidence.md`
+  §5 grades a prescribed method Sound / Suboptimal / Bad practice. A ticket
+  asking for two tables the outcome does not need grades **Sound** — it would
+  work — so the one mechanism built to push back on a ticket's HOW was blind to
+  the most common way a HOW is wrong.
+- **Acceptance criteria entered as requirements.** `gate-design` §1 extracted
+  "desired outcome and acceptance criteria" as one thing, and `work-item` fetched
+  them from the tracker with no note that a criterion naming a column is a
+  proposal. A checklist is the format most often mistaken for a specification.
+- **The lens fan-out was itself a scope source.** Four lenses over one small
+  request name, between them, every gap the repository has. Each finding is real
+  and cited, and their union arrives at the design stage looking exactly like
+  requirements — the machinery built to catch under-building becoming the reason
+  for over-building, with every artefact downstream reading as diligence.
+- **A rejection had no re-derivation rule.** "If the user requests changes,
+  revise and remain at Stage 2" produced a plan edited down, which keeps the
+  shape that was rejected and draws the same objection again. A run of shrinking
+  plans is not convergence; it is the first answer, defended.
+
+**What changed.** `repository-evidence.md` gains **Over-specified** as a method
+grade, an explicit split of every acceptance criterion into its outcome and its
+mechanism, §4c stating that a map and a lens produce constraints and non-goals
+rather than scope, and a line on gathering the evidence that decides an option
+before choosing the option. `gate-design` §5 turns its preference into an
+obligation: the smallest approach that fully delivers the outcome is always
+among the compared options, and only a stated, sourced requirement may defeat
+it — "it would not scale" and "we will need this later" are predictions.
+`plan.md` §5 now lists every persisted shape and abstraction introduced against
+the outcome each one serves. `gate-approve` and `work-item` read the smallest
+option back before the human decides, and re-derive rather than subtract when
+the answer is that the design is too large.
+
+**Two lines of the always-on charter.** The failure happens while a ticket is
+being read, in sessions that never invoke a gate, so a rule reachable only from
+`gate-design` arrives after the design exists. The charter now says a ticket
+states a goal, not a design, and that its wording and acceptance criteria propose
+a method rather than a spec. That spends the charter's remaining budget: it
+renders at 84 lines against a ceiling of 84, and the next addition there removes
+something first.
+
+Both halves of each rule are anchored in `tests/validate-plugin.mjs` and
+`tests/validate-charter.mjs`, and a new `design-minimality` grader plus the
+`ticket-proposes-more-than-the-goal-needs` case score the behaviour a static
+check cannot see.
+
+**Nothing to act on.** Methodology only, and no consuming repository changes.
+
+---
+
 ## 2.8.0 — 2026-08-31
 
 **A brief now assigns one decision, and the launch sites no longer hand a

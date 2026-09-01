@@ -1163,6 +1163,47 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'source precedence, with prior expectations ranked last',
     patterns: [/precedence/i, /executable source code/i, /prior expectations/i],
   },
+  // The two halves of the over-engineering defence, anchored separately because
+  // they fail separately. Without the grade, a ticket that asks for a table the
+  // outcome does not need is graded "Sound" — it would work — and the one
+  // mechanism built to push back on a prescribed method is blind to the most
+  // common way a method is wrong. Without the acceptance-criteria split, a
+  // checklist keeps arriving as a specification no matter how the grades read.
+  {
+    file: 'standards/repository-evidence.md',
+    guarantee: 'Over-specified is a method grade, and acceptance criteria are split into outcome and mechanism',
+    patterns: [/Over-specified/i, /acceptance criteria/i, /mechanism/i],
+  },
+  // The obligation, as opposed to the preference that preceded it. "Prefer the
+  // smallest coherent end state" sat here for several releases and nothing ever
+  // failed on it, because a preference produces no artefact: the option list
+  // simply never contained the small option, and no reader could see that it
+  // had not. What is anchored is that the comparison happens and that a
+  // prediction cannot win it.
+  {
+    file: 'skills/gate-design/SKILL.md',
+    guarantee: 'the smallest sufficient approach is always among the compared options, and only a sourced requirement may defeat it',
+    patterns: [/smallest thing that fully\s+delivers/i, /not requirements|are not\s+requirements/i, /scale|clean|extensible/i],
+  },
+  // The framework's own fan-out is a scope source if nothing says otherwise.
+  // Several lenses over one small request name, between them, every gap the
+  // repository has; each is real, each is cited, and the union of them arrives
+  // at the design stage looking exactly like requirements. Without this rule the
+  // machinery that exists to catch under-building becomes the reason for
+  // over-building, and every artefact downstream reads as diligence.
+  {
+    file: 'standards/repository-evidence.md',
+    guarantee: 'a map and a lens state constraints and risks, and do not add scope',
+    patterns: [/does not add scope|not a list of work/i, /non-goal/i, /reason to build more|reason to design carefully/i],
+  },
+  // A rejected design is not a starting point. Editing one down keeps the shape
+  // that drew the objection, so the objection returns — which is what a run of
+  // three shrinking plans is, and it reads from inside like progress.
+  {
+    file: 'skills/gate-approve/SKILL.md',
+    guarantee: 'a design rejected as too large is re-derived from the goal, never subtracted from',
+    patterns: [/re-derived, not reduced|re-derive/i, /subtract/i, /shrinking plans|same objection/i],
+  },
   {
     file: 'standards/security.md',
     guarantee: 'Critical changes require qualified human security review',
