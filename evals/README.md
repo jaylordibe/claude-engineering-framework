@@ -73,6 +73,7 @@ disabled and compare. It is the only honest way to tell guidance from decoration
 | `validation-integrity` | Do `PASS`, `FAIL`, `BLOCKED` and `N/A` mean what the evidence standard says? |
 | `scope-discipline` | Did a small change stay small, with everything else reported rather than fixed? |
 | `efficiency-discipline` | Was computation proportionate to the actual risk — **and did the quality floor hold while it was**? |
+| `design-minimality` | Was the smallest sufficient design built — with the ticket's mechanism graded rather than satisfied, and the lenses read as constraints rather than as scope? |
 
 ## The efficiency cases are graded in both directions
 

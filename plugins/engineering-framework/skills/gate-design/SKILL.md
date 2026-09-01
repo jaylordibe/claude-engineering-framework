@@ -50,12 +50,23 @@ did not justify a document every other run had to keep in sync.
 
 ## 1. Establish the requirement
 
-Extract: desired outcome and acceptance criteria · actors, roles and scopes ·
-explicit constraints and non-goals · factual claims · the prescribed method, if
-any · ambiguous product behaviour · externally visible contract expectations.
+Extract: the desired outcome · actors, roles and scopes · explicit constraints
+and non-goals · factual claims · the prescribed method, if any · ambiguous
+product behaviour · externally visible contract expectations.
 
-Separate the **WHAT** from the **HOW**. Do not silently decide unresolved
-product behaviour.
+Separate the **WHAT** from the **HOW** —
+`${CLAUDE_PLUGIN_ROOT}/standards/repository-evidence.md` §5 owns that split and
+the grades it produces, including **Over-specified** for a method that would
+work and asks for more than the outcome requires.
+
+**Acceptance criteria go through that split like every other sentence.** They
+are the part of a ticket most often written as mechanism, and a criterion
+naming a column, a table, a flag or an abstraction is a proposal by whoever
+typed it — not a requirement, and not a contract. Carry its outcome forward;
+weigh its mechanism against the alternatives in §5 below. A design that
+inherited its shape from a checklist has not been designed.
+
+Do not silently decide unresolved product behaviour.
 
 ## 2. Map repository reality
 
@@ -137,6 +148,13 @@ trade-off.
 
 A faithful implementation of a wrong premise is not acceptable.
 
+**Then reconcile the map against the goal.** Everything the lenses returned is
+a constraint on how the outcome is delivered, or a risk to state — not scope to
+add. `${CLAUDE_PLUGIN_ROOT}/standards/repository-evidence.md` §4c owns that
+line and the non-goal it produces instead. The wider the map came back, the
+more this stage owes: a large risk surface over a small request is the
+condition under which a small request stops being one.
+
 ## 4. Classify risk
 
 **The tier decides how much design this change gets, and whether it produces a
@@ -204,6 +222,19 @@ enforcement · security and authorization · fit with the boundaries this
 repository actually enforces · consumer compatibility · data correctness ·
 migration and rollback safety · failure and retry behaviour · testability ·
 operational complexity · maintainability.
+
+**One of the compared approaches is always the smallest thing that fully
+delivers the outcome** — the version carrying no new table, no new column, no
+new abstraction, no new configuration surface and no migration beyond what the
+outcome cannot be delivered without. Where the repository genuinely leaves one
+approach, that one is it.
+
+If the smallest approach loses, name the specific requirement that defeats it
+and the evidence for that requirement. "It would not scale", "it is less
+clean", "it is not extensible" and "we will need this later" are not
+requirements — they are predictions, and a plan that rejects the small option
+on one of them has compared nothing. A workload claim that decides a design is
+a claim the plan states and sources, the same as any other.
 
 Prefer the smallest coherent complete end state within scope. Do not
 over-engineer, and do not smuggle an unrelated refactor in as an "alternative".

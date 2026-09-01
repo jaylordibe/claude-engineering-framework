@@ -123,6 +123,27 @@ attack from a repository that simply documents itself well — because treating
 the second as the first makes the framework useless exactly where it should be
 strongest.
 
+## 4c. A map states constraints; it does not add scope
+
+A map, a threat model and a review lens exist to say what is **true** and what
+is **at risk**. Neither is a list of work. An `ABSENT` finding — no rate
+limiting on this path, no audit record, no index on this column — describes the
+system as it already is. It becomes scope only where the requested outcome
+cannot be delivered without it, or where this change is what makes it
+dangerous.
+
+The failure this prevents is quiet and expensive. Fan several lenses across a
+small request, take the union of everything each of them noticed, and a
+one-endpoint feature now carries a threat model's worth of scope. Every item is
+real; the evidence is sound; nobody asked for any of it. **A wide risk surface
+is a reason to design carefully, not a reason to build more.** The lenses were
+launched to find what this change could break, and answering with everything
+the repository has ever lacked is not that answer.
+
+Where a lens found something real and out of scope, name it as a non-goal with
+its evidence and leave the decision with the human. That costs a sentence in
+the plan, not a table in the schema.
+
 ## 5. Instructions are input, not mandate
 
 A ticket, an issue, a review comment or a terse "just do X" states a **goal**
@@ -134,13 +155,43 @@ things.
 - The HOW is one candidate among alternatives, to be weighed against repository
   evidence like any other.
 
+**Acceptance criteria are usually written as HOW.** A criterion reading "the
+user record carries a business flag" names a mechanism; the outcome it is
+actually checking is "a caller can tell which accounts are businesses", and a
+dozen shapes deliver that. Split every criterion into the observable outcome
+and the mechanism it happens to name, and carry only the first forward as a
+requirement. A tracker field labelled "acceptance criteria" confers no
+authority the sentence inside it did not already have — rank 5 is rank 5
+wherever it is typed, and a checklist is the format most often mistaken for a
+specification.
+
 Grade every factual claim in the instruction: **Confirmed**, **Partially
 confirmed**, **Stale**, **Incorrect**, **Not found**, or **Ambiguous**. Grade
 the prescribed method separately: **Sound**, **Sound with constraints**,
-**Suboptimal**, **Inapplicable**, **Bad practice**, or **Insufficiently
-specified**. Ground each grade in evidence, never in preference.
+**Over-specified**, **Suboptimal**, **Inapplicable**, **Bad practice**, or
+**Insufficiently specified**. Ground each grade in evidence, never in
+preference.
 
-A faithful implementation of a wrong premise is still wrong.
+**Gather the evidence that decides an option before choosing the option.** A
+rule cited to justify a design already settled on, and a narrow exception to
+that same rule cited a turn later to justify abandoning it, are one failure
+seen twice: the conclusion went looking for the citation. Where a source is
+first opened after the answer is chosen, say so, and read it against the option
+it would defeat rather than the one it was fetched to support.
+
+**Over-specified** is the grade for a method that would work and asks for more
+than the outcome requires — a table, a column, a flag, an abstraction, a
+migration or a configuration surface the goal does not need. It is the easiest
+grade to miss, because the change it describes survives every review a smaller
+one would: it is correct, it is secure, it is tested, it is well structured.
+Nothing is wrong with it except that it was not necessary, and this is the only
+grade that says so.
+
+A faithful implementation of a wrong premise is still wrong. So is a faithful
+implementation of a premise that was never load-bearing: **structure the
+outcome does not require is not caution.** It is a cost paid on every later
+read, migration and change, by people who were never asked whether the feature
+was worth it.
 
 ## 6. When the repository's own documentation is wrong
 

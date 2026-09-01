@@ -62,6 +62,9 @@ Present, concisely and in your own words rather than quoted:
 - the **rollback or roll-forward path**;
 - **what this deliberately does NOT do** — scope disappointment surfaces here
   far more often than technical objection;
+- **the smallest approach that was on the table, and the requirement that
+  defeated it** — this is the last moment the human can ask for the smaller
+  one, and everything after it is them paying for the larger;
 - **every unresolved blocker, individually.**
 
 ## 3. Unresolved blockers
@@ -85,6 +88,14 @@ scope, the implementation stops there.
 
 **On rejection**, say what would have to change for a new design to supersede
 this one, and stop.
+
+**Where the rejection is that the design is too large, the next one is
+re-derived, not reduced.** Go back to the outcome in the human's own words and
+build up from nothing. Do not take the rejected plan and subtract from it: a
+plan edited down keeps the shape that was rejected — the same tables with one
+removed, the same module behind a thinner interface — and comes back needing
+the same objection again. A sequence of shrinking plans is not convergence. It
+is the first answer, defended.
 
 There is no status line to set. The approval is the decision itself.
 

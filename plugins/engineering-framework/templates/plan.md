@@ -29,9 +29,12 @@ second is input to weigh, not a mandate.
 |---|---|---|---|
 | | Confirmed / Partially confirmed / Stale / Incorrect / Not found / Ambiguous | | `path:line` |
 
-**Prescribed method:** Sound / Sound with constraints / Suboptimal /
-Inapplicable / Bad practice / Insufficiently specified — and one
-evidence-backed sentence saying why.
+**Prescribed method:** Sound / Sound with constraints / Over-specified /
+Suboptimal / Inapplicable / Bad practice / Insufficiently specified — and one
+evidence-backed sentence saying why. **Over-specified** is the grade for a
+method that would work and asks for more than the outcome requires; acceptance
+criteria naming a column, a table or an abstraction are graded here, not
+carried into §7 as requirements.
 
 Then the current authoritative flow, end to end, in this repository's own
 vocabulary, each step cited.
@@ -51,6 +54,12 @@ At least two credible approaches for Medium and above, unless the repository
 genuinely leaves one. For each: the approach, what it buys, what it costs,
 compatibility, security, migration and operational impact, testability.
 
+**One of them is the smallest thing that fully delivers the outcome** — no new
+table, column, abstraction, configuration surface or migration beyond what the
+outcome cannot be delivered without. If it lost, name the specific requirement
+that defeated it and the evidence for that requirement. A prediction is not a
+requirement.
+
 State plainly why the rejected ones lost. An option list where one choice is
 obviously correct is decoration.
 
@@ -58,6 +67,11 @@ obviously correct is decoration.
 
 The recommendation, its rationale, and what is given up by rejecting the
 alternatives.
+
+**Then list every persisted shape, abstraction and configuration surface this
+change introduces, and against each the outcome that cannot be delivered
+without it.** A row with no such outcome is scope to cut here, not to review
+later.
 
 ## 6. Contract impact
 
