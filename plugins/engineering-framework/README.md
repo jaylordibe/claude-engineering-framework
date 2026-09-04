@@ -66,6 +66,16 @@ rewritten.
 Runs the whole pipeline and stops exactly twice: to approve the plan, and to
 review the diff before you commit.
 
+To write the requirement first:
+
+```text
+/engineering-framework:write-ticket <goal, rough notes, or an issue to rewrite>
+```
+
+A story, current behaviour cited from your code, observable acceptance
+criteria, non-goals and open questions, iterated with you until you say it is
+final. No design — that is `work-item`'s job, with your approval.
+
 Or drive it stage by stage:
 
 ```text
@@ -88,8 +98,8 @@ ceremony in both directions.
 
 ## What ships
 
-**12 skills** — the `work-item` conductor, five gates, an installer, a doctor,
-and four model-invoked domain playbooks (`domain-auth`,
+**13 skills** — the `work-item` conductor, the `write-ticket` writer, five
+gates, an installer, a doctor, and four model-invoked domain playbooks (`domain-auth`,
 `domain-authorization`, `domain-background-work`, `domain-debugging`).
 
 **8 read-only agents** — `context-mapper`, `architect`, `reviewer`, `security`,

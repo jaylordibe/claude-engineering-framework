@@ -107,6 +107,17 @@ minor and patch bumps never ask anything of you.
 Runs the whole pipeline. Stops exactly twice: to approve the plan, and to review
 the diff before you commit.
 
+Before there is a requirement to feed it:
+
+```text
+/engineering-framework:write-ticket <goal, rough notes, or an issue to rewrite>
+```
+
+Writes the ticket the way a business analyst would — a story, the current
+behaviour cited from your code, observable acceptance criteria, non-goals and
+open questions — and iterates with you until you say it is final. It contains
+no design; `work-item` derives that from evidence, with approval.
+
 Or drive the stages yourself:
 
 ```text
@@ -173,9 +184,9 @@ Skipped, partial, filtered or flaky is never `PASS`.
 
 ## What ships
 
-**8 skills:** `work-item` (conductor), `gate-design`, `gate-approve`,
-`gate-implement`, `gate-review`, `gate-validate`, `framework-install`,
-`framework-doctor`. Four more load themselves when relevant: `domain-auth`,
+**9 skills:** `work-item` (conductor), `write-ticket`, `gate-design`,
+`gate-approve`, `gate-implement`, `gate-review`, `gate-validate`,
+`framework-install`, `framework-doctor`. Four more load themselves when relevant: `domain-auth`,
 `domain-authorization`, `domain-background-work`, `domain-debugging`.
 
 **8 read-only agents:** `context-mapper`, `architect`, `reviewer`, `security`,

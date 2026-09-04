@@ -12,6 +12,38 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 2.11.0 — 2026-09-04
+
+**A ticket is written as a goal, not as the design an agent found.** Asked to
+create a ticket, the default behaviour was to map the repository and write the
+resulting design into the description — steps, files, a schema — so the ticket
+reached `work-item` as a specification nobody had approved. That stage then
+graded the method as one proposal among alternatives, which is what a ticket
+is, and re-derived the design from evidence. The work was discarded and the
+human never saw the goal stated on its own.
+
+- **`write-ticket`**, a human-invoked skill that starts a mode the
+  conversation stays in until the human says the ticket is final. The first
+  turn reads the area the goal names — a bounded read, never a `context-mapper`
+  launch — and emits a full draft with every gap labelled `UNKNOWN` rather than
+  an interview. Every turn after re-emits the whole ticket with a `Changed:`
+  line, asks at most three questions, and states in one line whether the
+  ticket is ready and what stands in the way. A mechanism the human names is
+  kept under **Ideas from discussion**, non-binding; a second goal is offered
+  as a second ticket; a product question is listed with the human as its
+  owner, never decided. The skill writes nothing into the repository, never
+  declares the ticket final, and creates an issue in a tracker only when asked
+  to in that turn.
+- **`templates/ticket.md`**, the shape: story, current behaviour with
+  `path:line`, problem, scope and non-goals, `Given / when / then` criteria
+  with negatives, edge cases, contract and data touchpoints, open questions
+  with owners, non-binding ideas, dependencies, evidence. Each section names
+  what it becomes in `work-item`, which is what makes a ticket written here fit
+  the pipeline it is fed to.
+- `validate-plugin.mjs` pins the skill read-only and anchors its three
+  boundaries. A new eval case and a `ticket-discipline` grader score the first
+  turn and a follow-up.
+
 ## 2.10.0 — 2026-09-04
 
 **A defect is diagnosed before its fix is designed.** The framework treated a
