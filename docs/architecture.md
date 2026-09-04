@@ -378,6 +378,32 @@ stop. The playbook adds no stage: the diagnosis is Stage 1's understanding, the
 fix is Stage 2's design, and review and validation run unchanged at the tier of
 the code the fix touches.
 
+## A ticket is a goal, and it is written by a different stage
+
+The framework ranks a ticket at the bottom of its evidence order and reads its
+acceptance criteria as a proposed method, because that is what a ticket is:
+one person's account of an outcome and their guess at how to reach it. That
+position is what lets `gate-design` build the smallest thing that delivers the
+goal rather than the thing the ticket happened to describe.
+
+It also means the framework's own ticket writing has to respect it. Asked to
+create a ticket, the default is to map the repository and write down the
+design — which produces a good plan, at the wrong stage, for a reader who has
+not approved it, and which the design stage then grades down and re-derives.
+`skills/write-ticket` carries the correction: a human-invoked mode, iterated
+across turns, that writes the story, the current behaviour as cited fact, the
+outcomes that would prove delivery and the questions still open — and puts
+every mechanism anyone proposes under a non-binding heading. Its template names
+what each section becomes downstream, so a ticket written there arrives at
+`work-item` already in the shape Stage 1 extracts.
+
+The mode is deliberately not a pipeline. There is no ledger and no state file:
+the whole ticket is re-emitted every turn, so the last message is the state,
+and a draft too long for that is a ticket that needs splitting. The skill is
+pinned read-only in CI for the same reason `gate-design` is — a ticket that
+can write into the repository has started implementing the design it exists
+not to contain.
+
 ## Adaptive rigor, fixed quality floor
 
 `standards/execution-efficiency.md` is the single source for how much

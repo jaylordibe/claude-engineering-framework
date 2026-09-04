@@ -34,7 +34,7 @@ and score the transcript against the named graders. The rubrics are written to
 be applied by a person as readily as by a judge model — that is deliberate, not
 a stopgap.
 
-## Two cases type the command, and the rest do not
+## Three cases type the command, and the rest do not
 
 Every prompt here is a plain user request — that is the convention, and it is
 what makes the corpus measure behaviour rather than obedience.
@@ -51,6 +51,11 @@ the panel. Those two therefore open with
 
 `gate-design` stops at the approval boundary on its own, so this is not the
 full-pipeline run excluded below.
+
+`ticket-is-a-goal-not-a-spec` is the third. `write-ticket` is human-invocable
+for the same reason the gates are — a ticket written unasked is a design
+written unasked — so the case opens with the command, and its follow-up turn is
+a plain message, which is where the mode's per-turn rules are graded.
 
 ## The ablation arm matters more than the score
 
@@ -75,6 +80,7 @@ disabled and compare. It is the only honest way to tell guidance from decoration
 | `efficiency-discipline` | Was computation proportionate to the actual risk — **and did the quality floor hold while it was**? |
 | `design-minimality` | Was the smallest sufficient design built — with the ticket's mechanism graded rather than satisfied, and the lenses read as constraints rather than as scope? |
 | `diagnosis-discipline` | For a defect, was the cause demonstrated and labelled before the fix was designed — with the proof scaled to the defect's shape, and the fix still reviewed and validated? |
+| `ticket-discipline` | Asked for a ticket, did the run write a goal — story, cited current behaviour, observable criteria, non-goals, open questions — and keep every proposed mechanism as a non-binding idea rather than a requirement? |
 
 ## The efficiency cases are graded in both directions
 

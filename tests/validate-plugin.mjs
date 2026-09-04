@@ -142,6 +142,7 @@ const READ_ONLY_SKILLS = {
   'gate-approve': 'the gate whose whole purpose is to stop before source changes',
   'gate-validate': 'validation that can edit anything can manufacture its own PASS, which destroys the only signal the gate produces',
   'framework-doctor': 'an audit that can change what it is auditing is not an audit',
+  'write-ticket': 'a ticket that can write into the repository has started implementing the design it exists not to contain',
 };
 
 // Marketplace names reserved for official Anthropic use, plus the pattern of
@@ -1152,6 +1153,17 @@ const NORMATIVE_ANCHORS = [
     file: 'standards/evidence.md',
     guarantee: 'never modify anything to manufacture a pass',
     patterns: [/manufacture|make a check succeed/i],
+  },
+  // The ticket writer's whole reason to exist is a default it corrects: asked
+  // for a ticket, an agent writes the design it found into the description.
+  // The three sentences below are the ones that stop that — no design in the
+  // ticket, the human closes the mode, nothing is created in a tracker
+  // unasked. Each is a boundary the skill's prose states and nothing else
+  // enforces, so each is anchored.
+  {
+    file: 'skills/write-ticket/SKILL.md',
+    guarantee: 'a ticket carries no design, the human finalises it, and no issue is created unasked',
+    patterns: [/never write a design/i, /never declare the ticket final/i, /never create, edit or transition an issue/i, /ideas from discussion/i],
   },
   {
     file: 'standards/repository-evidence.md',

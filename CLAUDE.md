@@ -76,7 +76,7 @@ line is paid on every request in every installed repository.
 .claude-plugin/marketplace.json     the catalogue
 plugins/engineering-framework/
   agents/                           eight read-only review lenses
-  skills/                           five gates, a conductor, playbooks, install/doctor
+  skills/                           five gates, a conductor, a ticket writer, playbooks, install/doctor
   standards/                        the normative texts agents read
   templates/                        thinking aids, never committed by a run
   scripts/session-charter.sh        the SessionStart charter — the only hook
