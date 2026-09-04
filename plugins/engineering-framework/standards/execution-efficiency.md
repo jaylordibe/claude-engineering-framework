@@ -385,6 +385,34 @@ as about the code.
 yet.** Deciding it once, here, costs less than each agent deciding it separately
 and differently.
 
+### 8.6 Minimum sufficient context
+
+A brief carries the **minimum sufficient context** for the decision it
+assigns — not the minimum possible, and not everything the delegating stage
+holds. §8.5 lists what that is. What it is not is anything the agent can retrieve for
+itself, or was not launched to judge:
+
+- **this conversation**, in whole or in part. Every launch starts from a fresh
+  context and is given its brief. A launch that inherits the conversation
+  carries the reasoning that produced the diff into the lens that exists to
+  read the diff without it, and pays for the whole conversation again to do so;
+- **the plan or design document** — the agreed scope and its non-goals in a
+  line or two, per §8.5, never the document;
+- **another agent's report**, from this stage or an earlier one. The one
+  exception is the single claim a launch exists to judge: a refutation carries
+  the finding it is refuting, and a re-review after a fix carries the finding
+  that fix answered. Neither carries the rest of the panel;
+- **investigation history** that does not bear on the assigned decision, and
+  the raw output it produced;
+- **pasted repository content.** A `path:line` costs the agent one read; a
+  paste costs the brief the whole file and hands over a copy that may already
+  be stale.
+
+Widening is the agent's, not the brief's. The contract every agent carries has
+it open a surface its brief never named when correctness depends on it, and
+say so — which is what makes a narrow brief safe. The brief is sized to the
+decision; the investigation is sized to the evidence.
+
 ## 9. Bounded output
 
 **Concise by default; completeness expands with risk and uncertainty.** No fixed

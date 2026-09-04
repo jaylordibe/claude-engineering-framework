@@ -65,6 +65,10 @@ Present, concisely and in your own words rather than quoted:
 - **the smallest approach that was on the table, and the requirement that
   defeated it** — this is the last moment the human can ask for the smaller
   one, and everything after it is them paying for the larger;
+- **for a defect, the root cause and its label** — demonstrated, or `UNKNOWN`
+  with a mitigation offered in its place;
+  `${CLAUDE_PLUGIN_ROOT}/skills/domain-debugging/SKILL.md` owns what
+  demonstrated means;
 - **every unresolved blocker, individually.**
 
 ## 3. Unresolved blockers

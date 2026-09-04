@@ -52,13 +52,16 @@ Only for Critical and High findings on High or Critical risk changes.
 |---|---|---|
 | | | |
 
-## Rejected findings
+## Rejected and unresolved findings
 
-Candidates that did not survive verification, and why. This section is what
-makes the surviving severities credible.
+Candidates that did not survive verification, and why; and candidates that
+could be neither confirmed nor ruled out, with what would settle them. This
+section is what makes the surviving severities credible — a finding is a claim
+until the source was re-opened, and an unresolved one is never remediated to be
+safe.
 
-| Candidate | Why rejected |
-|---|---|
+| Candidate | Outcome | Evidence, or what would settle it |
+|---|---|---|
 
 ## Remediation
 
@@ -67,12 +70,18 @@ makes the surviving severities credible.
 
 Cycles performed: _n_ of a maximum of 2.
 
-## Whole-change checks
+## Whole-change checks — did we build the approved thing?
 
-These belong to the reviewer, not to any lens:
+These belong to the reviewer, not to any lens. The lenses answer the other
+question, did we build it correctly, and their answer is the findings table
+above.
 
 - [ ] The diff does what the approved plan says, and nothing it excluded
-- [ ] No unrelated scope, speculative abstraction or opportunistic refactor
+- [ ] Every approved outcome is delivered in full — nothing partial, nothing
+      deferred without being named
+- [ ] Every condition the human attached at approval is honoured, verbatim
+- [ ] No unrelated scope, speculative abstraction, opportunistic refactor, or
+      addition nobody approved
 - [ ] Every in-scope call site of a changed pattern was migrated
 - [ ] Replaced code paths were deleted, not left in parallel
 - [ ] Contract changes name their consumers

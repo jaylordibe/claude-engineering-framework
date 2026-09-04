@@ -96,15 +96,16 @@ fan-out, model choice per launch and output size is
 `${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md`; it does not change
 anything this section requires.
 
-Launch the selected agents **in parallel**, on the brief
-`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §8.5 defines. It owns
-what a brief carries and this section does not restate it. What §1 supplies to
-it is the review target: the worktree diff or the explicit base reference the
-lens runs the diff from, whichever §1 established; the changed files as
-`path:line` pointers; the approved scope, as context for the lens's own
-decision; and **the unrelated user changes §1 excluded, by name**. A lens
-derives the diff itself, so an exclusion that is not stated does not travel —
-and the panel then spends its allowance reviewing edits this change never made.
+Launch the selected agents **in parallel**, each in a fresh context, on the
+brief `${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §8.5 defines.
+It owns what a brief carries, §8.6 there owns what a brief never carries, and
+this section does not restate it. What §1 supplies to it is the review
+target: the worktree diff or the explicit base reference the lens runs the diff
+from, whichever §1 established; the changed files as `path:line` pointers; the
+approved scope, as context for the lens's own decision; and **the unrelated
+user changes §1 excluded, by name**. A lens derives the diff itself, so an
+exclusion that is not stated does not travel — and the panel then spends its
+allowance reviewing edits this change never made.
 
 **Plan conformance is not delegated by handing a lens the approved scope.** It
 stays one of the whole-change checks you own, in
@@ -148,12 +149,27 @@ not restate those contracts, for the same reason `gate-implement` does not: a
 paraphrased checklist drifts from the rule it paraphrases, silently, and no
 tooling can detect it.
 
-Some checks belong to **you** rather than to any lens, because they are about
-the change as a whole rather than about one dimension of it. They are the
-"Whole-change checks" list in
+A review answers two questions, and different readers answer them.
+
+**Did we build the approved thing?** Every approved outcome delivered in full,
+every condition the human attached honoured, nothing partial, nothing the plan
+excluded, nothing added that nobody approved. It is judged against the approved
+scope and its conditions, verbatim from the run state under `work-item`, and
+it is **yours**, because it is about the change as a whole rather than about
+one dimension of it. The list is the "Whole-change checks" in
 `${CLAUDE_PLUGIN_ROOT}/templates/review-handoff.md`, which is also the report
-you fill in at §6 — so the list lives there, once, and cannot drift from the
-report that asks for it.
+you fill in at §6 — so it lives there, once, and cannot drift from the report
+that asks for it.
+
+**Did we build it correctly and safely?** Correctness, security, contracts,
+data, performance, tests, conventions. That is what the lenses were launched
+for, each on its own decision, and their answer is the findings table.
+
+Below Critical, one pass answers both: the panel answers the second and you
+answer the first, and no lens is launched to duplicate your reading of the
+plan. On Critical, `architect` runs and its declared area includes conformance
+to the approved plan — the one independent second answer to the first
+question, and the only tier that buys one.
 
 ## 4. Verify every finding
 
@@ -180,6 +196,21 @@ For each candidate, before it becomes a finding:
 
 Reject speculative, duplicate, irrelevant and style-only findings. A finding
 that cannot name a trigger is a worry.
+
+**A finding is a claim, not a fact.** The lens that returned it opened the
+source; so do you, before anything changes. Every candidate leaves this step
+with one of three outcomes: **confirmed** — you re-opened the cited lines and
+the trigger is real; **rejected** — you re-opened them and it is not, and the
+evidence that settles it goes in the report, whichever lens returned it and
+however confidently it was worded; or **unresolved** — the trigger could
+neither be confirmed nor ruled out from the source. Remediation starts from a
+confirmed finding and from nothing else. An unresolved Critical or High goes to
+`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §5 — a second
+independent reader on that one claim; an unresolved Medium or Low is reported
+as unresolved, with what would settle it. **Neither is fixed to be safe.** A
+change made against a claim nobody could confirm is an unreviewed change with a
+reviewer's name on it, and on a concurrency or ordering claim it is the change
+most likely to introduce the defect it was meant to remove.
 
 ### Adversarial verification — Critical and High only
 
@@ -213,7 +244,8 @@ changes; the cycle costs more than the precision it buys there.
 - Add regression tests for every fix.
 - Return to the approval gate for material divergence. **Never edit the plan to
   match the diff.**
-- Re-run the affected checks after fixes, and re-run the affected lenses.
+- Re-run the affected checks after fixes, and re-run the affected lenses —
+  each on the finding its fix answered, never on the panel's other reports.
 
 Perform **at most two** complete remediation and re-review cycles. If findings
 remain unresolved after the second, stop and say so.
@@ -223,9 +255,9 @@ remain unresolved after the second, stop and say so.
 Use `${CLAUDE_PLUGIN_ROOT}/templates/review-handoff.md`:
 
 exact target and risk tier · lenses selected and why that set · findings by
-severity · adversarial verification outcomes · rejected findings and why ·
-fixes and their tests · command evidence with real scopes · unresolved blockers
-and risks · consumer handoff · readiness for validation.
+severity · adversarial verification outcomes · rejected and unresolved
+findings and why · fixes and their tests · command evidence with real scopes ·
+unresolved blockers and risks · consumer handoff · readiness for validation.
 
 Do not commit, push, deploy, apply migrations, or claim production readiness.
 

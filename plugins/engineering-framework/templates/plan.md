@@ -39,6 +39,11 @@ carried into §7 as requirements.
 Then the current authoritative flow, end to end, in this repository's own
 vocabulary, each step cited.
 
+**For a defect:** the reproduction, the hypothesis and the experiment that
+settled it, and the root cause with its label — `FACT`, `INFERENCE` or
+`UNKNOWN`. `skills/domain-debugging/SKILL.md` owns what each shape of defect
+must show; a fix for an `UNKNOWN` cause is recorded here as a mitigation.
+
 ## 3. Constraints and invariants
 
 What the change must not break: boundaries and layering · error and result

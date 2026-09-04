@@ -255,7 +255,7 @@ is a first-class design constraint.
 | Loaded | When | Cost |
 |---|---|---|
 | Session charter | Every session, via a `SessionStart` hook | ~75 lines, capped at 80 |
-| Skill listing entries | Always | Three model-invoked descriptions |
+| Skill listing entries | Always | Four model-invoked descriptions |
 | A gate `SKILL.md` | When the human invokes that gate | One file |
 | A standard | When a gate or agent cites it | One file |
 | A template | When a gate reaches the section that uses it | One file |
@@ -337,6 +337,47 @@ severity credible to whoever reads it later.
 It is not run below that threshold: the cycle costs more than the precision it
 buys.
 
+Beneath it, at every tier, **a finding is a claim, not a fact**. The conductor
+re-opens the cited source and each candidate leaves as confirmed, rejected with
+the evidence, or unresolved with what would settle it. Remediation starts only
+from a confirmed finding; an unresolved one is escalated or reported, never
+fixed to be safe — a change made against a claim nobody could confirm is an
+unreviewed change with a reviewer's name on it. The same gate names the two
+questions a review answers: *did we build the approved thing*, which the
+conductor owns as the whole-change checks, and *did we build it correctly*,
+which the lenses answer. Below Critical one pass answers both; on Critical the
+`architect` lens's declared area already includes plan conformance, so that
+tier gets an independent second answer without a second reviewer per ticket.
+
+## Diagnosis before remediation
+
+A defect is a work item like any other, and one kind of failure is specific to
+it: a fix designed from a plausible cause. It reads as correct, its tests pass,
+the review sees a tidy diff, and nothing after the design can tell it from a
+fix for the demonstrated cause. So the proof has to exist before the design
+does.
+
+`skills/domain-debugging` carries that, as a model-invoked playbook in the same
+shape as the other three: it loads itself when the work is a bug, a regression,
+a failing test, unexpected or intermittent behaviour, an integration failure or
+a performance regression — including in ad-hoc sessions that never invoke a
+gate, which is where most debugging happens. It fixes the order — reproduce,
+gather the evidence, trace, hypothesis, prove or disprove, root cause, then the
+fix with its regression test — and labels the cause like any other claim.
+`FACT` or `INFERENCE` supports a fix design; `UNKNOWN` is read back at approval
+so the human decides whether a mitigation ships, and it is called one.
+
+Rigor scales with the defect's shape, not the size of the fix. A deterministic
+failure whose cause is on the failing line takes the `Direct` exit — the
+reproduction is the proof, and a written-up hypothesis for a typo is the
+ceremony the exit exists to prevent. An intermittent, concurrent,
+cross-component, data-corrupting or security-relevant defect owes a reproduction
+or a stated reason none is possible, the value at each boundary, and a
+hypothesis whose prediction was observed — never one whose fix made the symptom
+stop. The playbook adds no stage: the diagnosis is Stage 1's understanding, the
+fix is Stage 2's design, and review and validation run unchanged at the tier of
+the code the fix touches.
+
 ## Adaptive rigor, fixed quality floor
 
 `standards/execution-efficiency.md` is the single source for how much
@@ -389,6 +430,17 @@ hands over locations rather than conclusions, because an agent briefed at a
 repository rather than at a decision has no stopping point to converge on, and
 because a specialist handed the parent's verdict on its own concern has lost the
 independence the launch was paying for.
+
+The brief carries **minimum sufficient context** — §8.6 of that standard —
+which is a different number from minimum possible. Every launch starts from a
+fresh context and is given the decision, the band and tier, `path:line`
+pointers, and the agreed scope in a line or two. It is never given the
+conversation, the plan document, another agent's report, or a paste of what it
+can read for itself; a lens that inherits the context that wrote the diff has
+lost the independence it exists to supply, and paid for the whole conversation
+to lose it. What keeps a narrow brief from becoming a narrow investigation is
+the agent's side of the contract: it opens any surface its decision turns on,
+named in the brief or not.
 
 ### Specification and runtime contract
 

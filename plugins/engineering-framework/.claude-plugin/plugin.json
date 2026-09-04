@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "engineering-framework",
   "displayName": "Engineering Framework",
-  "version": "2.9.0",
+  "version": "2.10.0",
   "description": "A stack-agnostic engineering workflow for Claude Code: understand, design, human approval, implement, review, validate, present. Ships gates, read-only review agents, standards and templates that discover repository reality instead of assuming a stack. No permission rules, and no hooks that gate a command.",
   "author": {
     "name": "Jay Lord Ibe",
