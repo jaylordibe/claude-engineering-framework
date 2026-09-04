@@ -74,6 +74,7 @@ disabled and compare. It is the only honest way to tell guidance from decoration
 | `scope-discipline` | Did a small change stay small, with everything else reported rather than fixed? |
 | `efficiency-discipline` | Was computation proportionate to the actual risk — **and did the quality floor hold while it was**? |
 | `design-minimality` | Was the smallest sufficient design built — with the ticket's mechanism graded rather than satisfied, and the lenses read as constraints rather than as scope? |
+| `diagnosis-discipline` | For a defect, was the cause demonstrated and labelled before the fix was designed — with the proof scaled to the defect's shape, and the fix still reviewed and validated? |
 
 ## The efficiency cases are graded in both directions
 

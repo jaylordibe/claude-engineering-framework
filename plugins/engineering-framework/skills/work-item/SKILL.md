@@ -270,6 +270,24 @@ larger re-enters at Stage 1 having cost one turn. What is not recoverable is
 the reverse — nobody gets the hour back, and the next small change goes
 somewhere else.
 
+## If the work is a defect, the cause comes first
+
+A bug, a regression, a failing test, unexpected or intermittent behaviour, a
+defect reported from an environment, an integration failure, a performance
+regression: read `${CLAUDE_PLUGIN_ROOT}/skills/domain-debugging/SKILL.md` now.
+It owns the order of a diagnosis and how much proof the defect's shape
+requires, and it adds no stage — the diagnosis is this stage's understanding,
+and the fix is Stage 2's design. Its first row is the Direct check above,
+applied to a defect: a deterministic failure whose cause is on the failing line
+gets the edit, not a diagnosis.
+
+Two things follow for this pipeline. The mapper's brief names the failing path
+and asks where the observed behaviour first departs from the intended one — a
+location, never the reporter's cause. And Stage 2 designs a fix only from a
+root cause labelled `FACT` or `INFERENCE`. A cause still `UNKNOWN` after the
+diagnosis is read back at approval as exactly that, so the human is deciding
+whether a mitigation ships, not being told a fix did.
+
 ## Then map it
 
 Launch `engineering-framework:context-mapper` with the complete request **and
@@ -418,7 +436,9 @@ words: the recommendation · the trade-off accepted by rejecting the
 alternatives · **the smallest approach that was on the table and the sourced
 requirement that defeated it** · contract and data impact · residual security
 and privacy risk · the rollback path · **what this deliberately does NOT do** ·
-**every unresolved blocker, individually**.
+**for a defect, the root cause and its label — demonstrated, or `UNKNOWN` with
+the mitigation offered in its place** · **every unresolved blocker,
+individually**.
 
 Approval must be unambiguous. Ambiguous praise in passing is not an approval,
 in either direction. If `ExitPlanMode` is unavailable, fall back to

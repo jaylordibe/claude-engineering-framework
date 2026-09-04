@@ -12,6 +12,64 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 2.10.0 — 2026-09-04
+
+**A defect is diagnosed before its fix is designed.** The framework treated a
+bug as a work item and ran the pipeline over it, and nothing in that pipeline
+asked whether the cause had been demonstrated. A fix designed from a plausible
+cause is the one defect no later stage can catch: it reads as correct, its
+tests pass, and the review sees a tidy diff. The proof has to exist before the
+design does, and now something says so.
+
+- **`domain-debugging`**, a fourth model-invoked playbook in the shape of the
+  other three. It loads itself when the work is a bug, a regression, a failing
+  or flaky test, unexpected or intermittent behaviour, an integration failure
+  or a performance regression — in ad-hoc sessions as well as under a gate. It
+  fixes the order (reproduce, evidence, trace, hypothesis, prove or disprove,
+  root cause, then the fix with its regression test), labels the cause like any
+  other claim, and scales the proof owed to the defect's shape: a deterministic
+  failure whose cause is on the failing line takes the `Direct` exit with no
+  diagnosis written up, and an intermittent, concurrent, data or security defect
+  owes a demonstrated mechanism rather than a fix that made the symptom stop.
+  It adds no stage and skips none — the fix is reviewed and validated at the
+  tier of the code it touches.
+- `work-item` reads it at Stage 1 for a defect, briefs the mapper with the
+  failing path rather than the reporter's cause, and reads a root cause still
+  `UNKNOWN` back at approval as a mitigation rather than a fix. `gate-design`
+  §3 and the plan template's reconciliation section record the cause with its
+  label.
+
+**A brief carries minimum sufficient context.** `standards/execution-efficiency.md`
+§8.5 said what a brief carries; nothing said what it never carries, so a lens
+launched by inheriting the conversation — the context that just wrote the diff
+— violated nothing. §8.6 names the principle and the exclusions: a fresh
+context per launch, never the conversation, the plan document, another agent's
+report or a paste of what the agent can read itself, with the single exception
+of the one claim a refutation or a re-review exists to judge. Widening stays
+the agent's, which is what makes a narrow brief safe.
+
+**A review answers two questions, and a finding is a claim.** `gate-review`
+now names the two questions it always asked — *did we build the approved
+thing*, owned by the conductor as the whole-change checks, and *did we build it
+correctly and safely*, answered by the lenses — with no second reviewer per
+ticket: below Critical one pass answers both, and on Critical `architect`'s
+declared area already includes plan conformance. The whole-change checks gain
+rows for partial delivery, the human's verbatim conditions and unapproved
+additions. And each candidate finding now leaves verification as **confirmed**,
+**rejected** or **unresolved**: remediation starts only from a confirmed one,
+an unresolved Critical or High escalates to a second reader, and nothing is
+fixed to be safe — a change made against a claim nobody could confirm is an
+unreviewed change with a reviewer's name on it.
+
+Every rule above is anchored in `tests/validate-plugin.mjs`, root-cause
+vocabulary is bound to its single source the way the convergence vocabulary
+already is, and a `diagnosis-discipline` grader with the
+`defect-root-cause-before-fix` case scores the behaviour a static check cannot.
+
+**Nothing to act on.** Methodology only; no consuming repository changes.
+
+---
+
 ## 2.9.0 — 2026-09-01
 
 **A ticket proposes a method; the framework now grades it instead of building

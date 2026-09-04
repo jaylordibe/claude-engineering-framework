@@ -148,6 +148,11 @@ trade-off.
 
 A faithful implementation of a wrong premise is not acceptable.
 
+**For a defect, this section also states the root cause and its label.**
+`${CLAUDE_PLUGIN_ROOT}/skills/domain-debugging/SKILL.md` owns the diagnosis
+that produces it and the proof each shape of defect owes. A design that fixes a
+cause labelled `UNKNOWN` is a mitigation, and the plan says so.
+
 **Then reconcile the map against the goal.** Everything the lenses returned is
 a constraint on how the outcome is delivered, or a risk to state — not scope to
 add. `${CLAUDE_PLUGIN_ROOT}/standards/repository-evidence.md` §4c owns that

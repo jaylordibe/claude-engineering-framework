@@ -1479,6 +1479,74 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'a count or duration the runner did not print is left out rather than estimated',
     patterns: [/only if the runner printed/i, /never\s+estimated/i, /false `?PASS/i],
   },
+  // Root-cause-first diagnosis. A fix designed from a plausible cause is the
+  // one defect no later stage can catch: it reads as correct, its tests pass,
+  // and the review sees a tidy diff — so the proof has to exist before the
+  // design does. Three anchors, because the rule fails in three separate ways:
+  // the principle deleted; the scaling deleted, so a typo gets a forensic
+  // investigation or a race gets a symptom fix; the rejoin deleted, so a
+  // "diagnosis" becomes a route around review and validation.
+  {
+    file: 'skills/domain-debugging/SKILL.md',
+    guarantee: 'a plausible fix is not a substitute for a demonstrated root cause, and the cause is labelled before a fix is designed',
+    patterns: [/plausible fix is not a substitute/i, /root cause/i, /reproduc/i, /hypothes/i, /\bFACT\b/, /\bUNKNOWN\b/, /mitigation/i],
+  },
+  {
+    file: 'skills/domain-debugging/SKILL.md',
+    guarantee: 'proof scales with the shape of the defect — a deterministic on-line cause takes the Direct exit, and an intermittent, concurrent, data or security defect owes a demonstrated mechanism',
+    // Both ends are load-bearing, for the reason the efficiency standard gives:
+    // without the Direct row a failing typo test gets mapped and planned, and
+    // without the demonstrated-mechanism row a race gets the fix that made the
+    // symptom stop.
+    patterns: [/\bDirect\b/, /deterministic/i, /intermittent/i, /concurren/i, /security/i, /demonstrated mechanism/i, /symptom stop/i],
+  },
+  {
+    file: 'skills/domain-debugging/SKILL.md',
+    guarantee: 'a diagnosis rejoins the normal pipeline — the fix is reviewed and validated at the tier of the code it touches, and adds no stage',
+    patterns: [/change like any other/i, /reviewed at that tier/i, /validated/i, /canonical commands/i, /changes nothing about\s+what happens to the fix afterwards/i],
+  },
+  {
+    file: 'skills/work-item/SKILL.md',
+    guarantee: 'a defect is diagnosed before its fix is designed, and a cause left UNKNOWN is read back at approval rather than designed over',
+    patterns: [/domain-debugging/, /root cause/i, /\bUNKNOWN\b[\s\S]{0,200}approval/i, /mitigation/i],
+  },
+  {
+    file: 'skills/gate-design/SKILL.md',
+    guarantee: 'the standalone design gate states a defect\'s root cause and its label, and calls a fix for an UNKNOWN cause a mitigation',
+    patterns: [/domain-debugging/, /root cause/i, /mitigation/i],
+  },
+  // Minimum sufficient context. §8.5 said what a brief carries; nothing said
+  // what it never carries, so a lens launched by inheriting the conversation —
+  // the context that just wrote the diff — violated nothing. Each pattern is
+  // one exclusion or the widening carve-out; the carve-out is what keeps a
+  // narrow brief from becoming a narrow investigation.
+  {
+    file: 'standards/execution-efficiency.md',
+    guarantee: 'a brief carries minimum sufficient context — a fresh context per launch, never the conversation, the plan document or another agent\'s report — and widening stays the agent\'s',
+    patterns: [/minimum sufficient context/i, /not the minimum possible/i, /fresh\s+context/i, /another agent'?s report/i, /refutation/i, /widening is the agent'?s/i],
+  },
+  // Review semantics. Both questions were always asked — the whole-change
+  // checks and the lens panel — and nothing named them, so a partial
+  // implementation that was correct in every line it did write passed. And a
+  // finding was verified by procedure without anyone saying a finding is a
+  // claim, so a "possible race" could be rewritten around without a trigger
+  // ever being confirmed. The "no lens is launched to duplicate" pattern is
+  // deliberate: the split is of questions, never a second reviewer per ticket.
+  {
+    file: 'skills/gate-review/SKILL.md',
+    guarantee: 'a review answers two questions — the approved thing was built, and it was built correctly — the first owned by the conductor, with an independent second answer only where Critical launches architect',
+    patterns: [/build the approved thing/i, /correctly and safely/i, /partial/i, /no lens is launched to duplicate/i, /architect/i],
+  },
+  {
+    file: 'skills/gate-review/SKILL.md',
+    guarantee: 'a finding is a claim — each candidate is confirmed, rejected or unresolved, remediation starts only from a confirmed one, and an unresolved one is never fixed to be safe',
+    patterns: [/claim, not a fact/i, /confirmed/i, /rejected/i, /unresolved/i, /from nothing else/i, /fixed to be safe/i],
+  },
+  {
+    file: 'templates/review-handoff.md',
+    guarantee: 'the report separates the compliance checks the conductor owns from the lens findings, and records rejected and unresolved candidates with their evidence',
+    patterns: [/approved thing/i, /in full/i, /verbatim/i, /unresolved/i, /what would settle/i],
+  },
 ];
 
 // Host tools this framework may USE but must never REQUIRE. Claude Code stopped
@@ -1570,8 +1638,18 @@ const SINGLE_SOURCE_POLICIES = [
     // entirely on "hand over locations": a launch site could restate what a
     // brief carries, cite nothing, and pass. A reworded sentence would have
     // removed the citation requirement along with it.
-    vocabulary: /\bsufficiency test\b|\bbounded report\b|\bhand over locations\b|\bthe decision (it|the lens) owns\b|\bwhat a brief carries\b|\bcounts turns, not tool calls\b|\bindependent steps go out\b/i,
+    vocabulary: /\bsufficiency test\b|\bbounded report\b|\bhand over locations\b|\bthe decision (it|the lens) owns\b|\bwhat a brief carries\b|\bwhat a brief never carries\b|\bminimum sufficient context\b|\bcounts turns, not tool calls\b|\bindependent steps go out\b/i,
     what: 'the convergence and evidence-sufficiency contract',
+  },
+  // The diagnosis order and the proof a fix owes are one policy, and it is
+  // reached from three places — the conductor, the standalone design gate and
+  // the plan template. A per-file copy of "how much proof does this defect
+  // need" would drift into three answers, and the one that drifts loosest is
+  // the one a bug fix under time pressure happens to load.
+  {
+    owner: 'skills/domain-debugging/SKILL.md',
+    vocabulary: /\broot cause\b|\bplausible fix\b/i,
+    what: 'root-cause-first diagnosis',
   },
   // Drift assessment is a three-outcome decision that three
   // separate files reach — work-item on resume, gate-implement before its first

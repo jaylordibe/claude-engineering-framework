@@ -175,8 +175,8 @@ Skipped, partial, filtered or flaky is never `PASS`.
 
 **8 skills:** `work-item` (conductor), `gate-design`, `gate-approve`,
 `gate-implement`, `gate-review`, `gate-validate`, `framework-install`,
-`framework-doctor`. Three more load themselves when relevant: `domain-auth`,
-`domain-authorization`, `domain-background-work`.
+`framework-doctor`. Four more load themselves when relevant: `domain-auth`,
+`domain-authorization`, `domain-background-work`, `domain-debugging`.
 
 **8 read-only agents:** `context-mapper`, `architect`, `reviewer`, `security`,
 `tester`, `contract`, `data`, `performance`. Read-only is enforced by their tool

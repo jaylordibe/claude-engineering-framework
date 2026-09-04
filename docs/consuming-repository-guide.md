@@ -259,7 +259,8 @@ Your stack knowledge belongs in your repository, in `.claude/skills/`:
 
 These load alongside the framework's own and are authoritative where they
 overlap. The framework's `domain-*` playbooks carry the **questions** for auth,
-authorization and background work; yours carry **this repository's answers**.
+authorization, background work and defect diagnosis; yours carry **this
+repository's answers**.
 
 ---
 
