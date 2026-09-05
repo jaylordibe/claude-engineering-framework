@@ -34,7 +34,7 @@ and score the transcript against the named graders. The rubrics are written to
 be applied by a person as readily as by a judge model — that is deliberate, not
 a stopgap.
 
-## Three cases type the command, and the rest do not
+## Some cases type the command, and the rest do not
 
 Every prompt here is a plain user request — that is the convention, and it is
 what makes the corpus measure behaviour rather than obedience.
@@ -52,10 +52,32 @@ the panel. Those two therefore open with
 `gate-design` stops at the approval boundary on its own, so this is not the
 full-pipeline run excluded below.
 
-`ticket-is-a-goal-not-a-spec` is the third. `write-ticket` is human-invocable
-for the same reason the gates are — a ticket written unasked is a design
-written unasked — so the case opens with the command, and its follow-up turn is
-a plain message, which is where the mode's per-turn rules are graded.
+The `ticket-*` cases that open with `/engineering-framework:write-ticket` are
+the others. `write-ticket` is human-invocable for the same reason the gates
+are — a ticket written unasked is a design written unasked — so each case
+opens with the command, and where a case has a follow-up turn it is a plain
+message, which is where the mode's per-turn rules are graded.
+`ticket-proposes-more-than-the-goal-needs` is not one of them: it hands a
+finished ticket to the design stage as a plain request.
+
+## The ticket cases grade restraint as much as content
+
+Ten cases open with `write-ticket`, and most of them exist because a
+particular kind of thoroughness is a defect. `ticket-actor-evidenced`,
+`ticket-actor-human-supplied` and `ticket-actor-not-invented` are one
+instrument: the actor is grounded by the code, or by the human, or it is
+`UNKNOWN` — score them together, because a run that invents a persona in the
+third will look fine in the first two. `ticket-criteria-split-by-outcome`
+carries an "and" that is one criterion and an "and" that is two, so a grammar
+rule fails it in one direction and a fused pair fails it in the other.
+`ticket-omits-empty-sections` and `ticket-refinement-retains-state` are the
+rendering pair: the first fails a draft that fills the template, the second
+fails a draft that drops what an earlier turn established. `ticket-broad-
+request-splits` fails a run that designs three features in order to say the
+request is too big. `ticket-suggestion-stays-non-binding` and
+`ticket-defect-hypothesis-stays-hypothesis` are the WHAT/HOW line drawn twice:
+a mechanism the human offered stays an idea, and a cause the read found stays
+an inference.
 
 ## The ablation arm matters more than the score
 
@@ -80,7 +102,7 @@ disabled and compare. It is the only honest way to tell guidance from decoration
 | `efficiency-discipline` | Was computation proportionate to the actual risk — **and did the quality floor hold while it was**? |
 | `design-minimality` | Was the smallest sufficient design built — with the ticket's mechanism graded rather than satisfied, and the lenses read as constraints rather than as scope? |
 | `diagnosis-discipline` | For a defect, was the cause demonstrated and labelled before the fix was designed — with the proof scaled to the defect's shape, and the fix still reviewed and validated? |
-| `ticket-discipline` | Asked for a ticket, did the run write a goal — story, cited current behaviour, observable criteria, non-goals, open questions — and keep every proposed mechanism as a non-binding idea rather than a requirement? |
+| `ticket-discipline` | Asked for a ticket, did the run write a goal — a story whose actor the code or the human grounds, cited current behaviour, criteria split by what can be verified apart, negatives where a boundary is real, non-goals, open questions — re-emit its substance every turn without the empty sections, judge readiness on scope rather than effort, and keep every proposed mechanism and every guessed cause as a non-binding idea or a labelled hypothesis rather than a requirement? |
 
 ## The efficiency cases are graded in both directions
 

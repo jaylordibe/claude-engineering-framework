@@ -44,6 +44,67 @@ human never saw the goal stated on its own.
   boundaries. A new eval case and a `ticket-discipline` grader score the first
   turn and a follow-up.
 
+**The ticket writer is hardened against the thoroughness that is a defect.**
+Each of these corrects a way a draft could look more complete while carrying a
+requirement nobody made. Together they keep `write-ticket` the light stage it
+is meant to be beside `work-item`. None of them adds an agent, a pass or a
+stage, and none of them touches a component that shipped in 2.10.0: this
+release is the skill, its template, its grader and its eval cases.
+
+- **Economy is scope, not effort.** The skill launches no mapper and no lens
+  and finishes in one turn; that is where it is cheap. Its effort stays at
+  high like every component that judges, because the calls it makes — is
+  this claim confirmed, is this actor grounded, is this the human's question
+  — fail as a tidier draft, and an unusually ambiguous request earns more care
+  inside the same turn rather than a second pass or a delegated review.
+- **Readiness judges scope, not effort.** The "small enough to estimate" check
+  asked the writer for a number only a design could supply. It is replaced by
+  **bounded enough to plan**: the ticket fails when it carries more than one
+  independently deliverable goal, when its edges cannot be stated without
+  choosing a design, when a boundary that decides what is inside is
+  unresolved, or when the request should be several tickets — and the
+  readiness line then proposes the split. The writer never estimates duration
+  or difficulty.
+- **An actor is evidenced or human-supplied, and never invented.** A story's
+  "As a" is grounded by the repository — a role, a caller, an operator the
+  code names, cited with `path:line` — or by the human introducing the actor
+  as part of the behaviour they asked for, marked as new product scope and
+  `ABSENT` from the code today. A greenfield capability is not rejected because
+  its actor does not exist yet. A persona neither source named stays `UNKNOWN`
+  and is asked about in one bounded question. The rule applies to product
+  stories and to the operator or maintainer of technical work alike.
+- **Every turn re-emits the substantive ticket, and nothing else.** The story,
+  the current behaviour, the problem, the scope with its exclusions, every
+  criterion and every open question survive each turn and compaction. A
+  section with nothing in it — contract, dependencies, ideas, an edge-case
+  table of blank rows — is left out rather than written as "none" or "N/A".
+  `templates/ticket.md` says which sections are always present, and that
+  section numbers are stable identifiers whether or not a section appears.
+- **Atomicity is semantic.** A criterion is split when it holds two
+  independently verifiable outcomes — two things that could pass or fail
+  apart. The word "and" is a signal to look, not a verdict: "rejected and
+  nothing persisted" is one invariant and stays one criterion; "created and
+  the dashboard refreshes" is two.
+- **A negative is written where a boundary is real.** The caller who is not
+  permitted, the unsupported input, the invalid state, the repeat, the
+  excluded scope and the failure the actor would notice each get a criterion
+  or an open question when the request or the code makes them real. A
+  negative is not manufactured for every positive line because the template
+  has a slot for one.
+- **The WHAT/HOW line holds in both directions.** A mechanism the human offers
+  — "maybe use a cache" — stays under **Ideas from discussion** unless they
+  state in so many words that the mechanism itself is contractual, in which
+  case the criterion quotes them. A cause the read finds for a defect is an
+  `INFERENCE` with its `path:line`, never a root cause; `domain-debugging`
+  proves it downstream.
+- Nine new eval cases cover the evidenced, human-supplied and absent actor;
+  the "and" that is one criterion beside the "and" that is two; the sections
+  a simple ticket does not earn; a refinement turn that must keep every
+  earlier criterion and exclusion; a suggested mechanism; a request that is
+  three tickets; and a defect whose cause is guessed by the reporter and again
+  by the read. `ticket-discipline` scores each of these, and
+  `validate-plugin.mjs` anchors the rules in the skill and the template.
+
 ## 2.10.0 — 2026-09-04
 
 **A defect is diagnosed before its fix is designed.** The framework treated a
