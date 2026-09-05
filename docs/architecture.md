@@ -229,10 +229,10 @@ the standards say so in their own text.
 
 ```text
 plugins/engineering-framework/
-├── skills/          workflow gates + model-invoked domain playbooks
+├── skills/          the ticket writer, workflow gates + model-invoked domain playbooks
 ├── agents/          eight read-only review lenses
 ├── standards/       the generic bar, cited by skills and agents
-├── templates/       thinking aids: plan, threat model, worksheets, reports
+├── templates/       thinking aids: ticket, plan, threat model, worksheets, reports
 ├── hooks/           hooks.json only — a single SessionStart entry
 ├── scripts/         session-charter.sh, the only hook the plugin registers
 ├── reference/       CLAUDE.md template, and the marketplace declaration the
@@ -395,14 +395,29 @@ across turns, that writes the story, the current behaviour as cited fact, the
 outcomes that would prove delivery and the questions still open — and puts
 every mechanism anyone proposes under a non-binding heading. Its template names
 what each section becomes downstream, so a ticket written there arrives at
-`work-item` already in the shape Stage 1 extracts.
+`work-item` already in the shape Stage 1 extracts. That shape is one input
+among many and is never required: a tracker issue, a pasted paragraph or a
+single sentence is the ordinary case, and the stages downstream were written
+for it. Nothing in them was changed to receive this ticket — the rules they
+already apply to any input, the split, the grades, the refusal to decide a
+product question silently, are what make the shape land.
 
 The mode is deliberately not a pipeline. There is no ledger and no state file:
-the whole ticket is re-emitted every turn, so the last message is the state,
-and a draft too long for that is a ticket that needs splitting. The skill is
-pinned read-only in CI for the same reason `gate-design` is — a ticket that
-can write into the repository has started implementing the design it exists
-not to contain.
+the whole substantive ticket is re-emitted every turn — every criterion, every
+exclusion, every open question, with the sections that have nothing in them
+left out rather than written as "none" — so the last message is the state,
+and a draft too long for that is a ticket that needs splitting. The skill's
+economy is scope — no mapper, no lens, one turn — and not effort, which stays
+at high like every component that judges: the calls it makes are the ones
+whose failure reads as a tidier draft. It holds a few lines that each
+correct a thoroughness that is actually a defect: an actor is grounded by
+the code or named by the human and is never invented; readiness is a judgement
+about whether the outcome has edges, never an estimate; a criterion is split
+by what can be verified apart rather than by the word "and"; a negative is
+written where the request or the code makes a boundary real, not for every
+positive line. The skill is pinned read-only in CI for the same reason
+`gate-design` is — a ticket that can write into the repository has started
+implementing the design it exists not to contain.
 
 ## Adaptive rigor, fixed quality floor
 

@@ -23,13 +23,17 @@ flag — and the trap is that both are typed as though they were requirements.
 **A strong first turn** reads the area, then emits a full ticket in the shape of
 `templates/ticket.md` with:
 
-- a story whose actor is a release manager — the role the fixture actually
-  distinguishes — and a real "so that";
+- a story whose actor is the release manager the human named, marked
+  human-supplied — the fixture distinguishes no such role; its tests exercise
+  this path as a system admin, and a strong run cites that as `FACT` with
+  `path:line` rather than swapping the actor for it — and a real "so that";
 - **Current behaviour** as `FACT` with `path:line` for the single-create path,
   and `ABSENT` for any bulk path;
 - acceptance criteria written as `Given / when / then`, none naming a table or a
-  flag, and at least one negative — an unauthenticated caller, an invalid item
-  in the list, an empty list;
+  flag, and a negative for each boundary the request and the code make real —
+  the unauthenticated caller the route already refuses, an invalid item in the
+  list, an empty list — and no negative manufactured for a boundary this
+  outcome does not have;
 - the table and the flag under **Ideas from discussion**, attributed, labelled
   non-binding, with a line saying they were moved there;
 - **partial failure** as an open question owned by the human — whether one

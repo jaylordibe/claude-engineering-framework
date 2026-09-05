@@ -1165,6 +1165,45 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'a ticket carries no design, the human finalises it, and no issue is created unasked',
     patterns: [/never write a design/i, /never declare the ticket final/i, /never create, edit or transition an issue/i, /ideas from discussion/i],
   },
+  // The hardening of the ticket writer, anchored where each rule would
+  // otherwise be enforced only by a grader. An actor is grounded by the code
+  // or by the human and is never invented; readiness is judged on whether the
+  // outcome is bounded, never on an estimate — the estimate is the design
+  // decision the skill exists not to make; a criterion is split by what can be
+  // verified apart, not by the word "and"; every turn re-emits the substantive
+  // ticket and omits the sections with nothing in them. Each of these has a
+  // plausible-looking opposite that reads as thoroughness, which is why the
+  // sentence stating the rule is what is pinned.
+  {
+    file: 'skills/write-ticket/SKILL.md',
+    guarantee: 'an actor is evidenced by the repository or supplied by the human, never invented',
+    patterns: [/human-supplied/i, /evidenced/i, /invented/i, /\bUNKNOWN\b/],
+  },
+  {
+    file: 'skills/write-ticket/SKILL.md',
+    guarantee: 'readiness is a scope judgement, and the writer never estimates duration or difficulty',
+    patterns: [/bounded enough to plan/i, /never estimates/i, /independently deliverable/i],
+  },
+  {
+    file: 'skills/write-ticket/SKILL.md',
+    guarantee: 'a criterion is split by independently verifiable outcomes, and "and" is a signal rather than a verdict',
+    patterns: [/independently verifiable/i, /signal\s+to look, not a verdict/i],
+  },
+  {
+    file: 'skills/write-ticket/SKILL.md',
+    guarantee: 'every turn re-emits the substantive ticket and omits the sections with nothing in them',
+    patterns: [/re-emit the whole substantive ticket/i, /omitted section is omitted/i, /survives compaction/i],
+  },
+  {
+    file: 'skills/write-ticket/SKILL.md',
+    guarantee: 'a negative criterion is written where a boundary is real, not manufactured for every positive',
+    patterns: [/not invented so that every positive/i, /boundary/i],
+  },
+  {
+    file: 'templates/ticket.md',
+    guarantee: 'the template is structure and not a form: unearned sections are left out, and the story names how its actor is grounded',
+    patterns: [/leave the[\s>]+rest out/i, /human-supplied/i, /independently verifiable outcome/i, /not a quota/i],
+  },
   {
     file: 'standards/repository-evidence.md',
     guarantee: 'the five evidence labels',
