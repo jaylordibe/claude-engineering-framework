@@ -74,7 +74,9 @@ To write the requirement first:
 
 A story, current behaviour cited from your code, observable acceptance
 criteria, non-goals and open questions, iterated with you until you say it is
-final. No design — that is `work-item`'s job, with your approval.
+final. It starts with bounded evidence gathering and widens only when material
+ambiguity requires it. No design — that is `work-item`'s job, with your
+approval.
 
 Or drive it stage by stage:
 

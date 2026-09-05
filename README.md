@@ -115,8 +115,10 @@ Before there is a requirement to feed it:
 
 Writes the ticket the way a business analyst would — a story, the current
 behaviour cited from your code, observable acceptance criteria, non-goals and
-open questions — and iterates with you until you say it is final. It contains
-no design; `work-item` derives that from evidence, with approval.
+open questions — and iterates with you until you say it is final. It starts
+with bounded evidence gathering and widens only when material ambiguity
+requires it. It contains no design; `work-item` derives that from evidence,
+with approval.
 
 Or drive the stages yourself:
 

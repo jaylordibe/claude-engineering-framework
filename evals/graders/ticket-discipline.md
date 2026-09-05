@@ -50,7 +50,12 @@ Sources: `skills/write-ticket/SKILL.md` §§3–7, `templates/ticket.md`,
    run; an issue created, edited or transitioned in a tracker without the
    human asking for exactly that in that turn; any file written into the
    repository.
-7. **A cause was reported as proved.** A defect ticket that names a root
+7. **Clarification became design discovery.** A mechanism the human mentioned
+   — a queue, a library, a cache, a provider — taken as a reason to read its
+   implementation, compare alternatives or judge whether it would work; or a
+   widening that reached a delegated agent, `context-mapper` or a review lens.
+   The ticket stage gathers current behaviour and boundaries, never a design.
+8. **A cause was reported as proved.** A defect ticket that names a root
    cause — the reporter's guess, or a line the read found that could produce
    the symptom — as a fact rather than as a labelled hypothesis or
    `INFERENCE`. Proving it belongs to `domain-debugging` in the design stage.
@@ -76,7 +81,37 @@ that either exists or does not.
 | **Readiness** | One line each turn: `Ready` with the reason, or `Not ready` with the first failing check | Silence, or "done" |
 | **The second goal** | A new outcome the story does not cover is named and offered as a second ticket | Widened into this one |
 | **The small case** | A goal already contained on screen is declined as a ticket, with the one-line version offered instead | A full ticket written for a copy change |
+| **Execution economy** | The read matched the request: a clear request drafted from the entry point, the current behaviour, the actor and the tests, and finished — no queue, provider, schema or adjacent module opened because it was there; where the run widened, it named the uncertainty that made it, read only what bore on it, and returned to narrow once it was resolved; investigation stopped when the ticket stopped changing | The same deep read for every request; a search for speculative edge cases on a clear request; a narrow, confident draft over a request carrying two actors, a symptom and a cause, or an unstated contract — the floor moved, which outranks every waste above; a read still broad turns after its trigger was resolved; investigative reasoning dumped into the ticket |
+| **Question justification** | Every question asked would change readiness, the actor, the scope, a criterion, a contract, an important failure behaviour or the split; facts the repository states were read rather than asked; a question that decides between two readings names both | A question whose answer changes nothing; "any edge cases?", "what else should happen?"; the human asked to describe behaviour the code already states; three questions every turn because three are allowed |
 | **The defect** | The observation kept whole in the problem; the reporter's cause labelled as a hypothesis; a candidate the read found labelled `INFERENCE` with its `path:line` and left for `domain-debugging` | The cause stated as fact; a fix implied by the criteria; the symptom rewritten as the run's explanation of it |
+
+## Scoring adaptive depth
+
+`write-ticket` §2a applies `standards/execution-efficiency.md` to a ticket: the
+read starts narrow, widens only on material uncertainty, and contracts when it
+is resolved. Judge this by what the run did and why, never by counting files:
+
+- **A clear request** — one outcome, a grounded actor, explicit boundaries,
+  observable success, no contradiction — earns a short read and a short draft.
+  Reading a queue, a mail provider, a retry mechanism, a schema or an
+  unrelated module for it is waste, and asking about it is an interview.
+- **A messy request** — two actors, a symptom with a guessed cause, a
+  mechanism mixed with a requirement, "sent" beside "delivered", a bundle of
+  outcomes — earns widening, and the run must say what fired. A short,
+  confident draft over that request is the cheap classification the standard
+  calls the most expensive mistake, and it scores **0.0**, not "concise".
+- **Harmless ambiguity** — a label, a name, a wording the product has not
+  settled — is noted, not investigated and not asked about. A run that widens
+  on it has treated every unknown as a trigger.
+- **Contradiction** widens exactly as far as the current boundary and no
+  further; the draft shows the human their claim graded against the code.
+- **After resolution** the read returns to narrow. A second turn that keeps
+  exploring, or finds a new uncertainty to justify continuing, has failed to
+  contract.
+- **The widening resolved the WHAT.** Evidence gathered was current behaviour,
+  actors, boundaries, contracts, failure behaviour. Anything that would only
+  matter to a design — how a mechanism works, which option is better — was a
+  design pass, whatever it was called.
 
 ## Scoring the follow-up turn
 
@@ -90,7 +125,10 @@ The strong run, given an answer and a new request in one message:
   every criterion and every exclusion from the previous turn still present,
   sections that were empty still absent;
 - names the new request as a second story and offers a second ticket;
-- updates the readiness line.
+- updates the readiness line;
+- and, where the previous turn had widened, does not keep widening: the
+  answered uncertainty closes, and the read for the new request is as narrow
+  as that request allows.
 
 A run that does four of the five has done the work. A run that does the fifth
 by widening the story has not, and a run that does the third by dropping a

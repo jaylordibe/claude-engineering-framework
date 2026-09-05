@@ -26,14 +26,16 @@ here, and the person is the only one who can end the mode.
 
 The work here is bounded — classifying the input, a targeted read, separating
 the outcome from the mechanism, and writing the draft. It maps nothing,
-designs nothing, implements nothing and reviews nothing, and that is where its
-economy comes from: no mapper, no lens, one turn. What it does do is judge —
-whether a claim is confirmed, whether an actor is grounded, whether a question
-is the human's to answer — and those are the calls whose failure reads as a
-tidier draft, so the effort behind them is not where the saving is taken. An
-unusually ambiguous request earns more care inside the same turn: a slower
-read of the input, one more `UNKNOWN` written down, a sharper question. It
-never earns a second pass, a hidden review or a delegated agent.
+designs nothing, implements nothing and reviews nothing. How much of that
+bounded work a given ticket gets is not fixed: **the computation adapts and
+the quality floor does not**, exactly as
+`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` says of every stage.
+That standard is the authority for how much this skill reads, asks and writes;
+§2a below is only its application to a ticket. A clear request is drafted
+from a narrow read and finished. A materially ambiguous one widens — more
+evidence, sharper questions — only along the uncertainty, and only inside the
+same turns. Nothing here ever earns a second pass, a hidden review or a
+delegated agent, and no one selects a depth: it follows from the evidence.
 
 > **A ticket states a goal. A design is the next stage's job.**
 
@@ -104,7 +106,8 @@ gap labelled.
 Before drafting, read the repository for the area the goal names. This is a
 **bounded, targeted read** in the sense of
 `${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §3 — the entry
-points, the current behaviour, the actors and the tests that pin it. Do **not**
+points, the current behaviour, the actors and the tests that pin it — and it
+is the narrow start §2a widens from only when evidence requires. Do **not**
 launch `context-mapper`: a full map is design-stage spending, and a ticket that
 needs one to be written is a ticket that has started designing. What the read
 is for:
@@ -120,6 +123,111 @@ is for:
 
 Write what you did not find as `ABSENT` and what you could not determine as
 `UNKNOWN`. Absence is often the point of the ticket.
+
+### 2a. Adaptive clarification depth
+
+Follow `${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md`. Use the
+minimum sufficient clarification and repository investigation needed to
+establish a bounded, evidence-grounded ticket. Start narrow and widen only
+when evidence requires it. The standard owns the principle — minimum
+sufficient computation (§2), widening as mandatory and not a failure (§4),
+the sufficiency test before each further step (§8.1), bounded output (§9),
+and the rule that a genuinely close call spends more (§13.1). What follows is
+what those mean for a ticket, and nothing else.
+
+**Stay narrow.** The narrow read of §2 is enough, and the draft is written
+from it, when:
+
+- the requested outcome is singular and understandable;
+- the actor is evidenced by the repository or explicitly supplied by the
+  human (§4d);
+- the scope boundaries that matter are explicit in the request;
+- success can be stated as something observable;
+- the repository does not materially contradict the request;
+- any mechanism the human named separates cleanly from the outcome (§3);
+- no `UNKNOWN` that remains would change readiness (§6).
+
+In that state: inspect only the entry point, the current behaviour, the actor
+and the tests that pin them; do not search for edge cases the request and the
+code do not suggest; do not read adjacent architecture; do not launch any
+agent; do not ask a question whose answer would not change the ticket; keep
+the draft short; and stop the moment readiness can be stated. **A clean
+request is a short read and a short draft**, however much more the repository
+would allow you to read.
+
+**Widen when evidence reveals material uncertainty** — one or more of:
+
+- more than one materially different reading of the requested behaviour
+  remains plausible;
+- the request appears to contain more than one independently deliverable
+  outcome;
+- who the actor is, or what they are permitted to do, is unclear;
+- a tenancy boundary is unclear, where the outcome crosses one;
+- what must be persisted, or kept consistent, is unclear, where the outcome
+  touches stored state;
+- what a consumer or an external party could observe changing is unclear,
+  where the outcome reaches a contract;
+- the repository materially contradicts the human's account of today;
+- an implementation suggestion is being read as a product requirement, or
+  cannot be told apart from one;
+- a defect symptom arrives mixed with an unverified cause;
+- the observable success or failure behaviour cannot be stated with
+  confidence;
+- a scope boundary that decides what is inside is still `UNKNOWN`;
+- choosing one reading over another would materially change product
+  behaviour, security, data integrity, permissions or an external contract.
+
+Not every unknown is a trigger. Widen for the uncertainty that could change
+the ticket — its readiness, actor, scope, criteria, contract, failure
+behaviour or whether it splits — and for nothing else. A wording choice, a
+label, a name the product has not settled: those are noted, not investigated.
+
+**When a trigger fires:**
+
+1. name the specific uncertainty;
+2. say what would resolve it — a piece of repository evidence, or a decision
+   only the human can make;
+3. read only the evidence that uncertainty needs, and nothing adjacent to it;
+4. where two readings would produce materially different tickets, put both
+   in front of the human, briefly, so the decision is theirs;
+5. ask at most three questions in the turn, per §5;
+6. keep every part of the ticket already confirmed;
+7. leave the rest of the repository alone;
+8. do not state `Ready` while the uncertainty is unresolved and the human has
+   not explicitly accepted it or deferred it.
+
+**Then contract.** Once the uncertainty is resolved, return to the narrow
+state. Investigation does not stay wide because it was wide last turn, and
+it does not go looking for the next thing to be uncertain about. Two
+consecutive steps that changed nothing in the ticket are the signal to stop
+and write (§8.1).
+
+**Widening resolves the WHAT, never the HOW.** It may gather current
+observable behaviour, existing actor and role boundaries, the current
+external contract, a repository-confirmed constraint, current failure
+behaviour, and whatever distinguishes two conflicting readings. It may not be
+used to decide a library, a queue, a schema, a cache, an architectural
+pattern, a module split, a migration approach, or how hard the work is. A
+mechanism the human mentions is recorded under **Ideas from discussion** and
+is not a reason to read that mechanism's code, its documentation or its
+alternatives — that is design discovery wearing clarification's clothes, and
+the design stage owns it. Widening never reaches for `context-mapper`, a
+review lens or any delegated agent.
+
+**A defect widens the same way.** The symptom is kept whole, a suggested cause
+stays a hypothesis (§4b), and the read establishes only the current behaviour
+that grounds the questions the report leaves open — who may act, what
+"delivered" means against what "sent" means, what must never happen twice.
+The purpose of the wider read is the correct WHAT; the diagnosis belongs to
+`${CLAUDE_PLUGIN_ROOT}/skills/domain-debugging/SKILL.md` downstream.
+
+**The split is detected here, not estimated here.** Widening is how a draft
+that contains several tickets is noticed — outcomes that could each ship
+alone. Several criteria are not several tickets; several independently
+deliverable outcomes are, and when it is genuinely unclear whether the human
+means one product outcome or three, that is put to them as the question
+rather than bundled or split silently. §6 owns the readiness check this
+feeds.
 
 **When the goal is contained in what is already on screen** — a copy change,
 a wording fix, a one-line behaviour the human has already scoped — say that a
@@ -286,11 +394,26 @@ Each turn in the mode does all of the following, in this order.
    check and it says nothing. Write "none" only where the absence is itself a
    boundary the reader needs — *no existing caller may see a difference* is
    a requirement; *Dependencies: none* is a line. Above the draft, one line
-   beginning `Changed:` says what this turn altered.
+   beginning `Changed:` says what this turn altered. When §2a widened this
+   turn, what accompanies the draft is the uncertainty, the evidence that
+   bears on it and the readings it decides between — never the investigation
+   itself. Search results, files that turned out not to matter and reasoning
+   that changed no line of the ticket stay out of the message
+   (`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §9).
 4. **Ask at most three questions**, ranked by how much the answer changes the
-   ticket. Every other question waits, still visible in **Open questions**.
-   A question the draft already shows as `UNKNOWN` is asked by pointing at it,
-   not by restating it.
+   ticket. Three is the hard limit; the usual number is fewer. A question is
+   justified only when its answer could change at least one of: readiness,
+   the actor, the scope, an acceptance criterion, a contract requirement, an
+   important failure behaviour, or whether the ticket splits. If the answer
+   would not materially alter the ticket, do not ask it. Where the repository
+   can establish the fact from a bounded read, read it rather than asking the
+   human to describe what their code already states. Never ask a broad
+   question — "can you give more detail", "what else should happen", "any
+   edge cases?" — ask the focused one that exposes the exact unresolved
+   decision, with the readings it decides between where that helps. Every
+   other question waits, still visible in **Open questions**. A question the
+   draft already shows as `UNKNOWN` is asked by pointing at it, not by
+   restating it.
 5. **State readiness in one line.** `Ready` with the reason, or `Not ready`
    with the one thing that most stands in the way. §6 defines ready.
 
@@ -378,6 +501,29 @@ Each of these has been observed in a real transcript, and each is a defect.
   stale the day the code moves.
 - **The interview before the draft.** Eight questions and no ticket. The human
   came with a goal; give them something to correct.
+- **The interview disguised as clarification.** Three questions a turn, every
+  turn, none of which would change a line — asked because widening was
+  permitted, not because anything was uncertain. §2a widens on material
+  uncertainty; a question whose answer alters nothing is a cost with no
+  ticket behind it.
+- **The read that keeps going.** Queues, providers, retries and internals
+  inspected for a request that named none of them, because the repository was
+  there and reading it felt like rigour. The narrow read answers what the
+  ticket asks; the rest is the design stage's evidence, gathered by the stage
+  that will use it.
+- **The widening that never contracts.** Investigation still broad three turns
+  after the uncertainty that opened it was resolved, each turn finding a new
+  thing to be unsure of. Once the trigger is gone, the read returns to
+  narrow, and two steps that change nothing are the signal to write.
+- **The clarification that designs.** A mechanism the human mentioned, taken
+  as a reason to read its implementation, compare it to alternatives, or
+  decide whether it would work. That is design discovery, and the ticket
+  records the idea as non-binding without doing any of it.
+- **The narrow read that should have widened.** A tidy, confident, short draft
+  over a request that contained two actors, a symptom and a cause, or a
+  contract nobody could state — the cheap classification
+  `${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §3 calls the most
+  expensive mistake available. The floor is fixed; only the spend adapts.
 - **The silently filled gap.** A plausible actor, a plausible tier, a
   plausible current behaviour written without a read — the same shape as a
   design from an assumed architecture.

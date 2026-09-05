@@ -62,7 +62,7 @@ finished ticket to the design stage as a plain request.
 
 ## The ticket cases grade restraint as much as content
 
-Ten cases open with `write-ticket`, and most of them exist because a
+Sixteen cases open with `write-ticket`, and most of them exist because a
 particular kind of thoroughness is a defect. `ticket-actor-evidenced`,
 `ticket-actor-human-supplied` and `ticket-actor-not-invented` are one
 instrument: the actor is grounded by the code, or by the human, or it is
@@ -78,6 +78,19 @@ request is too big. `ticket-suggestion-stays-non-binding` and
 `ticket-defect-hypothesis-stays-hypothesis` are the WHAT/HOW line drawn twice:
 a mechanism the human offered stays an idea, and a cause the read found stays
 an inference.
+
+Six of them grade the skill's application of
+`standards/execution-efficiency.md` — a read that starts narrow, widens only
+on material uncertainty, and contracts once it is resolved — and they are
+graded in both directions like the `efficiency-*` cases.
+`ticket-clear-request-stays-narrow` and `ticket-harmless-ambiguity-stays-narrow`
+fail a run for reading or asking more than the request needed;
+`ticket-messy-request-widens` and `ticket-contradiction-widens` fail a run for
+a short confident draft over a request that was not clear; `ticket-widen-then-
+contract` needs both, across two turns; and
+`ticket-mechanism-no-design-exploration` fails a run for treating a named
+library as a reason to investigate it. Score the first pair against the second
+pair: a run that reads the same amount for all four has not read the request.
 
 ## The ablation arm matters more than the score
 

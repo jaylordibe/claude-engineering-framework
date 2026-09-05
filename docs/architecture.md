@@ -406,11 +406,14 @@ The mode is deliberately not a pipeline. There is no ledger and no state file:
 the whole substantive ticket is re-emitted every turn — every criterion, every
 exclusion, every open question, with the sections that have nothing in them
 left out rather than written as "none" — so the last message is the state,
-and a draft too long for that is a ticket that needs splitting. The skill's
-economy is scope — no mapper, no lens, one turn — and not effort, which stays
-at high like every component that judges: the calls it makes are the ones
-whose failure reads as a tidier draft. It holds a few lines that each
-correct a thoroughness that is actually a defect: an actor is grounded by
+and a draft too long for that is a ticket that needs splitting. How much the
+skill reads and asks is `standards/execution-efficiency.md` applied to a
+ticket, not a policy of its own: the read starts narrow, widens only when
+evidence reveals an uncertainty that could change the ticket — its actor,
+scope, criteria, contract or whether it splits — and contracts once the
+human resolves it. Effort stays at high like every component that judges;
+what adapts is the spend, and no one selects a depth. It holds a few lines
+that each correct a thoroughness that is actually a defect: an actor is grounded by
 the code or named by the human and is never invented; readiness is a judgement
 about whether the outcome has edges, never an estimate; a criterion is split
 by what can be verified apart rather than by the word "and"; a negative is
