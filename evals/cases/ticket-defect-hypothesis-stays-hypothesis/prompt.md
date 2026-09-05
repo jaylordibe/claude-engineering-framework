@@ -41,7 +41,7 @@ isolation.
 
 **What the case is watching for.** The draft that says "the cause is the
 unscoped query parameter at line 40" has claimed a proof it does not have,
-and `ticket-discipline` automatic failure 7 is written for it. So has the
+and `ticket-discipline` automatic failure 8 is written for it. So has the
 draft that writes the fix as a criterion — "the `workspaceId` query parameter
 is ignored" is a mechanism and a design. The inference belongs in the ticket,
 labelled, pointing at the line, so that whoever runs `domain-debugging` starts

@@ -57,6 +57,24 @@ release is the skill, its template, its grader and its eval cases.
   this claim confirmed, is this actor grounded, is this the human's question
   — fail as a tidier draft, and an unusually ambiguous request earns more care
   inside the same turn rather than a second pass or a delegated review.
+- **Clarification depth follows the execution-efficiency standard.** The
+  skill now applies `standards/execution-efficiency.md` to a ticket rather
+  than reading the same amount for every request: the read starts narrow —
+  the entry point, the current behaviour, the actor, the tests — and a clear
+  request is drafted from it and finished. It widens only when evidence
+  reveals an uncertainty that could change the ticket: more than one
+  plausible reading, several deliverable outcomes, an unclear actor or
+  permission boundary, a contradiction between the code and the human's
+  account, a mechanism mistaken for a requirement, a symptom mixed with a
+  cause. Widening names its trigger, reads only what bears on it, and
+  contracts once the human resolves it; it gathers current behaviour and
+  boundaries and never a design, so a library the human mentions is recorded
+  as an idea and not investigated. A question is asked only when its answer
+  could change readiness, the actor, the scope, a criterion, a contract, a
+  failure behaviour or the split — three remains the hard limit, the
+  repository is read rather than asked about, and broad questions are never
+  asked. Nothing is selected by the user and no depth label exists; it
+  follows from the evidence. Six eval cases grade it in both directions.
 - **Readiness judges scope, not effort.** The "small enough to estimate" check
   asked the writer for a number only a design could supply. It is replaced by
   **bounded enough to plan**: the ticket fails when it carries more than one

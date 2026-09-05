@@ -1194,6 +1194,21 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'every turn re-emits the substantive ticket and omits the sections with nothing in them',
     patterns: [/re-emit the whole substantive ticket/i, /omitted section is omitted/i, /survives compaction/i],
   },
+  // Adaptive depth is the execution-efficiency standard applied to a ticket,
+  // and the skill must keep saying so: without the citation this section is a
+  // second copy of the policy, which is the drift the single-source check
+  // exists to stop; without "start narrow" and "widen" the skill reads the
+  // same amount for every request; without "contract" it never comes back.
+  {
+    file: 'skills/write-ticket/SKILL.md',
+    guarantee: 'clarification depth follows execution-efficiency.md: start narrow, widen only on material uncertainty, contract when it is resolved, and never into design',
+    patterns: [/Follow `\$\{CLAUDE_PLUGIN_ROOT\}\/standards\/execution-efficiency\.md`/, /start narrow/i, /widen only\s+when evidence requires/i, /then contract/i, /never the HOW/i, /not every unknown is a trigger/i],
+  },
+  {
+    file: 'skills/write-ticket/SKILL.md',
+    guarantee: 'a question is asked only when its answer could change the ticket, three is the hard limit, and the repository is read rather than asked about',
+    patterns: [/at most three questions/i, /would not materially alter the ticket, do not ask/i, /never ask a broad\s+question/i],
+  },
   {
     file: 'skills/write-ticket/SKILL.md',
     guarantee: 'a negative criterion is written where a boundary is real, not manufactured for every positive',
