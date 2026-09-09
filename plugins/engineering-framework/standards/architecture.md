@@ -41,18 +41,75 @@ rather than absorbed silently.
 ## 3. Coherent scope
 
 Prefer the **smallest coherent and complete** change: not the smallest patch,
-and not an opportunistic rewrite.
+and not an opportunistic rewrite. This standard owns how much a change
+*implements*; `standards/execution-efficiency.md` owns how much it
+*investigates*, and the two are independent — deep investigation is the input
+to this decision, never a licence to build more.
 
-Do not:
+### 3.1 The complexity ladder
 
-- leave in-scope call sites half-migrated — if four call sites share the
-  pattern being changed, migrate all four, or state explicitly why not;
-- create a parallel new path beside the old one and leave both alive;
-- add an abstraction for a second case that does not exist yet;
-- hide an unrelated refactor inside a feature change.
+Before introducing new implementation machinery, work down this order and
+**stop at the first rung that satisfies the approved behaviour**:
 
-Delete what you replace. No "legacy" directories, no commented-out former
-implementations, no `// removed` markers.
+1. **Does this behaviour need to exist at all** to satisfy the approved scope?
+   If it is speculative, it is a non-goal — say so in a line and stop.
+2. **Does the repository already own it** — a helper, path, abstraction,
+   convention or component whose responsibility this is? Reuse it.
+3. **Can the existing owner be extended or simplified** rather than a parallel
+   path created beside it?
+4. **Does the language or runtime standard library** already provide it?
+5. **Does the framework, platform, database, browser or operating system the
+   repository already runs on** provide it natively?
+6. **Does an already-installed dependency** provide it appropriately?
+7. **Can the requirement be satisfied directly**, without another abstraction?
+8. **Only then** introduce the minimum new code or structure that works.
+
+The first solution that satisfies the approved behaviour **and** the applicable
+correctness, security, contract, data, concurrency, maintainability and testing
+requirements normally wins. This is a reasoning order, not a mandate to produce
+one-liners, and **repository architecture stays authoritative**: do not stop at
+a lower rung when doing so violates a declared convention, misplaces a
+responsibility (§2), or creates worse ownership or coupling than the rung above.
+
+### 3.2 Unnecessary complexity is a defect
+
+Each of these is scope to cut, not flexibility to keep:
+
+- an abstraction, interface, factory, strategy or provider layer with **one
+  implementation** and no second one the approved scope establishes;
+- a wrapper that only delegates, unless it protects a real boundary or a
+  repository convention;
+- a configuration option, flag or parameter **nothing requires** and no
+  existing convention asks to be configurable;
+- hand-rolled code for what the standard library or the platform already does
+  correctly;
+- a new dependency for functionality that is trivial and safe to build from
+  existing capabilities — a new dependency is justified by capability,
+  maintenance and security cost, repository convention, and why native or
+  installed capabilities are insufficient, not by convenience;
+- a parallel new path left alive beside the old one;
+- an abstraction added for a second case that does not exist yet (**YAGNI**);
+- an unrelated refactor hidden inside a feature change.
+
+When the approved change makes existing complexity unnecessary, **prefer
+deleting it**. Delete what you replace: no "legacy" directories, no
+commented-out former implementations, no `// removed` markers, and no in-scope
+call site left half-migrated — if four call sites share the pattern being
+changed, migrate all four, or state explicitly why not.
+
+### 3.3 Smaller is a signal, larger is sometimes correct
+
+Prefer the **smallest coherent diff, not the fewest lines**. Fewer files, lines
+and dependencies are useful signals that the ladder was walked; none of them is
+a correctness target, and none may be bought by dropping a test, a validation
+step, an access check or an error path — §1 orders correctness and security
+above delivery speed, and this section never reorders them.
+
+A larger solution is correct when the evidence, the approved design, the
+repository's architecture, the risk tier or a contract requires it. The rule
+cuts what the requirement does not need; it never argues a genuinely
+cross-cutting requirement down into an unsafe or architecturally wrong
+shortcut.
 
 ## 4. Contracts
 

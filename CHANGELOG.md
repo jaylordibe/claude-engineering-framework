@@ -12,6 +12,53 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 2.12.0 — 2026-09-10
+
+**Investigate to the depth confidence needs; implement only the complexity the
+evidence needs.** The framework already sized *investigation* by risk and
+already pushed back on an over-built *design*. What it had no named answer for
+was the change in between: a diff that is correct in every line and larger than
+the requirement, and — the failure that produced it — a deep investigation read
+as permission to build deeply. A High-risk change can now earn a Deep map, a
+threat model and a full review panel and still be delivered as a five-line diff,
+and that is recorded as the correct outcome rather than an under-built one.
+Nothing here asks a consuming repository to do anything, and nothing here adds
+an agent, a skill, a gate, a pipeline stage or a mode.
+
+- **`standards/architecture.md` §3 is the single owner** of how much a change
+  implements. It gains the complexity ladder — does this need to exist, does the
+  repository already own it, does the standard library or the platform provide
+  it, before any new component — a catalogue of what counts as unnecessary
+  complexity (single-use abstractions, delegating wrappers, config nobody sets,
+  hand-rolled stdlib, needless dependencies, parallel paths, YAGNI), and the
+  guard against the ladder becoming a ratchet: a larger solution is correct when
+  the requirement needs it, and smallness is never bought by dropping a test, a
+  check or an error path.
+- **`standards/execution-efficiency.md` §2.1** states the split the whole
+  release turns on: investigation breadth and implementation breadth are
+  independent budgets. It sizes the investigation and cites §3 for the change;
+  it does not restate the ladder.
+- **The gates cite the ladder rather than restating it.** `gate-implement` gives
+  "smallest coherent and complete" an actionable threshold — evidence that the
+  lower rung is insufficient before new machinery, walked silently for obvious
+  changes and surfaced only when the choice is material. `gate-design` §5
+  constructs its smallest option by walking the ladder, and owes nothing extra
+  on a Low or below-the-line change. `gate-review` makes unnecessary complexity
+  a reviewable defect — after correctness and security, as a verified claim,
+  never trading the quality floor for fewer lines. The `reviewer` lens carries
+  the taxonomy.
+- **`templates/plan.md` §12** lets a deliberately simple approach record a known
+  ceiling with a concrete, evidence-based upgrade trigger — never "maybe
+  someday", never a `TODO` manufactured because a minimal path was chosen, and
+  living in a code comment beside the line when it must outlive the session.
+- `validate-plugin.mjs` anchors each new rule at its owning file, including the
+  non-ratchet guarantee. A new `implementation-minimality` grader and five
+  `impl-*` eval cases score the change in both directions: over-building
+  (duplicating an owned helper, adding a dependency where the standard library
+  served), the independence case (a deep authorization investigation that must
+  still land as one guard line), and under-building (a "simplification" that
+  reintroduces a timing oracle, an SSRF fix minimized into an unsafe shortcut).
+
 ## 2.11.0 — 2026-09-04
 
 **A ticket is written as a goal, not as the design an agent found.** Asked to

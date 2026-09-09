@@ -137,9 +137,30 @@ A brief you cannot state in a few lines has a scope you have not decided yet,
 and a specialist that spends its whole allowance investigating is usually
 reporting that rather than a defect in itself.
 
-Bundled skills supplement the panel; they never replace it. Run a
-simplification pass only after correctness and security findings are resolved,
-and verify each of its proposals against the approved plan before accepting it.
+Bundled skills supplement the panel; they never replace it.
+
+**Unnecessary complexity is one of the things this review is for.** A diff can
+be correct in every line and still carry a single-use abstraction, a wrapper
+that only delegates, configuration nobody sets, a hand-rolled version of what
+the platform already does, a needless dependency, a parallel path, or
+architecture beyond the approved scope. `reviewer` owns this lens by default and
+`${CLAUDE_PLUGIN_ROOT}/standards/architecture.md` §3 owns the catalogue; this
+gate adds only the discipline around it:
+
+- **Correctness and security first, always.** Run the simplification pass
+  **only after** the correctness and security findings above are resolved. A
+  shorter diff that drops a check, a validation step or an error path is not a
+  simplification — the quality floor in
+  `${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §1 is never traded
+  for fewer lines, and §2.1 there is why a small correct diff is a success and
+  not something to shrink further.
+- **A simplification proposal is a claim, like any finding.** It is verified
+  against repository evidence and the approved scope before remediation — the
+  §4 rule that a finding is a claim, not a fact, applies to "this could be
+  deleted" exactly as it does to "this is a bug." A wrongly-cut helper that had
+  a second caller is a defect the shorter diff introduced.
+- These are ordinarily **Note** or **Low** severity, since the code works; they
+  do not block the gate, and they are never remediated ahead of a real defect.
 
 ## 3. What to review against
 

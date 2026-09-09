@@ -73,10 +73,34 @@ For each slice:
 1. restate the behaviour and the invariant it must preserve;
 2. read the complete relevant files and their tests — not just the region you
    intend to change;
-3. implement the smallest **coherent and complete** change;
+3. implement the smallest **coherent and complete** change, per
+   `${CLAUDE_PLUGIN_ROOT}/standards/architecture.md` §3;
 4. add or update the tests;
 5. run the focused checks;
 6. inspect the diff you just produced.
+
+**"Smallest coherent and complete" has an actionable meaning, and step 3 is
+where it is paid.** `${CLAUDE_PLUGIN_ROOT}/standards/architecture.md` §3 owns
+the complexity ladder and the list of what counts as unnecessary complexity;
+this gate does not restate it. What it adds is a threshold: **before you add a
+new abstraction, dependency, component or parallel path, you must have
+repository evidence that the lower rung is insufficient** — that the existing
+owner cannot be extended, that the standard library or the platform does not
+already do it, that no installed dependency fits. Absent that evidence, the
+lower rung is the change.
+
+The depth of investigation that reached this slice never licenses a wider diff:
+`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §2.1. A slice that was
+mapped at Deep breadth is still built at the smallest rung its evidence allows.
+
+**This is reasoning, not a report to write.** For an obvious change, walk the
+ladder silently and make the edit — a ladder narrated over a one-line fix is the
+ceremony §12 of the efficiency standard exists to prevent. Surface the rationale
+in a sentence **only** when the choice is architecturally material: it
+introduces new machinery, it is surprising, or it diverges from the approved
+design. A divergence that adds an abstraction, a dependency or a path the plan
+did not approve is a material change — Reconciliation below, not a line in the
+final report.
 
 ## Contracts to enforce
 

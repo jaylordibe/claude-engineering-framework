@@ -1251,6 +1251,44 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'the smallest sufficient approach is always among the compared options, and only a sourced requirement may defeat it',
     patterns: [/smallest thing that fully\s+delivers/i, /not requirements|are not\s+requirements/i, /scale|clean|extensible/i],
   },
+  // The implementation-complexity discipline, added when the framework gained a
+  // named answer to over-building the CHANGE (not just over-designing it).
+  // architecture.md §3 is the single owner; the gates cite it and add only their
+  // own threshold. Each rule below has a plausible-looking opposite that reads
+  // as diligence — a fuller abstraction, a wider diff after a deep look, a
+  // simplification that quietly drops a check — which is why the sentence
+  // stating it is pinned rather than left to a grader.
+  {
+    file: 'standards/architecture.md',
+    guarantee: 'implementation complexity is chosen by a ladder — need, then the existing owner, then the standard library and the platform, before new code — with YAGNI and the smallest coherent diff a signal, not the fewest lines',
+    patterns: [/first rung/i, /already own it/i, /standard library/i, /\bYAGNI\b/, /smallest coherent diff, not the fewest lines/i],
+  },
+  // The non-ratchet half, anchored separately because it fails separately and is
+  // the one a later edit removes as hedging. Without it the ladder becomes a
+  // floor with no ceiling: the higher rung on every boundary, a real cross-
+  // cutting requirement argued down into an unsafe shortcut, and the smaller
+  // diff rewarded for dropping a check. CLAUDE.md's efficiency-asymmetry note is
+  // why both directions have to be stated in the same section.
+  {
+    file: 'standards/architecture.md',
+    guarantee: 'a larger solution is correct when the requirement needs it, the ladder never argues a cross-cutting requirement into an unsafe shortcut, and smallness is never bought by dropping a test, a check or an error path',
+    patterns: [/larger solution is correct/i, /cross-cutting requirement/i, /unsafe or architecturally wrong/i, /correctness target/i],
+  },
+  {
+    file: 'standards/execution-efficiency.md',
+    guarantee: 'investigation breadth and implementation breadth are independent — a deep investigation does not license a deep implementation, and a high-risk change may be a five-line diff',
+    patterns: [/breadth and implementation breadth are independent/i, /does not license a deep implementation/i, /five-line diff/i, /three separate budgets/i],
+  },
+  {
+    file: 'skills/gate-implement/SKILL.md',
+    guarantee: 'before a new abstraction, dependency, component or path, repository evidence shows the lower rung insufficient; the ladder is walked silently for obvious changes and surfaced only when the choice is material',
+    patterns: [/lower rung is insufficient/i, /ladder silently/i, /architecturally material/i],
+  },
+  {
+    file: 'skills/gate-review/SKILL.md',
+    guarantee: 'unnecessary complexity is reviewed only after correctness and security, a simplification is a claim verified against evidence and scope, and the quality floor is never traded for fewer lines',
+    patterns: [/Unnecessary complexity/i, /simplification pass[\s\S]{0,40}only after/i, /simplification proposal is a claim/i, /never traded/i],
+  },
   // The framework's own fan-out is a scope source if nothing says otherwise.
   // Several lenses over one small request name, between them, every gap the
   // repository has; each is real, each is cited, and the union of them arrives

@@ -241,8 +241,24 @@ requirements — they are predictions, and a plan that rejects the small option
 on one of them has compared nothing. A workload claim that decides a design is
 a claim the plan states and sources, the same as any other.
 
+The smallest approach is **constructed by walking the complexity ladder**, not
+guessed at: `${CLAUDE_PLUGIN_ROOT}/standards/architecture.md` §3 owns it —
+whether the behaviour need exist, whether the repository already owns it,
+whether the standard library or the platform provides it, before any new
+component is proposed. Each new abstraction, layer, dependency, configuration
+surface or parallel path an approach carries is a rung it climbed, and §3
+requires a stated reason the rung below was insufficient. That reason is the
+`Decision` list in `${CLAUDE_PLUGIN_ROOT}/templates/plan.md` §5: every structure
+introduced against the outcome it serves, and a row with no such outcome cut
+here.
+
 Prefer the smallest coherent complete end state within scope. Do not
 over-engineer, and do not smuggle an unrelated refactor in as an "alternative".
+
+None of this is owed by a **Low**-risk change or one below the line in
+`${CLAUDE_PLUGIN_ROOT}/standards/execution-efficiency.md` §3: those produce no
+plan and no alternatives table, and adding a ladder write-up to them is the
+ceremony §4 refuses to spend.
 
 ## 6. Threat-model
 

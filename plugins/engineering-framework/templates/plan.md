@@ -146,6 +146,18 @@ What this explicitly does not do, and why. Scope disappointment surfaces here
 more often than any technical objection, which is why it is read back at
 approval.
 
+Where a chosen approach is deliberately simple and has a **known ceiling**,
+record the ceiling here with the **concrete, evidence-based condition** that
+would justify upgrading it — "single-node only; revisit when a second writer is
+introduced", not "revisit when we need to scale". Record it only when all three
+hold: the limitation is intentional, it is acceptable for the approved scope,
+and the upgrade trigger is a real event and not a wish. **"Maybe someday" is not
+a trigger, and a minimal implementation is not a debt** — do not manufacture a
+non-goal or a `TODO` merely because a lower rung of the ladder was chosen. Where
+the ceiling must outlive this session, its home is a code comment beside the
+line it constrains (`standards/architecture.md` §7), not a marker scattered
+through the code.
+
 ## 13. Open decisions and blockers
 
 | Type | Question or blocker | Why it matters | Owner |

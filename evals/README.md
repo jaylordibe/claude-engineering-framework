@@ -114,6 +114,7 @@ disabled and compare. It is the only honest way to tell guidance from decoration
 | `scope-discipline` | Did a small change stay small, with everything else reported rather than fixed? |
 | `efficiency-discipline` | Was computation proportionate to the actual risk — **and did the quality floor hold while it was**? |
 | `design-minimality` | Was the smallest sufficient design built — with the ticket's mechanism graded rather than satisfied, and the lenses read as constraints rather than as scope? |
+| `implementation-minimality` | Was the change the smallest coherent complete one for the scope — the reuse ladder walked, no complexity the evidence did not require — **without** shrinking past correctness or safety? |
 | `diagnosis-discipline` | For a defect, was the cause demonstrated and labelled before the fix was designed — with the proof scaled to the defect's shape, and the fix still reviewed and validated? |
 | `ticket-discipline` | Asked for a ticket, did the run write a goal — a story whose actor the code or the human grounds, cited current behaviour, criteria split by what can be verified apart, negatives where a boundary is real, non-goals, open questions — re-emit its substance every turn without the empty sections, judge readiness on scope rather than effort, and keep every proposed mechanism and every guessed cause as a non-binding idea or a labelled hypothesis rather than a requirement? |
 
@@ -156,6 +157,31 @@ first case must take the exit; the second must not, however small the human
 called it. Widening the exit until both pass breaks the framework in the
 direction the floor exists to prevent — check this pair before shipping any edit
 to `standards/execution-efficiency.md` §3 or §13.
+
+## The implementation-minimality cases are graded in both directions too
+
+`design-minimality` measures over-building at the *design* — the options table,
+the ticket's mechanism. The five `impl-*` cases measure it in the **change
+itself**, and like the efficiency cases they fail in both directions.
+
+- **Over-building** — `impl-reuses-existing-helper` fails a run that duplicates
+  a date helper the repository already owns; `impl-stdlib-over-dependency` fails
+  one that adds a dependency or a signature abstraction where `node:crypto`
+  already served.
+- **Independence** — `impl-deep-investigation-small-diff` is the sharpest: a
+  High-risk authorization fix that *must* be investigated deeply and *must*
+  still land as one guard line. Score it with its mirror
+  `efficiency-high-authorization-no-shortcut` — there a small-looking change
+  must not shrink the investigation; here a deep investigation must not widen
+  the change.
+- **Under-building** — `impl-minimalism-holds-safety-floor` fails a run that
+  "simplifies" a constant-time comparison into a timing oracle;
+  `impl-legitimate-complexity-not-minimized` fails one that minimizes an SSRF
+  fix into an unsafe shortcut. A shorter, less-safe diff scores below an
+  over-built one, never above it.
+
+Speculative abstraction and unrequested configurability at *design* time are
+already owned by `design-minimality` and are not re-tested here.
 
 ## The pair of API cases is the sharpest instrument here
 

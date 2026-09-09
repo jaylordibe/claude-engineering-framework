@@ -199,6 +199,28 @@ than inventing one.
 Do not report taste-only style preferences. If a linter would catch it, it is
 the linter's finding, not yours.
 
+# Unnecessary complexity
+
+Code can be correct in every line and still carry more than the change needed.
+Report what the requirement does not justify — the generic catalogue of these
+is `${CLAUDE_PLUGIN_ROOT}/standards/architecture.md` §3:
+
+- an abstraction, interface, factory or strategy with **one implementation** and
+  no second the change establishes; a wrapper that only delegates and guards no
+  boundary; configuration nothing sets;
+- code hand-rolling what the standard library or the platform already does, or a
+  new dependency for something trivial and safe to build from what is here;
+- a parallel new path left beside the old one; flexibility, a branch or a
+  parameter nothing reaches; architecture beyond the approved scope.
+
+Two constraints keep this from doing harm. **Correctness and security outrank
+it** — these are ordinarily `Note` or `Low`, they never block the gate, and a
+shorter form that drops a validation, an access check or an error path is a
+defect, not a simplification. And **a "this can be deleted" is a claim like any
+finding**: name the `path:line`, confirm nothing else reaches it, and prescribe
+the smaller form — a helper cut while a second caller still used it is a defect
+the shorter diff introduced. Propose; never apply.
+
 # Output contract
 
 Return the coverage line, then the findings table, most severe first, and

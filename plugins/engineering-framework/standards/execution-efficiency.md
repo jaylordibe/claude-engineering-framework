@@ -49,6 +49,30 @@ The target is not the lowest token count. It is the **smallest computation that
 establishes production-grade confidence for the actual risk and scope of this
 change.** Those are different numbers, and only one of them is safe.
 
+### 2.1 Investigation breadth and implementation breadth are independent
+
+This standard sizes the **investigation**; it never sizes the **change**. How
+much a stage reads, maps, reasons and fans out is decided here, by risk and
+uncertainty. How much the resulting change *builds* is decided by
+`standards/architecture.md` §3, by the approved scope and the repository's
+evidence — and the two dimensions do not track each other.
+
+**Deep investigation does not license a deep implementation.** Discovering ten
+relevant possibilities is the investigation working; implementing the one or
+two the approved scope and the evidence actually require is the change working.
+A High or Critical change may earn a Deep band, a threat model, several review
+lenses and extensive validation and still be delivered as a five-line diff —
+and that is a correct outcome, not an under-built one. The eventual smallness of
+the change is never evidence that the investigation was too large, and its
+eventual size is never evidence the investigation was enough (§4's reverse move
+still does not exist).
+
+The inverse is the failure this pins against: an investigation that went wide
+must not widen the diff to match. Investigate to the depth confidence requires;
+implement only the complexity the evidence requires; validate to the depth the
+risk requires. They are three separate budgets, and reading the first as
+permission for the second is over-engineering wearing the label of diligence.
+
 ## 3. Investigation depth bands
 
 Repository mapping runs in one of four bands. A band sets the *breadth* of
