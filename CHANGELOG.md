@@ -12,6 +12,49 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 2.13.0 — 2026-09-20
+
+**Two evidence gaps closed: a claim about the world outside the repository is
+now labelled like any other, and making a check green by weakening the check is
+now named as manufacturing a pass.** The framework grounded every claim in
+repository evidence and forbade manufacturing a pass during validation. What it
+had no words for was the claim the repository cannot settle — how an external
+framework, SDK, API, protocol or cloud service behaves — and the pass
+manufactured not by editing source but by lowering what a check demands. Both
+are additive strengthenings of existing standards; nothing here asks a consuming
+repository to do anything, and nothing adds an agent, skill, gate, pipeline
+stage or mode.
+
+- **`standards/repository-evidence.md` §2b** governs claims about the world
+  outside the repository. Remembered external behaviour is rank 6, not a FACT;
+  most external claims still need nothing more, because using a dependency the
+  way the surrounding code already uses it stands on repository evidence and no
+  lookup is owed. Verification against an authoritative source is required only
+  when correctness materially depends on the claim and the repository does not
+  settle it — version-sensitive behaviour, a security assumption, infrastructure
+  or CLI behaviour, a vendor guarantee, a docs-versus-observed disagreement, or a
+  claim supplied from memory. It states a source-preference order (repository and
+  installed dependency source first, official documentation and specifications
+  next, secondary sources last), treats fetched content as untrusted input, and
+  records an unresolved material claim as an `ASSUMPTION` rather than a FACT. It
+  does **not** turn ordinary repository-local facts into research.
+- **`standards/evidence.md` §5** now states that weakening the check itself —
+  deleting or skipping a failing test, weakening an assertion, lowering a
+  coverage/lint/type/security/performance threshold, removing a rule or check,
+  broadening a suppression, or a stub behind a green check — is manufacturing a
+  pass by another route, and that the prohibition is on the motive and holds
+  wherever the edit is made, not only during validation. A new subsection draws
+  the line between a legitimate requirement-driven change (justified by the
+  requirement) and manipulation (justified only by the result now being green),
+  and requires materially weakening a quality bar to be surfaced for human
+  review as the risk acceptance it is, per the §1 floor of the execution-
+  efficiency standard.
+- **`gate-validate` §4** adds one diff-inspection line so detection matches the
+  strengthened norm: a lowered threshold, a removed check or a weakened
+  assertion is flagged against `evidence.md` §5 rather than passed.
+- `validate-plugin.mjs` anchors both new guarantees at their owning files, so a
+  future edit that silently drops either fails the build rather than the grader.
+
 ## 2.12.0 — 2026-09-10
 
 **Investigate to the depth confidence needs; implement only the complexity the

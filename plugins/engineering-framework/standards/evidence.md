@@ -89,13 +89,45 @@ running it can change the working tree, it is not a gate.
 
 ## 5. Never manufacture a pass
 
-During validation, do not modify source, tests, snapshots, fixtures, lockfiles,
-generated output, schema, migrations, configuration or documentation in order
-to make a check succeed. That converts a FAIL into a false PASS and destroys
-the only signal the gate exists to produce.
+Do not modify source, tests, snapshots, fixtures, lockfiles, generated output,
+schema, migrations, configuration or documentation **in order to make a check
+succeed**. That converts a FAIL into a false PASS and destroys the only signal
+the gate exists to produce. The prohibition is on the *motive*, and it holds
+wherever the edit is made — implementation and review edit these files as normal
+work; validation edits nothing at all.
 
-If a check fails because the change is wrong, the change is what gets fixed —
-in the implementation or review stage, then re-reviewed and re-validated.
+**Weakening the check itself is the same failure by another route.** A check
+made green by lowering what it demands proves less than before, not more. Each
+of these is manufacturing a pass, not passing:
+
+- deleting, skipping, focusing or disabling a test that was failing;
+- weakening an assertion so it no longer catches the wrong value;
+- lowering a coverage, lint, type, security or performance threshold, or
+  removing a rule, gate or check, so a failing result stops being reported;
+- adding a suppression directive to silence a finding rather than fix it;
+- narrowing a check's scope so the failing case is no longer exercised;
+- an empty catch, a stub, or a placeholder left behind a green check.
+
+If a check fails because the change is wrong, the change is what gets fixed — in
+the implementation or review stage, then re-reviewed and re-validated.
+
+### The line between a legitimate change and manipulation
+
+A test, a threshold or a check may legitimately change: a requirement changed
+the behaviour it asserts, a rule was genuinely wrong, a threshold was measuring
+the wrong thing. **What separates the two is what the change answers to.** A
+check changed because the *requirement* changed is engineering, and its
+justification is the requirement and the evidence for it. A check changed
+because it was *red* is manipulation, and its justification is that the result
+is now green — which cannot be stated without describing the failure it hides.
+
+**Materially weakening a quality bar is a human's decision, not a stage's.**
+Where the work genuinely requires lowering a threshold, removing a check,
+retiring a test or broadening a suppression, that changes what the repository
+guarantees: surface it prominently for human review, with the reason and the
+evidence, the way any risk acceptance is surfaced.
+`standards/execution-efficiency.md` §1 is the floor, and "the check was in the
+way" is not one of the human risk acceptances it names.
 
 ## 6. Evidence table
 

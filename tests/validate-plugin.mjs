@@ -1154,6 +1154,20 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'never modify anything to manufacture a pass',
     patterns: [/manufacture|make a check succeed/i],
   },
+  // The second route to a false PASS, added 2.13.0. The rule above forbids
+  // editing source to make a check succeed; this forbids the subtler move of
+  // weakening the check itself — a lowered threshold, a gutted assertion, a
+  // removed rule — which reads as a smaller diff and passes review as a
+  // "simplification". Both halves matter: without the manipulation line an agent
+  // makes the bar green by lowering it, and without the legitimate-change line
+  // the rule reads as an absolute ban on ever touching a test, which is false
+  // and gets ignored. The human-review clause is what keeps a genuine
+  // bar-lowering a decision the person owns rather than a stage's to take.
+  {
+    file: 'standards/evidence.md',
+    guarantee: 'weakening the check itself is manufacturing a pass; a legitimate check change answers to the requirement and manipulation answers only to a red result; materially weakening a quality bar is surfaced for human review',
+    patterns: [/weakening the check itself/i, /manipulation/i, /lowering a coverage/i, /human review/i],
+  },
   // The ticket writer's whole reason to exist is a default it corrects: asked
   // for a ticket, an agent writes the design it found into the description.
   // The three sentences below are the ones that stop that — no design in the
@@ -1228,6 +1242,20 @@ const NORMATIVE_ANCHORS = [
     file: 'standards/repository-evidence.md',
     guarantee: 'source precedence, with prior expectations ranked last',
     patterns: [/precedence/i, /executable source code/i, /prior expectations/i],
+  },
+  // External-claim verification, added 2.13.0. The precedence table above ranks
+  // sources INSIDE the repository; this is the axis it does not cover — a claim
+  // about a framework, SDK, API or cloud service the repository depends on but
+  // does not contain. Both ends are pinned because the rule fails in two
+  // opposite directions: without the trigger clause a remembered external
+  // behaviour is stated as fact and ships wrong, and without the "not a research
+  // task" clause every ordinary repository-local fact becomes a documentation
+  // fetch and the efficiency floor is gone. The ASSUMPTION fallback is what makes
+  // an unresolved external claim visible instead of rounded up to a FACT.
+  {
+    file: 'standards/repository-evidence.md',
+    guarantee: 'a material external claim is verified against an authoritative source when correctness depends on it, recorded as an ASSUMPTION otherwise, and never turned from a repository-local fact into a research task',
+    patterns: [/external (framework|system|claim|content)/i, /authoritative source/i, /version-sensitive/i, /repository-local fact into a research/i, /\bASSUMPTION\b/],
   },
   // The two halves of the over-engineering defence, anchored separately because
   // they fail separately. Without the grade, a ticket that asks for a table the

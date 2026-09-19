@@ -86,6 +86,9 @@ Then inspect the diff for things a runner will not catch:
 - debug output, placeholder values, or commented-out code;
 - unintended lockfile, generated-output or formatting churn;
 - new suppressions or disabled rules without a reason;
+- a quality threshold lowered, a rule or check removed, or an assertion
+  weakened so a failing case stops being caught — a manufactured pass, not a
+  simplification (`${CLAUDE_PLUGIN_ROOT}/standards/evidence.md` §5);
 - entry points added without the access declaration this repository requires;
 - persistence records returned directly where the repository uses a deliberate
   output shape;
