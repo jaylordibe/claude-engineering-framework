@@ -270,6 +270,30 @@ Rationale: [Architecture](docs/architecture.md).
 
 ---
 
+## 🌐 Platforms
+
+Himoa is one methodology with thin, **native** adapters per coding agent — the
+methodology owns risk, evidence, approval, review and validation; an adapter
+owns discovery, registration and the host's native enforcement. Claude Code is
+the reference implementation; other adapters are in progress.
+
+| Platform | Status |
+|---|---|
+| **Claude Code** | **Reference — full support.** Production-proven |
+| **OpenAI Codex** | **Native-mappable** — every primitive verified native; adapter designed, **not yet shipped** |
+| **Cursor** | Researched |
+| **GitHub Copilot** | Researched |
+| **Gemini CLI** | Preliminary — native file is `GEMINI.md`; `AGENTS.md` support unverified |
+
+"Compatible in theory" is not "supported": a platform is listed as supported
+only once its adapter actually runs the methodology, and an adapter never
+reports a guarantee as enforced when the host can only advise it. Design and the
+per-platform capability contract:
+[Cross-agent architecture](docs/cross-agent-architecture.md) ·
+[Platform capabilities](docs/platform-capabilities.md).
+
+---
+
 ## 🩺 Troubleshooting
 
 <details>
@@ -306,6 +330,8 @@ Rationale: [Architecture](docs/architecture.md).
 | [Changelog](CHANGELOG.md) | What each release asks of you |
 | [Development guide](docs/development-guide.md) | Changing and releasing the framework |
 | [Claude Code constraints](docs/constraints.md) | Platform limits that shaped the design |
+| [Cross-agent architecture](docs/cross-agent-architecture.md) | The core/adapter boundary and platform roadmap |
+| [Platform capabilities](docs/platform-capabilities.md) | What each agent can and cannot enforce |
 
 ---
 
