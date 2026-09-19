@@ -2,7 +2,7 @@
 
 ## What this project is, and is not
 
-The `engineering-framework` plugin ships **methodology**: a session charter, a
+The `himoa` plugin ships **methodology**: a session charter, a
 set of human-invoked gates, eight read-only review lenses, and the standards
 they judge against.
 
@@ -31,7 +31,7 @@ this plugin will not change them.
 ## Reporting a vulnerability
 
 Report privately through
-[GitHub Security Advisories](https://github.com/jaylordibe/claude-engineering-framework/security/advisories/new).
+[GitHub Security Advisories](https://github.com/jaylordibe/himoa/security/advisories/new).
 Please do not open a public issue for an unfixed problem.
 
 Include: the prompt or repository content that triggered it, what the agent did,
@@ -79,7 +79,7 @@ regress.
 The framework will not do any of this for you, and that is deliberate.
 
 1. **Choose your permission posture yourself.** Deny rules, ask rules and your
-   permission mode are the layers that actually stop an operation. `ef-doctor`
+   permission mode are the layers that actually stop an operation. `himoa-doctor`
    will name a rule it thinks you want; it will never write one.
 2. **Mirror Bash rules as PowerShell rules.** The PowerShell tool is enabled by
    default on Windows without Git Bash, and `Bash(...)` rules do not govern it,
@@ -105,7 +105,7 @@ input**, and text placed in any of it can be written to address the agent rather
 than to describe the system — asking for an approval it never received, a
 fabricated `PASS`, a credential, a force push, or a weakened CI job.
 
-`plugins/engineering-framework/standards/untrusted-content.md` is the standard.
+`plugins/himoa/standards/untrusted-content.md` is the standard.
 The rule it enforces is that a repository *describes itself* to an agent and
 never *issues instructions* to one, and that an attempt to do so is a finding to
 report with its `path:line` rather than a directive to follow.
@@ -125,8 +125,8 @@ a credential, or a fabricated verdict — as in scope for a report.
 The plugin has **no runtime dependencies** beyond `jq`. It is Markdown, JSON and
 POSIX shell, and it executes nothing it did not ship. The only script
 it runs *on its own* is `scripts/session-charter.sh`, on `SessionStart`. Two more
-run only when you invoke them: `bin/ef-doctor`, which is read-only, and
-`bin/ef-install-settings`, which `framework-install` calls and which writes only
+run only when you invoke them: `bin/himoa-doctor`, which is read-only, and
+`bin/himoa-install-settings`, which `framework-install` calls and which writes only
 the two declaration keys in the project's own settings. Third-party GitHub
 Actions in this repository's own CI are pinned to commit SHAs rather than tags.
 

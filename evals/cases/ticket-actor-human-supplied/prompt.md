@@ -4,7 +4,7 @@ graders: [ticket-discipline, evidence-discipline, scope-discipline]
 tags: [ticket, write-ticket, actor, greenfield, user-story, human-supplied]
 ---
 
-/engineering-framework:write-ticket Finance auditors need to export the monthly ledger of paid invoices so they can reconcile it against the billing provider's statement.
+/himoa:write-ticket Finance auditors need to export the monthly ledger of paid invoices so they can reconcile it against the billing provider's statement.
 
 <!--
 What this case is for — Case B, the human-defined greenfield actor.

@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🛠️ Engineering Framework
+# 🛠️ Himoa
 
 ### A senior engineering workflow for Claude Code — on any stack, in any repository.
 
@@ -68,14 +68,14 @@ other lives in the **repository**.
 ### 1. Install the plugin (once per machine)
 
 ```text
-/plugin marketplace add jaylordibe/claude-engineering-framework
-/plugin install engineering-framework@jaylordibe
+/plugin marketplace add jaylordibe/himoa
+/plugin install himoa@jaylordibe
 ```
 
 Restart Claude Code, then check:
 
 ```bash
-claude plugin list      # expect: engineering-framework@jaylordibe, ✔ enabled
+claude plugin list      # expect: himoa@jaylordibe, ✔ enabled
 ```
 
 ### 2. Set up a repository (once per repository)
@@ -83,8 +83,8 @@ claude plugin list      # expect: engineering-framework@jaylordibe, ✔ enabled
 By one person. The result is committed.
 
 ```text
-/engineering-framework:framework-install
-/engineering-framework:framework-doctor      # verify
+/himoa:framework-install
+/himoa:framework-doctor      # verify
 ```
 
 It shows every change before writing, never overwrites existing content, and
@@ -103,8 +103,8 @@ Commit both. **Flags:** `--no-auto-update` (adopt releases manually),
 **Do not run `framework-install`.** You only need the plugin on your machine:
 
 1. Open the repo and accept the trust prompt — the marketplace registers itself.
-2. Run `/plugin install engineering-framework@jaylordibe` and restart.
-3. `/engineering-framework:framework-doctor` to confirm.
+2. Run `/plugin install himoa@jaylordibe` and restart.
+3. `/himoa:framework-doctor` to confirm.
 
 If the repo doesn't declare the marketplace, run both commands from [step 1](#1-install-the-plugin-once-per-machine).
 
@@ -119,7 +119,7 @@ background; the new version loads on your next launch or after
 
 ```text
 /plugin marketplace update jaylordibe
-/plugin update engineering-framework@jaylordibe
+/plugin update himoa@jaylordibe
 ```
 
 Then restart or `/reload-plugins` — updates don't apply to a running session. An
@@ -133,7 +133,7 @@ patch bumps never ask anything of you.
 ## ⚡ Use
 
 ```text
-/engineering-framework:work-item <requirement, issue key, or issue URL>
+/himoa:work-item <requirement, issue key, or issue URL>
 ```
 
 Runs the whole pipeline. Stops exactly twice: to approve the plan, and to review
@@ -142,7 +142,7 @@ the diff before you commit.
 Before there is a requirement to feed it:
 
 ```text
-/engineering-framework:write-ticket <goal, rough notes, or an issue to rewrite>
+/himoa:write-ticket <goal, rough notes, or an issue to rewrite>
 ```
 
 Writes the ticket the way a business analyst would — a story, the current
@@ -155,11 +155,11 @@ contains no design; `work-item` derives that from evidence, with approval.
 <summary>Or drive the stages yourself</summary>
 
 ```text
-/engineering-framework:gate-design <requirement>
-/engineering-framework:gate-approve
-/engineering-framework:gate-implement
-/engineering-framework:gate-review
-/engineering-framework:gate-validate
+/himoa:gate-design <requirement>
+/himoa:gate-approve
+/himoa:gate-implement
+/himoa:gate-review
+/himoa:gate-validate
 ```
 
 Implemented something ad hoc? Pick up the back half: `gate-review`, then
@@ -175,16 +175,16 @@ Implemented something ad hoc? Pick up the back half: `gate-review`, then
 
 | Command | How often | Required? |
 |---|---|---|
-| `/plugin marketplace add jaylordibe/claude-engineering-framework` | Per machine | Only if the repo doesn't declare it |
-| `/plugin install engineering-framework@jaylordibe` | Per machine | **Always, per developer** — project settings can't install it for you |
-| `/engineering-framework:framework-install` | Per repository | Yes, for the person introducing it. Never for anyone who pulls afterwards |
+| `/plugin marketplace add jaylordibe/himoa` | Per machine | Only if the repo doesn't declare it |
+| `/plugin install himoa@jaylordibe` | Per machine | **Always, per developer** — project settings can't install it for you |
+| `/himoa:framework-install` | Per repository | Yes, for the person introducing it. Never for anyone who pulls afterwards |
 | `/plugin marketplace update jaylordibe` | Per release | Only if you opted out of auto-update |
-| `/plugin update engineering-framework@jaylordibe` | Per release | Only if you opted out of auto-update |
-| `/engineering-framework:framework-doctor` | Any time | Optional — fastest way to check everything is wired |
-| `/engineering-framework:work-item <requirement>` | Per change | The everyday command |
-| `/engineering-framework:gate-*` | Per stage | Optional alternative to `work-item` |
+| `/plugin update himoa@jaylordibe` | Per release | Only if you opted out of auto-update |
+| `/himoa:framework-doctor` | Any time | Optional — fastest way to check everything is wired |
+| `/himoa:work-item <requirement>` | Per change | The everyday command |
+| `/himoa:gate-*` | Per stage | Optional alternative to `work-item` |
 
-Every `/engineering-framework:` command must be typed by a human — each sets
+Every `/himoa:` command must be typed by a human — each sets
 `disable-model-invocation: true`. Claude cannot invoke or fake one.
 </details>
 
@@ -219,8 +219,8 @@ still ship as a five-line diff — a deep look is not a licence to build deeply.
 Before adding an abstraction, a dependency or a new path, the framework reuses
 what the repository already owns and prefers the standard library and the
 platform over new code — and never trades a test, a check or an error path for a
-smaller diff. Policy: [`standards/execution-efficiency.md`](plugins/engineering-framework/standards/execution-efficiency.md)
-and [`standards/architecture.md`](plugins/engineering-framework/standards/architecture.md) §3.
+smaller diff. Policy: [`standards/execution-efficiency.md`](plugins/himoa/standards/execution-efficiency.md)
+and [`standards/architecture.md`](plugins/himoa/standards/architecture.md) §3.
 
 ---
 
@@ -283,18 +283,14 @@ Rationale: [Architecture](docs/architecture.md).
 | Update seems to have no effect | Restart. Updates don't apply to a running session. |
 | Task panel stays empty during `work-item` | Check `env.CLAUDE_CODE_ENABLE_TODO_TOOLS` in `.claude/settings.json` — re-run `framework-install` if absent. Then check the plugin is 2.3.0+. Then check `.claude/settings.local.json`, which is per-developer and outranks the committed file. The run also prints a pipeline ledger in the conversation. |
 | Everything prompts for permission / a command is blocked | Not this plugin — it ships no permission rules. Check your own settings and permission mode. |
-| An agent describes architecture you don't have | Check `CLAUDE.md` is current, run `framework-doctor`, then [open an issue](https://github.com/jaylordibe/claude-engineering-framework/issues) with the transcript. |
+| An agent describes architecture you don't have | Check `CLAUDE.md` is current, run `framework-doctor`, then [open an issue](https://github.com/jaylordibe/himoa/issues) with the transcript. |
 | Claude claims a gate ran | It didn't — gates cannot be model-invoked. The claim is the bug. |
 
-**Leftovers from an older setup** — nothing here reads either of these; clean
-them up by hand:
+**Leftover from an older setup** — nothing here reads it; clean it up by hand:
 
 - **A `permissions` block in `.claude/settings.json`** — it's yours now. Delete
   `permissions.defaultMode` in particular: project settings override each
   developer's own, so it cancels the permission mode they chose.
-- **`.claude/engineering-framework.json`** — move `commands` into your
-  `CLAUDE.md` canonical-commands table and `risk.highRiskPaths` into a
-  `High-risk paths` section, then delete the file.
 </details>
 
 ---

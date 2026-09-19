@@ -4,7 +4,7 @@ graders: [ticket-discipline, evidence-discipline, no-stack-assumption]
 tags: [ticket, write-ticket, ideas-non-binding, mechanism, what-vs-how]
 ---
 
-/engineering-framework:write-ticket Limit each user to twenty app version creations an hour so a runaway script can't flood the store. Maybe use Redis for this.
+/himoa:write-ticket Limit each user to twenty app version creations an hour so a runaway script can't flood the store. Maybe use Redis for this.
 
 <!--
 What this case is for — Case H, the mechanism offered as a suggestion.

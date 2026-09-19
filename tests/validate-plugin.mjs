@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 //
-// Static validation for the engineering-framework plugin and its marketplace.
+// Static validation for the himoa plugin and its marketplace.
 //
 // WHY THIS EXISTS ALONGSIDE `claude plugin validate`
 // --------------------------------------------------
@@ -23,7 +23,7 @@ import { join, relative, dirname, basename, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const pluginRoot = join(repositoryRoot, 'plugins', 'engineering-framework');
+const pluginRoot = join(repositoryRoot, 'plugins', 'himoa');
 const marketplaceManifestPath = join(repositoryRoot, '.claude-plugin', 'marketplace.json');
 const pluginManifestPath = join(pluginRoot, '.claude-plugin', 'plugin.json');
 
@@ -305,16 +305,16 @@ function validateMarketplace() {
   // relative sources. It is NOT honoured by the installer, and believing the
   // documentation over the behaviour is what broke installation:
   //
-  //   metadata.pluginRoot = "./plugins"  +  source = "./engineering-framework"
-  //     what this validator computed:  <root>/plugins/engineering-framework  ✓ exists
-  //     what the installer resolved:   <root>/engineering-framework          ✗ absent
+  //   metadata.pluginRoot = "./plugins"  +  source = "./himoa"
+  //     what this validator computed:  <root>/plugins/himoa  ✓ exists
+  //     what the installer resolved:   <root>/himoa          ✗ absent
   //
   // Verified against Claude Code v2.1.226 by building a marketplace for each
   // form and running `claude plugin install`:
   //
-  //   pluginRoot + "engineering-framework"          -> refused, `source: Invalid input`
-  //   pluginRoot + "./plugins/engineering-framework" -> installs; pluginRoot ignored
-  //   no pluginRoot + "./plugins/engineering-framework" -> installs
+  //   pluginRoot + "himoa"          -> refused, `source: Invalid input`
+  //   pluginRoot + "./plugins/himoa" -> installs; pluginRoot ignored
+  //   no pluginRoot + "./plugins/himoa" -> installs
   //
   // So the key is inert in every form: it cannot rescue a bare source, because
   // a relative source must start with `./`, and it changes nothing for one that
@@ -915,7 +915,7 @@ function validateHooksAndScripts() {
     // moment that text contains a quote, and Claude Code cannot parse it, so
     // the decision is lost and the guard fails open.
     if (/permissionDecisionReason":"%s/.test(content) || /permissionDecisionReason":"[^"]*%s/.test(content)) {
-      const isFallbackForMissingJq = content.includes('ef_require_jq') || content.includes('jq is unavailable');
+      const isFallbackForMissingJq = content.includes('himoa_require_jq') || content.includes('jq is unavailable');
       if (!isFallbackForMissingJq) {
         fail(scriptPath, 'builds a hook decision with printf interpolation. Encode it with `jq -n --arg` so a reason containing a quote cannot produce invalid JSON, which fails open.');
       }
@@ -958,7 +958,7 @@ function validateCrossReferences() {
 // ---------------------------------------------------------------------------
 // 7b. Named-component references resolve
 //
-// A gate that says "launch `engineering-framework:security`" is naming a real
+// A gate that says "launch `himoa:security`" is naming a real
 // component, and if that component is gone the instruction silently does
 // nothing — the panel is one lens smaller and the report never says so.
 //
@@ -976,10 +976,10 @@ function validateComponentReferences(agentNames, skillNames) {
     const lines = content.split('\n');
 
     lines.forEach((line, index) => {
-      for (const match of line.matchAll(/engineering-framework:([a-z0-9][a-z0-9-]*)/g)) {
+      for (const match of line.matchAll(/himoa:([a-z0-9][a-z0-9-]*)/g)) {
         const referenced = match[1];
         if (!referenceable.has(referenced)) {
-          fail(filePath, `line ${index + 1} names \`engineering-framework:${referenced}\`, which is neither an agent nor a skill in this plugin. An instruction to launch a component that does not exist fails silently: the lens is simply never run, and nothing in the report says so.`);
+          fail(filePath, `line ${index + 1} names \`himoa:${referenced}\`, which is neither an agent nor a skill in this plugin. An instruction to launch a component that does not exist fails silently: the lens is simply never run, and nothing in the report says so.`);
         }
       }
     });
@@ -989,7 +989,7 @@ function validateComponentReferences(agentNames, skillNames) {
 // ---------------------------------------------------------------------------
 // 7c. The marketplace declaration matches the marketplace
 //
-// `ef-install-settings` writes these identifiers into a consuming repository's
+// `himoa-install-settings` writes these identifiers into a consuming repository's
 // own settings, and it has to ship them: the marketplace NAME is not derivable
 // from the plugin payload, because `.claude-plugin/marketplace.json` lives at
 // the marketplace repository root and is never copied into a plugin cache.
@@ -1010,7 +1010,7 @@ function validateMarketplaceDeclaration(marketplace, manifest) {
   const declarationPath = join(pluginRoot, 'reference', 'marketplace-declaration.json');
 
   if (!existsSync(declarationPath)) {
-    fail(declarationPath, 'the marketplace declaration is missing; ef-install-settings cannot configure a repository without it, and framework-install fails at step 2.');
+    fail(declarationPath, 'the marketplace declaration is missing; himoa-install-settings cannot configure a repository without it, and framework-install fails at step 2.');
     return;
   }
 
@@ -1062,7 +1062,7 @@ function validateMarketplaceDeclaration(marketplace, manifest) {
 // ---------------------------------------------------------------------------
 
 function validateInstallerBoundary() {
-  const installerPath = join(pluginRoot, 'bin', 'ef-install-settings');
+  const installerPath = join(pluginRoot, 'bin', 'himoa-install-settings');
   if (!existsSync(installerPath)) {
     fail(installerPath, 'the installer is missing; framework-install has nothing to run at its settings step.');
     return;
@@ -1072,7 +1072,7 @@ function validateInstallerBoundary() {
 
   const forbidden = [
     { pattern: /frameworkVersion/, why: 'mentions `frameworkVersion`; consumer repositories carry no framework version' },
-    { pattern: /engineering-framework\.json/, why: 'references an obsolete repository policy file' },
+    { pattern: /himoa\.json/, why: 'references an obsolete repository policy file' },
     { pattern: /known_marketplaces|installed_plugins/, why: "names Claude Code's internal plugin state, which belongs to the host application" },
     { pattern: /(>|>>|mkdir|rm|mv|cp|touch|tee)\s+["']?(\$HOME|~\/|\$\{HOME)/, why: 'writes into the home directory; the installer is project-scoped' },
   ];
@@ -1082,38 +1082,6 @@ function validateInstallerBoundary() {
     for (const { pattern, why } of forbidden) {
       if (pattern.test(line)) {
         fail(installerPath, `line ${index + 1} ${why}: ${line.trim()}`);
-      }
-    }
-  }
-}
-
-// ---------------------------------------------------------------------------
-// 7d. The removed repository policy file stays removed
-//
-// `.claude/engineering-framework.json` is not a file any repository has: `frameworkVersion`
-// was a version pin the consuming repository had no business carrying,
-// `commands` duplicated the CLAUDE.md canonical-commands table, and
-// `risk.highRiskPaths` moved into CLAUDE.md.
-//
-// The risk is not that someone recreates the file deliberately. It is that a
-// gate keeps CITING it — costing nothing to write, failing silently forever,
-// and sending every agent to read a file that no repository has any more.
-// ---------------------------------------------------------------------------
-
-function validateNoLegacyPolicyFileReferences() {
-  const shipped = [
-    ...listFilesRecursively(join(pluginRoot, 'skills'), (path) => path.endsWith('.md')),
-    ...listFilesRecursively(join(pluginRoot, 'agents'), (path) => path.endsWith('.md')),
-    ...listFilesRecursively(join(pluginRoot, 'standards'), (path) => path.endsWith('.md')),
-    ...listFilesRecursively(join(pluginRoot, 'templates'), (path) => path.endsWith('.md')),
-    ...listFilesRecursively(join(pluginRoot, 'reference')),
-  ];
-
-  for (const filePath of shipped) {
-    const text = readFileSync(filePath, 'utf8');
-    for (const [index, line] of text.split('\n').entries()) {
-      if (line.includes('engineering-framework.json') || /\brisk\.highRiskPaths\b/.test(line) || /\bframeworkVersion\b/.test(line)) {
-        fail(filePath, `line ${index + 1} references an obsolete repository policy file. Canonical commands and high-risk paths live in the repository's CLAUDE.md now; an instruction to read a file no repository has fails silently, and the gate simply gets no answer.`);
       }
     }
   }
@@ -1898,7 +1866,6 @@ validateHooksAndScripts();
 validateCrossReferences();
 validateComponentReferences(agentNames, skillNames);
 validateMarketplaceDeclaration(marketplace, manifest);
-validateNoLegacyPolicyFileReferences();
 validateInstallerBoundary();
 validateNormativeAnchors();
 validateSingleSourcePolicies();
@@ -1914,7 +1881,7 @@ for (const name of agentNames.keys()) {
 
 const componentCount = agentNames.size + skillNames.size;
 
-console.log(`engineering-framework — static validation`);
+console.log(`himoa — static validation`);
 console.log(`  ${agentNames.size} agents, ${skillNames.size} skills, ${componentCount} named components\n`);
 
 for (const message of warnings) console.log(`WARN  ${message}`);

@@ -136,7 +136,7 @@ shipping product value rather than tracking framework releases. Teams that need
 controlled adoption opt out; see *What holds the line* below.
 
 **It also follows from removing the version pin.** Before 2.0.0 a consuming
-repository declared `frameworkVersion`, and `ef-doctor` failed on a major gap —
+repository declared `frameworkVersion`, and `himoa-doctor` failed on a major gap —
 crude, but a stale installation eventually announced itself. Nothing replaced
 it: a repository now records **no framework version at all**. Updating is still
 entirely possible — `/plugin marketplace update` then `/plugin update`, any
@@ -228,7 +228,7 @@ the standards say so in their own text.
 ## Component map
 
 ```text
-plugins/engineering-framework/
+plugins/himoa/
 ├── skills/          the ticket writer, workflow gates + model-invoked domain playbooks
 ├── agents/          eight read-only review lenses
 ├── standards/       the generic bar, cited by skills and agents
@@ -237,8 +237,8 @@ plugins/engineering-framework/
 ├── scripts/         session-charter.sh, the only hook the plugin registers
 ├── reference/       CLAUDE.md template, and the marketplace declaration the
 │                    installer merges into a consuming repository
-└── bin/             ef-doctor, the read-only contract audit; and
-                     ef-install-settings, the project declaration merge.
+└── bin/             himoa-doctor, the read-only contract audit; and
+                     himoa-install-settings, the project declaration merge.
                      Both on PATH while the plugin is enabled
 ```
 
@@ -641,7 +641,7 @@ this one:
 {
   "name": "some-stack-pack",
   "source": "./some-stack-pack",
-  "dependencies": ["engineering-framework"]
+  "dependencies": ["himoa"]
 }
 ```
 

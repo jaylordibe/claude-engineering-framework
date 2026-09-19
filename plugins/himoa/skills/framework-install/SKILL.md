@@ -1,6 +1,6 @@
 ---
 name: framework-install
-description: Configures the current repository to use the engineering framework — declares the marketplace and enables the plugin in the project's own .claude/settings.json, and scaffolds the CLAUDE.md that states what this system is. Preserves every existing setting, writes no permission rules, and touches nothing global.
+description: Configures the current repository to use the Himoa framework — declares the marketplace and enables the plugin in the project's own .claude/settings.json, and scaffolds the CLAUDE.md that states what this system is. Preserves every existing setting, writes no permission rules, and touches nothing global.
 argument-hint: "[settings | claude-md | all]"
 disable-model-invocation: true
 model: inherit
@@ -42,7 +42,7 @@ another member of `env`. That third key grants nothing and denies nothing; it
 only lets a run's stages appear in the task panel. A developer who turns on a
 permission mode is entitled to get that mode, not one a plugin rewrote
 underneath them. Declaring a dependency and rewriting someone's permission
-posture are different acts, and `bin/ef-install-settings` is written so the
+posture are different acts, and `bin/himoa-install-settings` is written so the
 difference is mechanical rather than promised.
 
 **It writes nothing global and nothing of Claude Code's.** Not
@@ -73,7 +73,7 @@ forget, and it goes stale silently.
 ## 1. Survey first
 
 ```bash
-ef-doctor
+himoa-doctor
 ```
 
 It is on `PATH` while the plugin is enabled. Report what already exists before
@@ -85,8 +85,8 @@ than no install.
 Show what would change, then apply it:
 
 ```bash
-ef-install-settings --check
-ef-install-settings
+himoa-install-settings --check
+himoa-install-settings
 ```
 
 The script merges structurally: it adds only what is missing, leaves an
@@ -124,7 +124,7 @@ halves rather than only the convenience:
   standard and this repository, and Claude Code keeps marketplace state per user,
   so it reaches each machine that opens it.
 
-Then name the alternative in one line: `ef-install-settings --no-auto-update`
+Then name the alternative in one line: `himoa-install-settings --no-auto-update`
 writes the entry without the key, and releases are adopted with the two update
 commands. An entry that already states `autoUpdate` either way is left alone,
 and you should not offer to change it.
@@ -159,7 +159,7 @@ every later agent will trust.
 
 ## 4. Verify and hand off
 
-Re-run `ef-doctor` and show the result.
+Re-run `himoa-doctor` and show the result.
 
 Then state plainly:
 
@@ -174,6 +174,6 @@ Then state plainly:
   sets it in `.claude/settings.local.json` rather than editing the committed
   file.
 
-Suggested next step: run `/engineering-framework:framework-doctor` after
+Suggested next step: run `/himoa:framework-doctor` after
 filling in `CLAUDE.md`, then start real work with
-`/engineering-framework:work-item <requirement>`.
+`/himoa:work-item <requirement>`.

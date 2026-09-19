@@ -23,8 +23,8 @@ that apply to it.
 ## Running them
 
 ```bash
-claude plugin eval ./plugins/engineering-framework
-claude plugin eval ./plugins/engineering-framework --case no-stack-assumption
+claude plugin eval ./plugins/himoa
+claude plugin eval ./plugins/himoa --case no-stack-assumption
 ```
 
 `plugin eval` is in early access, and the command reports as much on accounts
@@ -47,12 +47,12 @@ inside a gate. The gates are human-invocable by construction, so Claude cannot
 start one: a plain request reaches neither the mapper nor a lens, and a case
 written as one would grade the main conversation while looking like it graded
 the panel. Those two therefore open with
-`/engineering-framework:gate-design`, exactly as a developer would type it.
+`/himoa:gate-design`, exactly as a developer would type it.
 
 `gate-design` stops at the approval boundary on its own, so this is not the
 full-pipeline run excluded below.
 
-The `ticket-*` cases that open with `/engineering-framework:write-ticket` are
+The `ticket-*` cases that open with `/himoa:write-ticket` are
 the others. `write-ticket` is human-invocable for the same reason the gates
 are — a ticket written unasked is a design written unasked — so each case
 opens with the command, and where a case has a follow-up turn it is a plain
@@ -200,7 +200,7 @@ either case is read on its own, and obvious side by side.
   gradeable, and a rubric that pretends otherwise mostly measures verbosity.
 - Full pipeline runs. They need a human at the approval gate by construction —
   that is the point of the gate, not a testing gap.
-- Anything mechanical. `ef-doctor`'s diagnoses are pinned exactly by
+- Anything mechanical. `himoa-doctor`'s diagnoses are pinned exactly by
   `tests/run-doctor-fixtures.mjs`, which is cheaper, deterministic, and runs on
   every commit. Behavioural evals are for what only a model can be judged on.
 - Whether the fixtures themselves are honest. `tests/validate-fixtures.mjs`

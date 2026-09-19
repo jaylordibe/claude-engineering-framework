@@ -70,7 +70,7 @@ Do not silently decide unresolved product behaviour.
 
 ## 2. Map repository reality
 
-**`engineering-framework:context-mapper` is always required.** Launch it
+**`himoa:context-mapper` is always required.** Launch it
 **first**, before any option is weighed. You cannot judge a change you have not
 mapped. Never skip it, and **state that you ran it** — an unexplained skip is
 indistinguishable from an oversight to whoever reads the plan.

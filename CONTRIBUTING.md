@@ -33,8 +33,8 @@ node tests/validate-fixtures.mjs
 node tests/validate-charter.mjs
 node tests/run-doctor-fixtures.mjs
 node tests/validate-install-settings.mjs
-claude plugin validate ./plugins/engineering-framework --strict
-shellcheck plugins/engineering-framework/scripts/*.sh plugins/engineering-framework/bin/*
+claude plugin validate ./plugins/himoa --strict
+shellcheck plugins/himoa/scripts/*.sh plugins/himoa/bin/*
 ```
 
 All of them run in CI and take seconds together.
@@ -103,7 +103,7 @@ The most valuable report this project can receive is:
 
 That is the failure the whole design exists to prevent, and it is treated as a
 correctness bug. Please include the transcript, the relevant part of your
-`CLAUDE.md`, and the output of `/engineering-framework:framework-doctor`.
+`CLAUDE.md`, and the output of `/himoa:framework-doctor`.
 
 For a security issue — most likely an agent or standard that can be steered by
 repository content — see [SECURITY.md](SECURITY.md).

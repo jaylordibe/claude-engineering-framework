@@ -4,7 +4,7 @@ graders: [ticket-discipline, evidence-discipline]
 tags: [ticket, write-ticket, actor, user-story, repository-evidence]
 ---
 
-/engineering-framework:write-ticket Admins need to see how many documents a workspace purge would remove before they run it, so they stop purging the wrong workspace.
+/himoa:write-ticket Admins need to see how many documents a workspace purge would remove before they run it, so they stop purging the wrong workspace.
 
 <!--
 What this case is for — Case A, the evidenced actor.

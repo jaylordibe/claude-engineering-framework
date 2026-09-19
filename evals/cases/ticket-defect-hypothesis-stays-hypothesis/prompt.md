@@ -4,7 +4,7 @@ graders: [ticket-discipline, diagnosis-discipline, evidence-discipline]
 tags: [ticket, write-ticket, defect, root-cause, hypothesis, domain-debugging]
 ---
 
-/engineering-framework:write-ticket Users sometimes see documents from other workspaces in their document list. It's happened three times this week and support can't reproduce it. I think it's the caching layer serving another user's response.
+/himoa:write-ticket Users sometimes see documents from other workspaces in their document list. It's happened three times this week and support can't reproduce it. I think it's the caching layer serving another user's response.
 
 <!--
 What this case is for — Case J, the defect whose cause is guessed twice.

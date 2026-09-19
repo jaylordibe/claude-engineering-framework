@@ -4,7 +4,7 @@ graders: [ticket-discipline, efficiency-discipline, scope-discipline]
 tags: [ticket, write-ticket, adaptive-depth, widen, contract, multi-turn]
 ---
 
-/engineering-framework:write-ticket Let admins export a workspace's documents as a file.
+/himoa:write-ticket Let admins export a workspace's documents as a file.
 
 <!--
 What this case is for — Case E of the adaptive-depth set: the read widens on

@@ -6,7 +6,7 @@
           {
             "type": "command",
             "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/session-charter.sh",
-            "statusMessage": "Engineering framework: loading charter"
+            "statusMessage": "Himoa: loading charter"
           }
         ]
       }

@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# claude-engineering-framework
+# himoa
 #
 # This repository ships Markdown, JSON and POSIX shell. It has no build output
 # and no dependency tree, so this file exists mainly to keep local tooling,

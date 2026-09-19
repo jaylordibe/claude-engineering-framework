@@ -112,7 +112,7 @@ fresh, and this is the table that gets read in a hurry.
 If the suite runs in parallel, confirm the new tests respect the isolation the
 topology provides.
 
-Ask `engineering-framework:tester` whether the executed evidence actually
+Ask `himoa:tester` whether the executed evidence actually
 covers the plan, the review fixes and the identified risks — a suite that
 passed is not evidence that its assertions were sufficient.
 
@@ -132,7 +132,7 @@ mixed-version safety · the rollback or roll-forward path.
 harness exercises migrations against its own isolated store, that is the only
 place a migration may run automatically.
 
-Ask `engineering-framework:data` to assess the evidence.
+Ask `himoa:data` to assess the evidence.
 
 ## 7. Security and contract gates
 
@@ -145,7 +145,7 @@ message-sending paths · audit records with the right actor · log redaction ·
 any dependency or security scan this repository actually supports · consumer
 compatibility.
 
-Ask `engineering-framework:security` and `engineering-framework:contract`
+Ask `himoa:security` and `himoa:contract`
 whether the evidence covers the threat model and the contract.
 
 ## 8. Runtime and operational gates
@@ -158,7 +158,7 @@ correlation identifiers crossing process boundaries · terminal-failure handling
 · status and health responses leaking no internal detail · logs useful and
 redacted · rollout and rollback prerequisites present.
 
-Ask `engineering-framework:performance` for asynchronous, integration or
+Ask `himoa:performance` for asynchronous, integration or
 load-sensitive changes.
 
 ## 9. Verdict

@@ -111,7 +111,7 @@ reference in every Markdown file and rejects any `../` traversal.
 > last segment of the command [...]. The bare `/fancy` also invokes the skill
 > unless another command already uses that name. — *Skills*
 
-**Consequence.** `/engineering-framework:gate-design` is unambiguous, so the
+**Consequence.** `/himoa:gate-design` is unambiguous, so the
 `gate-` prefix is no longer load-bearing against built-in collisions the way it
 was in a project-local `.claude/`. It is kept anyway: the bare form still
 resolves, so the prefix protects that path, and typing `/gate` groups the five
@@ -284,10 +284,10 @@ Measured against v2.1.226 by building a marketplace for each form and running
 
 | `metadata.pluginRoot` | `source` | Result |
 |---|---|---|
-| `"./plugins"` | `"engineering-framework"` | **Refused** — `source: Invalid input` |
-| `"./plugins"` | `"./engineering-framework"` | **Installs nothing** — resolves to `<root>/engineering-framework`; `pluginRoot` ignored |
-| `"./plugins"` | `"./plugins/engineering-framework"` | Installs; `pluginRoot` ignored |
-| *absent* | `"./plugins/engineering-framework"` | Installs |
+| `"./plugins"` | `"himoa"` | **Refused** — `source: Invalid input` |
+| `"./plugins"` | `"./himoa"` | **Installs nothing** — resolves to `<root>/himoa`; `pluginRoot` ignored |
+| `"./plugins"` | `"./plugins/himoa"` | Installs; `pluginRoot` ignored |
+| *absent* | `"./plugins/himoa"` | Installs |
 
 **Consequence.** `pluginRoot` cannot do the one thing it is documented to do: a
 bare source is rejected by the schema before any prefix could be applied, and a
@@ -297,8 +297,8 @@ inert in every combination.
 It is worse than merely useless. Its presence is an invitation to write the
 short source it claims to support — which is exactly how this repository shipped
 a marketplace that passed both validators and could not install: the manifest
-said `pluginRoot: "./plugins"` with `source: "./engineering-framework"`, and the
-installer looked for `<root>/engineering-framework`.
+said `pluginRoot: "./plugins"` with `source: "./himoa"`, and the
+installer looked for `<root>/himoa`.
 
 **Enforced by.** `validate-plugin.mjs` rejects `metadata.pluginRoot` outright,
 resolves every relative source against the marketplace root with no prefix, and
@@ -519,7 +519,7 @@ actors the documentation sanctions — Claude Code writing the key when a user
 toggles it, and an administrator in managed settings. A project file setting it
 for other developers is nowhere *described*, even though it demonstrably works.
 
-**How the design resolves it.** `ef-install-settings` writes
+**How the design resolves it.** `himoa-install-settings` writes
 `"autoUpdate": true` on a new entry, deliberately, because of what 2.0.0
 removed: a consuming repository records **no framework version**, so nothing in
 it ever asks to be updated. Without the key a team installs once and stays on
@@ -609,7 +609,7 @@ have the task tools, the same seven stages are mirrored into them, because the
 native panel is a better display than a code block; nothing about the run
 changes when it is absent.
 
-**What we do about the opt-in.** `ef-install-settings` writes the key, and the
+**What we do about the opt-in.** `himoa-install-settings` writes the key, and the
 test that admits it is the one to apply to any future addition.
 
 The rule the framework holds itself to is about settings that can **deny**: a

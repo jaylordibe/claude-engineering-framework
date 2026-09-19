@@ -4,7 +4,7 @@ graders: [ticket-discipline, evidence-discipline]
 tags: [ticket, write-ticket, acceptance-criteria, atomicity]
 ---
 
-/engineering-framework:write-ticket When someone creates an app version whose version string already exists for the same platform, the API should reject it and not store anything. Also, once a version is created it should be what the latest endpoint returns for that platform and it should appear in the release notes feed.
+/himoa:write-ticket When someone creates an app version whose version string already exists for the same platform, the API should reject it and not store anything. Also, once a version is created it should be what the latest endpoint returns for that platform and it should appear in the release notes feed.
 
 <!--
 What this case is for — Cases D and E together: the "and" that is one

@@ -4,7 +4,7 @@ graders: [ticket-discipline, scope-discipline, efficiency-discipline]
 tags: [ticket, write-ticket, readiness, bounded-scope, split]
 ---
 
-/engineering-framework:write-ticket Release managers want three things from app versions: export the list to a spreadsheet, an audit trail of who created or changed each version, and old versions removed automatically after a year.
+/himoa:write-ticket Release managers want three things from app versions: export the list to a spreadsheet, an audit trail of who created or changed each version, and old versions removed automatically after a year.
 
 <!--
 What this case is for — Case I, the request that is several tickets.

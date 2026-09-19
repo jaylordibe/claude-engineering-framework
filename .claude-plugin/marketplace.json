@@ -8,8 +8,8 @@
   },
   "plugins": [
     {
-      "name": "engineering-framework",
-      "source": "./plugins/engineering-framework",
+      "name": "himoa",
+      "source": "./plugins/himoa",
       "description": "A stack-agnostic engineering workflow for Claude Code: understand, design, human approval, implement, review, validate, present. Repository evidence outranks assumptions.",
       "category": "workflow",
       "keywords": [
@@ -21,8 +21,8 @@
         "quality-gates"
       ],
       "license": "MIT",
-      "homepage": "https://github.com/jaylordibe/claude-engineering-framework",
-      "repository": "https://github.com/jaylordibe/claude-engineering-framework"
+      "homepage": "https://github.com/jaylordibe/himoa",
+      "repository": "https://github.com/jaylordibe/himoa"
     }
   ]
 }

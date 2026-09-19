@@ -1,4 +1,4 @@
-# engineering-framework
+# himoa
 
 A stack-agnostic engineering workflow for Claude Code.
 
@@ -24,8 +24,8 @@ Two independent things must be in place. Confusing them is the usual problem:
 **Install the plugin — once per machine:**
 
 ```text
-/plugin marketplace add jaylordibe/claude-engineering-framework
-/plugin install engineering-framework@jaylordibe
+/plugin marketplace add jaylordibe/himoa
+/plugin install himoa@jaylordibe
 ```
 
 Restart, then confirm with `claude plugin list`.
@@ -34,7 +34,7 @@ Restart, then confirm with `claude plugin list`.
 it here; the declaration arrived with your `git pull`.
 
 ```text
-/engineering-framework:framework-install
+/himoa:framework-install
 ```
 
 It shows every change before writing and never overwrites existing content:
@@ -44,7 +44,7 @@ It shows every change before writing and never overwrites existing content:
 | `CLAUDE.md` | **Yes** | Your canonical commands, high-risk paths, architecture, consumers. Without it every agent infers your stack. |
 | `.claude/settings.json` | Recommended | The dependency declaration. Without it, every teammate registers the marketplace by hand. |
 
-Commit both. Verify with `/engineering-framework:framework-doctor`.
+Commit both. Verify with `/himoa:framework-doctor`.
 
 **Teammates still run `/plugin install` themselves.** From Claude Code v2.1.195
 a plugin enabled only by project settings, sourced from a git repository, does
@@ -60,7 +60,7 @@ rewritten.
 ## Use
 
 ```text
-/engineering-framework:work-item <requirement | issue key | issue URL>
+/himoa:work-item <requirement | issue key | issue URL>
 ```
 
 Runs the whole pipeline and stops exactly twice: to approve the plan, and to
@@ -69,7 +69,7 @@ review the diff before you commit.
 To write the requirement first:
 
 ```text
-/engineering-framework:write-ticket <goal, rough notes, or an issue to rewrite>
+/himoa:write-ticket <goal, rough notes, or an issue to rewrite>
 ```
 
 A story, current behaviour cited from your code, observable acceptance
@@ -81,14 +81,14 @@ approval.
 Or drive it stage by stage:
 
 ```text
-/engineering-framework:gate-design <requirement>
-/engineering-framework:gate-approve
-/engineering-framework:gate-implement
-/engineering-framework:gate-review
-/engineering-framework:gate-validate
+/himoa:gate-design <requirement>
+/himoa:gate-approve
+/himoa:gate-implement
+/himoa:gate-review
+/himoa:gate-validate
 ```
 
-Diagnostics: `/engineering-framework:framework-doctor`
+Diagnostics: `/himoa:framework-doctor`
 
 Every one of these must be typed by a human — each sets
 `disable-model-invocation: true`, so Claude cannot invoke a gate or claim one
@@ -137,6 +137,6 @@ mode they chose. Nothing here reads it.
 
 Architecture, consuming-repository guide, migration guide, development guide and
 the Claude Code constraints that shaped this design are in the
-[repository](https://github.com/jaylordibe/claude-engineering-framework).
+[repository](https://github.com/jaylordibe/himoa).
 
 MIT licensed.

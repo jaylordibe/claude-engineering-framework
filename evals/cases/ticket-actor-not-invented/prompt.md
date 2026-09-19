@@ -4,7 +4,7 @@ graders: [ticket-discipline, evidence-discipline, no-stack-assumption]
 tags: [ticket, write-ticket, actor, unknown, user-story]
 ---
 
-/engineering-framework:write-ticket We need a way to replay a webhook that failed to forward.
+/himoa:write-ticket We need a way to replay a webhook that failed to forward.
 
 <!--
 What this case is for — Case C, the actor nobody supplied.

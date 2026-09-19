@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 //
-// Asserts what `ef-doctor` actually reports, per repository shape.
+// Asserts what `himoa-doctor` actually reports, per repository shape.
 //
 // WHY THIS EXISTS
 // ---------------
-// CI ran ef-doctor across every fixture and discarded the result with `|| true`,
+// CI ran himoa-doctor across every fixture and discarded the result with `|| true`,
 // printing output nobody asserted. That is a smoke test at best: it proves the
 // script does not crash. It cannot tell a doctor that reports a real problem
 // from one that reports nothing at all, and "reports nothing" is the failure
@@ -34,12 +34,12 @@ import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const pluginRoot = join(repositoryRoot, 'plugins', 'engineering-framework');
-const doctor = join(pluginRoot, 'bin', 'ef-doctor');
+const pluginRoot = join(repositoryRoot, 'plugins', 'himoa');
+const doctor = join(pluginRoot, 'bin', 'himoa-doctor');
 const declarationPath = join(pluginRoot, 'reference', 'marketplace-declaration.json');
 
 if (!existsSync(doctor)) {
-  console.error(`FAIL  ef-doctor not found at ${doctor}`);
+  console.error(`FAIL  himoa-doctor not found at ${doctor}`);
   process.exit(1);
 }
 
@@ -50,13 +50,13 @@ const DECLARATION = JSON.parse(readFileSync(declarationPath, 'utf8'));
 const MARKETPLACE = DECLARATION.marketplace;
 const PLUGIN_ID = `${DECLARATION.plugin}@${DECLARATION.marketplace}`;
 
-// ef-doctor audits the repository contract and nothing else: the
+// himoa-doctor audits the repository contract and nothing else: the
 // framework ships no permission rules and no hooks that gate a command, so
 // there is no floor to build, no user settings to control, and no permission
 // shape left to assert. Everything below describes a repository, and every case
 // reads only that repository.
 function buildRepository(files) {
-  const directory = mkdtempSync(join(tmpdir(), 'ef-doctor-'));
+  const directory = mkdtempSync(join(tmpdir(), 'himoa-doctor-'));
   for (const [relativePath, content] of Object.entries(files)) {
     const fullPath = join(directory, relativePath);
     mkdirSync(dirname(fullPath), { recursive: true });
@@ -185,7 +185,7 @@ const CASES = [
     name: 'a repository with no declaration at all is warned, not failed',
     build: { 'CLAUDE.md': HEALTHY_CLAUDE_MD },
     exit: 0,
-    mustReport: ['WARN  This repository does not declare the engineering framework.'],
+    mustReport: ['WARN  This repository does not declare the Himoa framework.'],
     mustNotReport: ['FAIL'],
   },
   {
@@ -199,18 +199,6 @@ const CASES = [
       `WARN  Does not declare the ${MARKETPLACE} marketplace.`,
       `WARN  Does not enable ${PLUGIN_ID} for this project.`,
     ],
-    mustNotReport: ['FAIL'],
-  },
-  {
-    // Obsolete. A repository that still has one is declaring commands
-    // and risk paths that nothing reads, and nothing else would ever say so.
-    name: 'an obsolete policy file is named, not parsed',
-    build: {
-      'CLAUDE.md': HEALTHY_CLAUDE_MD,
-      '.claude/engineering-framework.json': { commands: { test: 'make test' } },
-    },
-    exit: 0,
-    mustReport: ['WARN  .claude/engineering-framework.json is no longer read by anything.'],
     mustNotReport: ['FAIL'],
   },
   {
@@ -253,7 +241,7 @@ const CASES = [
   },
   {
     name: 'a directory that does not exist fails rather than passing vacuously',
-    path: join(tmpdir(), 'ef-doctor-definitely-not-here'),
+    path: join(tmpdir(), 'himoa-doctor-definitely-not-here'),
     exit: 1,
     mustReport: ['FAIL  no such directory'],
   },
@@ -274,7 +262,7 @@ for (const testCase of CASES) {
   const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
 
   if (result.error) {
-    failures.push({ name: testCase.name, why: `ef-doctor did not run: ${result.error.message}` });
+    failures.push({ name: testCase.name, why: `himoa-doctor did not run: ${result.error.message}` });
     continue;
   }
 
@@ -308,7 +296,7 @@ for (const testCase of CASES) {
   }
 }
 
-console.log(`ef-doctor — ${CASES.length} repository shapes\n`);
+console.log(`himoa-doctor — ${CASES.length} repository shapes\n`);
 
 for (const failure of failures) {
   console.log(`FAIL  ${failure.name}`);

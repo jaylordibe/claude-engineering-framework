@@ -4,7 +4,7 @@ graders: [ticket-discipline, efficiency-discipline, evidence-discipline]
 tags: [ticket, write-ticket, adaptive-depth, stay-narrow, execution-efficiency]
 ---
 
-/engineering-framework:write-ticket Admins need a "Retry import" action for a document import that failed. Only admins may use it. Success and failure must be shown to the admin.
+/himoa:write-ticket Admins need a "Retry import" action for a document import that failed. Only admins may use it. Success and failure must be shown to the admin.
 
 <!--
 What this case is for — Case A of the adaptive-depth set: a clear request

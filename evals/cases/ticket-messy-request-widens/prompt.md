@@ -4,7 +4,7 @@ graders: [ticket-discipline, efficiency-discipline, diagnosis-discipline]
 tags: [ticket, write-ticket, adaptive-depth, widen, defect, actor, split]
 ---
 
-/engineering-framework:write-ticket Sometimes invoices don't get marked paid after the customer pays. Maybe use Redis retries. Admins should be able to mark them paid by hand, maybe vendors too. We need to know whether the provider's webhook actually reached us, and nothing should ever get paid twice.
+/himoa:write-ticket Sometimes invoices don't get marked paid after the customer pays. Maybe use Redis retries. Admins should be able to mark them paid by hand, maybe vendors too. We need to know whether the provider's webhook actually reached us, and nothing should ever get paid twice.
 
 <!--
 What this case is for — Case B of the adaptive-depth set: a messy request

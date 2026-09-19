@@ -1,5 +1,5 @@
 <!--
-  Engineering framework — consuming repository template.
+  Himoa — consuming repository template.
 
   The framework owns methodology. This file owns truth.
 
@@ -25,7 +25,7 @@ every* change. Situational playbooks live in `.claude/skills/` and in the
 documentation this file points to.
 
 Engineering methodology — the gate sequence, risk tiers, evidence language and
-human-owned operations — comes from the `engineering-framework` plugin and is
+human-owned operations — comes from the `himoa` plugin and is
 not restated here. **Where a generic framework standard conflicts with a rule
 in this file, this file wins**: the framework describes how to work, this file
 describes what is true.

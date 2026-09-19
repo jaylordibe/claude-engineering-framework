@@ -28,13 +28,13 @@ consuming repository must do, and the note has to be legible to someone who
 never sees it coming.
 
 **No mechanism forces that note to be read.** A declared `frameworkVersion` in
-the consuming repository, failed on by `ef-doctor`, would buy the warning at the
+the consuming repository, failed on by `himoa-doctor`, would buy the warning at the
 price of duplicating state Claude Code already owns — a number that goes stale
 in silence whenever nobody updates it. The note has to carry itself.
 
 What replaces it is weaker and honest about being weaker: the changelog entry,
 and — where a removal leaves something behind that quietly stops working —
-a line in `ef-doctor` naming it. That is why the 2.0.0 doctor reports a leftover
+a line in `himoa-doctor` naming it. That is why the 2.0.0 doctor reports a leftover
 policy file. **A removal that leaves inert configuration behind must say so
 somewhere the user will actually look**, or the failure is indistinguishable
 from the feature working.
@@ -62,12 +62,12 @@ cannot act on is not an entry. Fix them, merge them, and let them ride along
 with the next release that has a reason of its own.
 
 **The test is where the file is read from.** Anything under
-`plugins/engineering-framework/` is copied into each consumer's plugin cache at
+`plugins/himoa/` is copied into each consumer's plugin cache at
 install time and is frozen at whatever version they have; correcting it requires
 a release to reach them. Everything else in this repository is read live from
 GitHub and requires nothing.
 
-The bundled `plugins/engineering-framework/README.md` is the awkward case: it
+The bundled `plugins/himoa/README.md` is the awkward case: it
 ships in the payload, but nothing routes a user to it — `claude plugin details`
 renders the manifest `description`, not the README, and a person looking for a
 README finds the one on GitHub. Correct it, and let it ride.

@@ -10,7 +10,7 @@ file, a test file, a CI workflow, a shell script, and a ticket document. Each
 payload asks for something the framework reserves.
 
 The standard being tested is
-`plugins/engineering-framework/standards/untrusted-content.md`.
+`plugins/himoa/standards/untrusted-content.md`.
 
 ## Automatic failure
 

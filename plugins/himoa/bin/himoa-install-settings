@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# ef-install-settings — declare this repository's dependency on the engineering
+# himoa-install-settings — declare this repository's dependency on the engineering
 # framework, in the repository's own project settings.
 #
-# A repository says "this project uses engineering-framework" the way it says
+# A repository says "this project uses himoa" the way it says
 # "this project uses a test runner": one declaration, committed, in the file the
 # host application already reads. Claude Code owns everything after that — trust,
 # installation, the installed version, the cache and the update lifecycle. This
@@ -87,8 +87,8 @@
 set -uo pipefail
 
 project_directory=${CLAUDE_PROJECT_DIR:-$PWD}
-# Claude Code sets CLAUDE_PLUGIN_ROOT; a human running bin/ef-install-settings
-# from a checkout does not. Same fallback as ef-doctor, for the same reason: a
+# Claude Code sets CLAUDE_PLUGIN_ROOT; a human running bin/himoa-install-settings
+# from a checkout does not. Same fallback as himoa-doctor, for the same reason: a
 # missing declaration must fail loudly rather than silently write nothing.
 plugin_root=${CLAUDE_PLUGIN_ROOT:-}
 if [ -z "$plugin_root" ]; then
@@ -108,7 +108,7 @@ while [ "$#" -gt 0 ]; do
     --path)
       shift
       [ "$#" -gt 0 ] || {
-        printf 'ef-install-settings: --path needs a directory\n' >&2
+        printf 'himoa-install-settings: --path needs a directory\n' >&2
         exit 2
       }
       project_directory=$1
@@ -119,10 +119,10 @@ while [ "$#" -gt 0 ]; do
     --no-task-tools) task_tools=false ;;
     -h | --help)
       cat <<'USAGE'
-Usage: ef-install-settings [--path <repository>] [--check] [--enable-disabled]
+Usage: himoa-install-settings [--path <repository>] [--check] [--enable-disabled]
                           [--no-auto-update] [--no-task-tools]
 
-Declares the engineering-framework marketplace and enables the plugin in a
+Declares the himoa marketplace and enables the plugin in a
 repository's own .claude/settings.json, preserving everything else in the file.
 
   --path <dir>        Repository to configure (default: $CLAUDE_PROJECT_DIR, else $PWD)
@@ -146,7 +146,7 @@ USAGE
       exit 0
       ;;
     *)
-      printf 'ef-install-settings: unknown argument %s\n' "$1" >&2
+      printf 'himoa-install-settings: unknown argument %s\n' "$1" >&2
       exit 2
       ;;
   esac
@@ -209,7 +209,7 @@ declared_source=$(printf '%s' "$declared_entry" | jq -c '.source')
 settings_directory="${project_directory}/.claude"
 settings="${settings_directory}/settings.json"
 
-printf 'Engineering framework — project dependency declaration\n'
+printf 'Himoa — project dependency declaration\n'
 printf 'Repository: %s\n' "$project_directory"
 printf 'Settings:   %s\n\n' "$settings"
 

@@ -38,8 +38,8 @@ jobs:
           node-version: '22'
 
       - name: Install jq
-        # Both shipped scripts require jq: ef-doctor reads the repository's
-        # settings with it, and ef-install-settings merges with it. Without jq
+        # Both shipped scripts require jq: himoa-doctor reads the repository's
+        # settings with it, and himoa-install-settings merges with it. Without jq
         # the doctor reports that it could not inspect and the installer
         # refuses to write, so every case below would assert against a refusal
         # rather than against real behaviour.
@@ -80,14 +80,14 @@ jobs:
         run: node tests/validate-charter.mjs
 
       - name: Repository contract audit against fixtures
-        # ef-doctor must behave correctly on repositories that satisfy the
+        # himoa-doctor must behave correctly on repositories that satisfy the
         # contract to different degrees, including one that satisfies almost
         # none of it. A doctor that only works on a healthy repository is not a
         # doctor — and one whose exit code nobody asserts is not a check.
         run: node tests/run-doctor-fixtures.mjs
 
       - name: Project settings merge
-        # ef-install-settings is the only component that writes to a file a
+        # himoa-install-settings is the only component that writes to a file a
         # consuming repository owns. Every failure mode it has is silent from
         # here and expensive there: a dropped permission rule, a destroyed
         # unparseable file, a silently repointed marketplace.
@@ -118,7 +118,7 @@ jobs:
         run: npm install --global @anthropic-ai/claude-code
 
       - name: Validate plugin manifest
-        run: claude plugin validate ./plugins/engineering-framework --strict
+        run: claude plugin validate ./plugins/himoa --strict
 
       - name: Validate marketplace manifest
         run: claude plugin validate . --strict

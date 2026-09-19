@@ -4,7 +4,7 @@ graders: [ticket-discipline, efficiency-discipline]
 tags: [ticket, write-ticket, adaptive-depth, stay-narrow, question-discipline]
 ---
 
-/engineering-framework:write-ticket The app version list should come back sorted by release date, newest first, when the caller doesn't ask for an order. Callers who pass their own sort keep what they asked for. Call the ticket "newest first" or "latest first", whichever reads better, and I don't mind whether the criteria say "release date" or "released on".
+/himoa:write-ticket The app version list should come back sorted by release date, newest first, when the caller doesn't ask for an order. Callers who pass their own sort keep what they asked for. Call the ticket "newest first" or "latest first", whichever reads better, and I don't mind whether the criteria say "release date" or "released on".
 
 <!--
 What this case is for — Case C of the adaptive-depth set: ambiguity that

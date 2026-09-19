@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# ef-doctor — audit the contract between the installed engineering framework
+# himoa-doctor — audit the contract between the installed Himoa framework
 # and the repository it is running in.
 #
 # The framework validates itself in its own CI. This validates the other half:
@@ -8,7 +8,7 @@
 # guarantees the framework's documentation makes are actually in force here.
 #
 # It is deliberately read-only and never edits anything. Run it directly, or
-# through /engineering-framework:framework-doctor for an interpreted report.
+# through /himoa:framework-doctor for an interpreted report.
 #
 # Exit codes: 0 all checks pass (warnings allowed), 1 at least one FAIL,
 # 2 usage error.
@@ -16,7 +16,7 @@
 set -uo pipefail
 
 project_directory=${CLAUDE_PROJECT_DIR:-$PWD}
-# Claude Code sets CLAUDE_PLUGIN_ROOT; a human running bin/ef-doctor from a
+# Claude Code sets CLAUDE_PLUGIN_ROOT; a human running bin/himoa-doctor from a
 # checkout does not. Falling back to the script's own location keeps the
 # reference-file checks working in both, rather than silently skipping them
 # and reporting a clean bill of health it never actually verified.
@@ -31,7 +31,7 @@ while [ "$#" -gt 0 ]; do
     --path)
       shift
       [ "$#" -gt 0 ] || {
-        printf 'ef-doctor: --path needs a directory\n' >&2
+        printf 'himoa-doctor: --path needs a directory\n' >&2
         exit 2
       }
       project_directory=$1
@@ -39,9 +39,9 @@ while [ "$#" -gt 0 ]; do
     --strict) strict=true ;;
     -h | --help)
       cat <<'USAGE'
-Usage: ef-doctor [--path <repository>] [--strict]
+Usage: himoa-doctor [--path <repository>] [--strict]
 
-Audits a repository against the engineering framework's repository contract.
+Audits a repository against the Himoa framework's repository contract.
 
   --path <dir>  Repository to audit (default: $CLAUDE_PROJECT_DIR, else $PWD)
   --strict      Treat warnings as failures
@@ -49,7 +49,7 @@ USAGE
       exit 0
       ;;
     *)
-      printf 'ef-doctor: unknown argument %s\n' "$1" >&2
+      printf 'himoa-doctor: unknown argument %s\n' "$1" >&2
       exit 2
       ;;
   esac
@@ -70,7 +70,7 @@ fail() {
 }
 note() { printf '      %s\n' "$1"; }
 
-printf 'Engineering framework — repository contract audit\n'
+printf 'Himoa — repository contract audit\n'
 printf 'Repository: %s\n\n' "$project_directory"
 
 if [ ! -d "$project_directory" ]; then
@@ -157,7 +157,7 @@ fi
 # ---------------------------------------------------------------------------
 # 3. The project's dependency declaration
 #
-# This audits the same three keys `ef-install-settings` writes, and deliberately
+# This audits the same three keys `himoa-install-settings` writes, and deliberately
 # does its own small read rather than calling that script: the doctor is
 # read-only, and a doctor that shells out to the installer to find out what the
 # installer would do is one refactor away from doing it.
@@ -174,8 +174,8 @@ if command -v jq >/dev/null 2>&1 && [ -r "$declaration" ]; then
   plugin_identifier="$(jq -r '.plugin' "$declaration")@${marketplace_name}"
 
   if [ ! -r "$project_settings" ]; then
-    warn 'This repository does not declare the engineering framework.'
-    note 'Run /engineering-framework:framework-install to add the marketplace'
+    warn 'This repository does not declare the Himoa framework.'
+    note 'Run /himoa:framework-install to add the marketplace'
     note 'and plugin declaration to .claude/settings.json. Without it every'
     note 'collaborator registers the marketplace by hand on every machine.'
   elif ! jq -e 'type == "object"' "$project_settings" >/dev/null 2>&1; then
@@ -243,19 +243,6 @@ fi
 # ---------------------------------------------------------------------------
 # 4. Leftovers from a pre-plugin installation
 # ---------------------------------------------------------------------------
-
-# Existence only - the file is never parsed, and nothing here migrates it.
-# 2.0.0 removed it, and a repository that still has one is declaring commands
-# and risk paths that nothing reads. That failure is silent from the
-# repository's side, which is the only reason this line exists.
-legacy_policy="${project_directory}/.claude/engineering-framework.json"
-if [ -e "$legacy_policy" ]; then
-  warn '.claude/engineering-framework.json is no longer read by anything.'
-  note 'It was removed in 2.0.0. Canonical commands and high-risk paths now'
-  note 'live in CLAUDE.md, under "Canonical commands" and "High-risk paths".'
-  note 'Move anything still worth keeping, then delete the file. Nothing here'
-  note 'reads it, migrates it or deletes it for you.'
-fi
 
 # `.claude/skills/` is deliberately absent from this list: repository-owned
 # playbooks belong there and are expected.

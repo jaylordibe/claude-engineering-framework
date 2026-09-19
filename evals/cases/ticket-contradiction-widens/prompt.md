@@ -4,7 +4,7 @@ graders: [ticket-discipline, drift-detection, evidence-discipline, efficiency-di
 tags: [ticket, write-ticket, adaptive-depth, contradiction, drift]
 ---
 
-/engineering-framework:write-ticket Every handler already checks a CASL ability before loading a record and the ORM middleware scopes queries to the tenant, so this is small: add an ability check to the order list so a business can only list its own orders, same as the others.
+/himoa:write-ticket Every handler already checks a CASL ability before loading a record and the ORM middleware scopes queries to the tenant, so this is small: add an ability check to the order list so a business can only list its own orders, same as the others.
 
 <!--
 What this case is for — Case D of the adaptive-depth set: the human's

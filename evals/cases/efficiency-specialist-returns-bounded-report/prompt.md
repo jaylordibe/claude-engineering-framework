@@ -4,7 +4,7 @@ graders: [efficiency-discipline, evidence-discipline]
 tags: [efficiency, convergence, delegation, bounded-report, unknown-handling, context-mapper]
 ---
 
-/engineering-framework:gate-design Support staff need to be able to list
+/himoa:gate-design Support staff need to be able to list
 documents belonging to any account, not just their own. Add an operator-only
 filter to the document endpoints.
 

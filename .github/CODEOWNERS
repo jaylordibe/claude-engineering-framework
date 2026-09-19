@@ -6,11 +6,11 @@
 # The rest of the repository is deliberately not listed. A CODEOWNERS file that
 # covers everything is one that gets bypassed.
 
-/plugins/engineering-framework/scripts/          @jaylordibe
-/plugins/engineering-framework/hooks/            @jaylordibe
-/plugins/engineering-framework/bin/              @jaylordibe
-/plugins/engineering-framework/reference/        @jaylordibe
-/plugins/engineering-framework/standards/        @jaylordibe
+/plugins/himoa/scripts/          @jaylordibe
+/plugins/himoa/hooks/            @jaylordibe
+/plugins/himoa/bin/              @jaylordibe
+/plugins/himoa/reference/        @jaylordibe
+/plugins/himoa/standards/        @jaylordibe
 /tests/                                          @jaylordibe
 /.github/workflows/                              @jaylordibe
 /.claude-plugin/                                 @jaylordibe

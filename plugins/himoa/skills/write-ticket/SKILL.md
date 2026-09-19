@@ -486,7 +486,7 @@ When the human says the ticket is final:
    still absent. Put it in one fenced block so it pastes into a tracker
    unchanged.
 2. Say what happens next, in two lines: the ticket can be fed to
-   `/engineering-framework:work-item` as pasted text or by its key once filed,
+   `/himoa:work-item` as pasted text or by its key once filed,
    and that stage will re-verify every `FACT` and grade every idea. That is not
    distrust of this ticket. It is the ticket being a ticket.
 3. Create nothing anywhere. If the human asks in that turn to create the issue

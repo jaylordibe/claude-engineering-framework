@@ -1,6 +1,6 @@
 ---
 name: framework-doctor
-description: Audits the contract between the installed engineering framework and this repository — whether the required artefacts exist, whether the declared commands actually resolve, and whether repository documentation still matches repository reality. Read-only; changes nothing, and reports no permission state because the framework ships none.
+description: Audits the contract between the installed Himoa framework and this repository — whether the required artefacts exist, whether the declared commands actually resolve, and whether repository documentation still matches repository reality. Read-only; changes nothing, and reports no permission state because the framework ships none.
 argument-hint: "[--strict]"
 disable-model-invocation: true
 disallowed-tools: Edit, Write, NotebookEdit
@@ -17,15 +17,15 @@ $ARGUMENTS
 ```
 
 This skill is **read-only**. It reports; it never fixes. Use
-`/engineering-framework:framework-install` to change anything.
+`/himoa:framework-install` to change anything.
 
 ## 1. Run the mechanical checks
 
 ```bash
-ef-doctor
+himoa-doctor
 ```
 
-Add `--strict` if the argument requested it. `ef-doctor` is on `PATH` while the
+Add `--strict` if the argument requested it. `himoa-doctor` is on `PATH` while the
 plugin is enabled.
 
 Report its output verbatim, then interpret it. Do not repeat a `PASS` line as
@@ -35,7 +35,7 @@ becomes possible because of it**, not just that it is missing.
 ## 2. Check the thing a script cannot: is the documentation still true?
 
 This is the highest-value part of the audit, and only a reading agent can do
-it. `ef-doctor` can tell you `CLAUDE.md` exists. It cannot tell you whether it
+it. `himoa-doctor` can tell you `CLAUDE.md` exists. It cannot tell you whether it
 still describes this repository.
 
 Pick the load-bearing claims in the repository's own documentation — the
@@ -84,7 +84,7 @@ Repository contract audit
   Commands:    <declared vs. actually resolvable>
   Risk paths:  <declared high-risk paths, and that they shape ceremony only>
   Leftovers:   <pre-plugin .claude/ directories still overriding the plugin,
-                and any obsolete policy file ef-doctor names — report what it
+                and any obsolete policy file himoa-doctor names — report what it
                 says; do not read the file yourself>
 ```
 

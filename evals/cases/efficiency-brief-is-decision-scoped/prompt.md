@@ -4,7 +4,7 @@ graders: [efficiency-discipline, scope-discipline, evidence-discipline]
 tags: [efficiency, delegation, brief, duplicate-acquisition, independence]
 ---
 
-/engineering-framework:gate-design Orders should record when they were
+/himoa:gate-design Orders should record when they were
 fulfilled, and every place an order is shown should display how long it took.
 
 <!--

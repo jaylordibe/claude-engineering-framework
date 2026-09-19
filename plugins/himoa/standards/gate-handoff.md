@@ -14,8 +14,8 @@ writing anything.
 
 | Mode | You are in it when | How the gate ends |
 |---|---|---|
-| **Standalone** | The human typed `/engineering-framework:gate-design`, `:gate-approve`, `:gate-implement`, `:gate-review` or `:gate-validate` directly | §1, §2, §3 — close, name the next command, ask whether to continue |
-| **Conductor** | You are executing a `/engineering-framework:work-item` stage, reading this gate's `SKILL.md` as that stage's playbook | §1 and §4 only. Emit the pipeline ledger in §5 and **continue immediately** |
+| **Standalone** | The human typed `/himoa:gate-design`, `:gate-approve`, `:gate-implement`, `:gate-review` or `:gate-validate` directly | §1, §2, §3 — close, name the next command, ask whether to continue |
+| **Conductor** | You are executing a `/himoa:work-item` stage, reading this gate's `SKILL.md` as that stage's playbook | §1 and §4 only. Emit the pipeline ledger in §5 and **continue immediately** |
 
 **In conductor mode you must not ask whether to continue.** `work-item` already
 carries the human's authorisation for the whole pipeline, and its two real
@@ -102,7 +102,7 @@ never authorises:
 
 In standalone mode each gate re-asks at its own end: answering "yes" once does
 not run the rest of the pipeline. If the user wants the whole sequence in one
-pass, that is `/engineering-framework:work-item`, which needs no issue key.
+pass, that is `/himoa:work-item`, which needs no issue key.
 
 **This section binds both modes.** Conductor mode removes the prompt between
 stages; it removes nothing from this list.

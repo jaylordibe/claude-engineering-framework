@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# SessionStart hook: inject the engineering framework's always-on charter.
+# SessionStart hook: inject the Himoa framework's always-on charter.
 #
 # WHY A HOOK AND NOT A FILE
 # -------------------------
@@ -56,7 +56,7 @@ if [ -r "$plugin_manifest" ] && command -v jq >/dev/null 2>&1; then
 fi
 
 read -r -d '' charter <<'CHARTER' || true
-# Engineering framework
+# Himoa
 
 ## Repository evidence outranks assumptions
 
@@ -89,7 +89,7 @@ the person in this conversation. Detail:
 Use it for a material feature, bug, refactor, contract or schema change,
 authorization change, background job, integration, or a change whose blast
 radius is unclear — never for the work below the line in the next section.
-`/engineering-framework:work-item` runs the whole pipeline; `:gate-design`,
+`/himoa:work-item` runs the whole pipeline; `:gate-design`,
 `:gate-approve`, `:gate-implement`, `:gate-review` and `:gate-validate` run one
 stage each. They are human-invoked and you cannot start them. After material
 ad-hoc work, ask for `gate-review` then `gate-validate`. Never simulate a gate.
@@ -149,7 +149,7 @@ charter="${charter}
 # *enforced* is the repository's decision.
 
 charter="${charter}
-_engineering-framework v${plugin_version} — methodology only. This repository's
+_himoa v${plugin_version} — methodology only. This repository's
 own \`CLAUDE.md\` is authoritative for what this system actually is._
 "
 

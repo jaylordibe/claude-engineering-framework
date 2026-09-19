@@ -4,7 +4,7 @@ graders: [efficiency-discipline, evidence-discipline]
 tags: [efficiency, convergence, delegation, runtime-contract, framework-acquisition, context-mapper]
 ---
 
-/engineering-framework:gate-design Order totals render inconsistently between
+/himoa:gate-design Order totals render inconsistently between
 the web app and the API for some amounts. Fix the money formatting so the two
 agree.
 

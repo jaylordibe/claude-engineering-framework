@@ -14,13 +14,13 @@ repository and arrives with `git pull`.
 the contract:
 
 ```text
-/plugin marketplace add jaylordibe/claude-engineering-framework
-/plugin install engineering-framework@jaylordibe
+/plugin marketplace add jaylordibe/himoa
+/plugin install himoa@jaylordibe
 ```
 
 ```text
-/engineering-framework:framework-install
-/engineering-framework:framework-doctor
+/himoa:framework-install
+/himoa:framework-doctor
 ```
 
 Commit what `framework-install` writes. That is the last time anyone in this
@@ -36,7 +36,7 @@ no further prompt, so you skip `/plugin marketplace add`. **You still run the
 install yourself:**
 
 ```text
-/plugin install engineering-framework@jaylordibe
+/plugin install himoa@jaylordibe
 ```
 
 Two commands become one, not none — a project declaration enables a plugin, it
@@ -45,7 +45,7 @@ never installs one.
 Either way, then work:
 
 ```text
-/engineering-framework:work-item add rate limiting to the password reset endpoint
+/himoa:work-item add rate limiting to the password reset endpoint
 ```
 
 ---
@@ -84,11 +84,11 @@ lands in the commit:
 {
   "extraKnownMarketplaces": {
     "jaylordibe": {
-      "source": { "source": "github", "repo": "jaylordibe/claude-engineering-framework" },
+      "source": { "source": "github", "repo": "jaylordibe/himoa" },
       "autoUpdate": true
     }
   },
-  "enabledPlugins": { "engineering-framework@jaylordibe": true },
+  "enabledPlugins": { "himoa@jaylordibe": true },
   "env": { "CLAUDE_CODE_ENABLE_TODO_TOOLS": "1" }
 }
 ```
@@ -145,7 +145,7 @@ becomes the only thing between a changed standard and this repository.
 **To adopt releases deliberately instead**, run the installer with
 `--no-auto-update`, or set `"autoUpdate": false` on the entry. The cost is
 `/plugin marketplace update jaylordibe` **and**
-`/plugin update engineering-framework@jaylordibe` per release.
+`/plugin update himoa@jaylordibe` per release.
 
 **Whatever you decide stays decided.** An entry that states `autoUpdate` either
 way is never rewritten by a later install.
@@ -217,7 +217,7 @@ force a matching change in?", and an empty table makes the honest answer always
 
 If there truly are none, write `_(none — internal only)_` **and say why**. An
 unfilled table and a deliberately empty one are indistinguishable to every
-later reader, and `ef-doctor` fails while the placeholder is still there.
+later reader, and `himoa-doctor` fails while the placeholder is still there.
 
 ---
 
@@ -267,9 +267,9 @@ repository's answers**.
 ## Working day to day
 
 ```text
-/engineering-framework:work-item <requirement>       whole pipeline, two stops
-/engineering-framework:gate-design <requirement>     one stage at a time
-/engineering-framework:framework-doctor              audit the contract
+/himoa:work-item <requirement>       whole pipeline, two stops
+/himoa:gate-design <requirement>     one stage at a time
+/himoa:framework-doctor              audit the contract
 ```
 
 Expect to be stopped for plan approval, and expect the run to end with a diff
@@ -336,7 +336,7 @@ secrets, and it is deleted when the run completes successfully.
 
 ```text
 /plugin marketplace update jaylordibe
-/plugin update engineering-framework@jaylordibe
+/plugin update himoa@jaylordibe
 ```
 
 Then restart — an update does not apply to a running session, and hooks in

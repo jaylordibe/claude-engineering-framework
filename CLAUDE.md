@@ -2,7 +2,7 @@
 
 ## Project
 
-The `engineering-framework` plugin for Claude Code, plus the marketplace that
+The `himoa` plugin for Claude Code, plus the marketplace that
 serves it. Markdown, JSON and POSIX shell — no build step, no runtime
 dependencies, no published artifact. The marketplace serves this repository
 directly.
@@ -24,8 +24,8 @@ which is why almost everything in `tests/` exists.
 | Charter budget and guarantees | `node tests/validate-charter.mjs` |
 | Repository contract audit | `node tests/run-doctor-fixtures.mjs` |
 | Project settings merge | `node tests/validate-install-settings.mjs` |
-| Lint | `shellcheck plugins/engineering-framework/scripts/*.sh plugins/engineering-framework/bin/*` |
-| Official validator | `claude plugin validate ./plugins/engineering-framework --strict` |
+| Lint | `shellcheck plugins/himoa/scripts/*.sh plugins/himoa/bin/*` |
+| Official validator | `claude plugin validate ./plugins/himoa --strict` |
 
 There is no build, no type check and no end-to-end suite.
 
@@ -43,7 +43,7 @@ What follows from that is the rule worth keeping: **a rule enforced only by a
 grader is a rule nothing fails on**, so anything that must hold gets an anchor
 in `validate-plugin.mjs` as well.
 
-`jq` is required by `ef-doctor` and by `ef-install-settings`; without it the
+`jq` is required by `himoa-doctor` and by `himoa-install-settings`; without it the
 audit reports that it could not inspect rather than passing silently, and the
 installer refuses to merge rather than guessing at JSON with a text tool.
 
@@ -55,12 +55,12 @@ are silent from this side.
 
 | Path pattern | Why a change here is High risk |
 |---|---|
-| `plugins/engineering-framework/scripts/session-charter.sh` | The always-on charter, paid on every request in every installed repository |
-| `plugins/engineering-framework/bin/ef-install-settings` | The only component that writes to a file a consuming repository owns |
-| `plugins/engineering-framework/bin/ef-doctor` | The audit consumers trust to tell them their contract is intact |
-| `plugins/engineering-framework/hooks/hooks.json` | Decides what runs in every session |
-| `plugins/engineering-framework/.claude-plugin/plugin.json` | `version` here is the only brake between a changed standard and every auto-updating consumer |
-| `plugins/engineering-framework/reference/marketplace-declaration.json` | Wrong values here point every installing repository at the wrong marketplace |
+| `plugins/himoa/scripts/session-charter.sh` | The always-on charter, paid on every request in every installed repository |
+| `plugins/himoa/bin/himoa-install-settings` | The only component that writes to a file a consuming repository owns |
+| `plugins/himoa/bin/himoa-doctor` | The audit consumers trust to tell them their contract is intact |
+| `plugins/himoa/hooks/hooks.json` | Decides what runs in every session |
+| `plugins/himoa/.claude-plugin/plugin.json` | `version` here is the only brake between a changed standard and every auto-updating consumer |
+| `plugins/himoa/reference/marketplace-declaration.json` | Wrong values here point every installing repository at the wrong marketplace |
 | `.claude-plugin/marketplace.json` | The catalogue; a break here stops the marketplace loading for everyone |
 
 This repository ships methodology that runs in other people's repositories, and
@@ -74,14 +74,14 @@ line is paid on every request in every installed repository.
 
 ```
 .claude-plugin/marketplace.json     the catalogue
-plugins/engineering-framework/
+plugins/himoa/
   agents/                           eight read-only review lenses
   skills/                           five gates, a conductor, a ticket writer, playbooks, install/doctor
   standards/                        the normative texts agents read
   templates/                        thinking aids, never committed by a run
   scripts/session-charter.sh        the SessionStart charter — the only hook
-  bin/ef-doctor                     repository contract audit, read-only
-  bin/ef-install-settings           the project dependency declaration merge
+  bin/himoa-doctor                     repository contract audit, read-only
+  bin/himoa-install-settings           the project dependency declaration merge
   reference/                        CLAUDE.md template, marketplace declaration
 fixtures/                           eleven tiny repositories of different shapes and situations
 evals/                              behavioural cases and grader rubrics
@@ -135,7 +135,7 @@ docs/                               design rationale and Claude Code constraints
   charter, which states the human-owned operations, and by the gates, which stop
   and hand off.
 - **The one file the framework writes, and the exact width of the exception.**
-  `ef-install-settings` merges three keys — `extraKnownMarketplaces`,
+  `himoa-install-settings` merges three keys — `extraKnownMarketplaces`,
   `enabledPlugins` and the single `env` member
   `CLAUDE_CODE_ENABLE_TODO_TOOLS` — into the *project's* own
   `.claude/settings.json`, and only when a human runs `framework-install`.
@@ -227,9 +227,9 @@ docs/                               design rationale and Claude Code constraints
   saying what happens when there is none; `docs/constraints.md` C21 has the
   citations.
 - **These scripts must run under bash 3.2**, the version macOS ships. No
-  `${var,,}`, no associative arrays. Only `session-charter.sh` and `ef-doctor`
+  `${var,,}`, no associative arrays. Only `session-charter.sh` and `himoa-doctor`
   remain, and both are read-only.
-- **`ef-doctor` reports, and changes nothing.** It audits whether this
+- **`himoa-doctor` reports, and changes nothing.** It audits whether this
   repository supplies what the framework needs — `CLAUDE.md`, resolvable
   commands, declared risk paths. Everything it finds is advisory. If a
   repository wants an operation blocked, the doctor names the rule its owner
@@ -252,7 +252,7 @@ The consumers are private codebases whose names, and whose owners' names, are
 not ours to disclose here.
 
 The instinct to fill this table in is a good one everywhere else: the framework
-itself insists that a contract change must name who breaks, and `ef-doctor`
+itself insists that a contract change must name who breaks, and `himoa-doctor`
 fails a consuming repository whose `Consumers` table is still a placeholder.
 That rule is for **repositories that own a contract**, where the reader is
 already inside the trust boundary. Here the reader is the public. What a release
@@ -263,7 +263,7 @@ A change to a standard, an agent, a gate or the charter reaches every one of
 them on their next `/plugin update`, and only when `version` in `plugin.json`
 changes.
 
-**`ef-install-settings` writes `"autoUpdate": true`, so this is the default
+**`himoa-install-settings` writes `"autoUpdate": true`, so this is the default
 rather than an opt-in** — `docs/constraints.md` C20 for what that key
 scopes to and why. A configured repository receives that release without anyone
 typing an update command, on its next session. A team can opt out and which ones

@@ -13,7 +13,7 @@ framework's vocabulary is reachable, deterministically, from one repository:
 | Lint | `CLAUDE.md` | `strictlint` is not installed and not obtainable | **BLOCKED** |
 | Type check | nowhere; `CLAUDE.md` says there is none | nothing to run | **N/A** |
 
-The vocabulary is `plugins/engineering-framework/standards/evidence.md`.
+The vocabulary is `plugins/himoa/standards/evidence.md`.
 
 ## Automatic failure
 

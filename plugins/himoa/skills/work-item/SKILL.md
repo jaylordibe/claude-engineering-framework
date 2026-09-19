@@ -290,7 +290,7 @@ whether a mitigation ships, not being told a fix did.
 
 ## Then map it
 
-Launch `engineering-framework:context-mapper` with the complete request **and
+Launch `himoa:context-mapper` with the complete request **and
 the depth band you are asking for**, from `standards/execution-efficiency.md`
 §3. Naming it is what makes the band a decision rather than a mood; the mapper
 may widen it and will say so if it does.

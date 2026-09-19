@@ -29,12 +29,12 @@ mis-sorted in both directions.
 ## Step 1 — Install and audit before deleting anything
 
 ```bash
-/plugin marketplace add jaylordibe/claude-engineering-framework
-/plugin install engineering-framework@jaylordibe
+/plugin marketplace add jaylordibe/himoa
+/plugin install himoa@jaylordibe
 ```
 
 ```text
-/engineering-framework:framework-doctor
+/himoa:framework-doctor
 ```
 
 Those two `/plugin` commands are a **per-machine** step, and every colleague who
@@ -146,7 +146,7 @@ than truth mixed with methodology.
 
 Add one line near the top so precedence is explicit:
 
-> Engineering methodology comes from the `engineering-framework` plugin and is
+> Engineering methodology comes from the `himoa` plugin and is
 > not restated here. Where a generic framework standard conflicts with a rule
 > in this file, **this file wins.**
 
@@ -187,7 +187,7 @@ Two of its ideas are worth keeping, and both have a new home:
 | Old check | New home |
 |---|---|
 | Plugin structure, frontmatter, collisions, read-only agents | The framework's own CI. Delete yours. |
-| `CLAUDE.md` completeness, resolvable commands, declared risk paths | `ef-doctor`, which runs in your repository |
+| `CLAUDE.md` completeness, resolvable commands, declared risk paths | `himoa-doctor`, which runs in your repository |
 | Permission-rule checks of any kind | **Keep yours.** The framework has no opinion on your rules and no longer inspects them. |
 | **Documentation-versus-code symbol drift** | Keep this. It is repository-specific and it is the best check you had. |
 | **Hook decision fixtures** | Keep yours for any hook you still own. The framework ships none to test. |
@@ -202,13 +202,13 @@ evidence.
 ## Step 8 — Verify
 
 ```text
-/engineering-framework:framework-doctor
+/himoa:framework-doctor
 ```
 
 Then run one real change end to end:
 
 ```text
-/engineering-framework:work-item <a small, real requirement>
+/himoa:work-item <a small, real requirement>
 ```
 
 Watch for three things specifically:
@@ -235,5 +235,5 @@ branch, and keep the deletions in their own commit — separate from the
 To disable the framework entirely without uninstalling:
 
 ```bash
-claude plugin disable engineering-framework@jaylordibe
+claude plugin disable himoa@jaylordibe
 ```

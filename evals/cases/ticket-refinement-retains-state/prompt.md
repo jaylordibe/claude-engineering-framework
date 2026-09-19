@@ -4,7 +4,7 @@ graders: [ticket-discipline, evidence-discipline, scope-discipline]
 tags: [ticket, write-ticket, multi-turn, refinement, state-retention]
 ---
 
-/engineering-framework:write-ticket Release managers need to be able to withdraw a published app version so that clients stop being offered it. Deleting versions is a separate thing and must stay as it is.
+/himoa:write-ticket Release managers need to be able to withdraw a published app version so that clients stop being offered it. Deleting versions is a separate thing and must stay as it is.
 
 <!--
 What this case is for — Case G, the refinement turn that keeps everything it

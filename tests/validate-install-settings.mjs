@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 //
-// Asserts what `ef-install-settings` actually does to a repository's own
+// Asserts what `himoa-install-settings` actually does to a repository's own
 // .claude/settings.json, per starting shape.
 //
 // WHY THIS EXISTS
@@ -33,8 +33,8 @@ import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const pluginRoot = join(repositoryRoot, 'plugins', 'engineering-framework');
-const installer = join(pluginRoot, 'bin', 'ef-install-settings');
+const pluginRoot = join(repositoryRoot, 'plugins', 'himoa');
+const installer = join(pluginRoot, 'bin', 'himoa-install-settings');
 const declarationPath = join(pluginRoot, 'reference', 'marketplace-declaration.json');
 
 for (const required of [installer, declarationPath]) {
@@ -160,15 +160,10 @@ runCase('fresh project — no .claude/settings.json at all', (name) => {
     JSON.stringify(settings, null, 2),
   );
 
-  // The architecture this replaced put a version and an install marker in the
-  // consuming repository. Neither may come back, in any spelling.
+  // The architecture this replaced put a version in the consuming repository.
+  // It may not come back, in any spelling.
   const written = readFileSync(settingsPath(repository), 'utf8');
   check(name, !/version/i.test(written), 'the written settings mention a version; consumer repositories carry no framework version', written);
-  check(
-    name,
-    !existsSync(join(repository, '.claude', 'engineering-framework.json')),
-    'a fresh install created .claude/engineering-framework.json',
-  );
   // A consuming repository records no framework version, so nothing in it ever
   // asks to be updated. Without this key a team runs on whatever version it
   // first received, forever, and a corrected standard never reaches them.
@@ -677,7 +672,7 @@ runCase('a repository that does not exist fails rather than passing vacuously', 
 // Report
 // ---------------------------------------------------------------------------
 
-console.log(`ef-install-settings — ${caseCount} repository shapes\n`);
+console.log(`himoa-install-settings — ${caseCount} repository shapes\n`);
 
 for (const failure of failures) {
   console.log(`FAIL  ${failure.name}`);

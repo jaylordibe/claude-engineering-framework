@@ -6,14 +6,14 @@ How to change, validate and release the framework itself.
 
 - Claude Code (development is done against the version in `docs/constraints.md`)
 - Node 22 or later — only to run the validators; the plugin has no dependencies
-- `jq` — `ef-doctor` reads a repository's settings with it, and
-  `ef-install-settings` merges with it
+- `jq` — `himoa-doctor` reads a repository's settings with it, and
+  `himoa-install-settings` merges with it
 - `shellcheck` — for the shell in `scripts/` and `bin/`
 
 ## Loading your working copy
 
 ```bash
-claude --plugin-dir ./plugins/engineering-framework
+claude --plugin-dir ./plugins/himoa
 ```
 
 A `--plugin-dir` plugin takes precedence over the same plugin installed from a
@@ -35,10 +35,10 @@ that was never loaded.
 node tests/validate-plugin.mjs --strict     # structure, contracts, normative anchors
 node tests/validate-fixtures.mjs           # the fixture corpus stays disjoint and hostile
 node tests/validate-charter.mjs            # the always-on context stays within budget
-node tests/run-doctor-fixtures.mjs         # ef-doctor diagnoses 15 repository shapes
-node tests/validate-install-settings.mjs   # the settings merge, across 22 repository shapes
-claude plugin validate ./plugins/engineering-framework --strict
-shellcheck plugins/engineering-framework/scripts/*.sh plugins/engineering-framework/bin/*
+node tests/run-doctor-fixtures.mjs         # himoa-doctor diagnoses 16 repository shapes
+node tests/validate-install-settings.mjs   # the settings merge, across 26 repository shapes
+claude plugin validate ./plugins/himoa --strict
+shellcheck plugins/himoa/scripts/*.sh plugins/himoa/bin/*
 ```
 
 All of them run in CI. Run them locally before pushing; the whole suite is a
@@ -77,8 +77,6 @@ The official validator checks the manifests. This one checks what fails
   key would point installing repositories at nothing, silently;
 - **the installer's source stays inside its boundary** — no write into `$HOME`,
   no reference to Claude Code's internal plugin state, no framework version;
-- **no shipped file cites `.claude/engineering-framework.json`**, removed in
-  2.0.0; an instruction to read a file no repository has fails silently;
 - **the changelog has an entry for the current version.**
 
 ## The rule that governs every contribution
@@ -109,7 +107,7 @@ the first step towards an assumption.
 ### A skill
 
 ```text
-plugins/engineering-framework/skills/<name>/SKILL.md
+plugins/himoa/skills/<name>/SKILL.md
 ```
 
 The frontmatter `name` **must** match the directory name — in a plugin skill it
@@ -127,7 +125,7 @@ model-invoked skill's text is always-on cost in every repository.
 ### An agent
 
 ```text
-plugins/engineering-framework/agents/<name>.md
+plugins/himoa/agents/<name>.md
 ```
 
 Frontmatter name must match the file name. Read-only agents need **both** a
@@ -201,7 +199,7 @@ a contributor out.** The framework ships no permission rules and no hooks that
 gate a tool call. Nothing here may write `permissions` or `hooks` into anyone's
 settings, and nothing may register a `PreToolUse` hook.
 
-`ef-install-settings` is not a counter-example, and the difference is worth
+`himoa-install-settings` is not a counter-example, and the difference is worth
 holding onto: it writes `extraKnownMarketplaces`, `enabledPlugins` and the one
 `env` member `CLAUDE_CODE_ENABLE_TODO_TOOLS` into the *project's* settings, when
 a human runs the installer, and nothing else. A dependency declaration is not an
@@ -219,7 +217,7 @@ options in order of preference are:
 2. **Give a gate the check**, if it belongs to a stage. `gate-review` and
    `gate-validate` already stop on what they find.
 3. **Tell the repository owner which rule to add** to their own settings, in
-   `ef-doctor` or a skill. Naming a rule is help; writing one is not ours to do.
+   `himoa-doctor` or a skill. Naming a rule is help; writing one is not ours to do.
 
 The history is in `CHANGELOG.md` under 1.0.0: the enforcement layer was a third
 of the plugin and half its test burden, and a six-lens review of the last
@@ -239,7 +237,7 @@ Static validation proves the plugin is well formed. It cannot prove the agents
 behave. For that:
 
 ```bash
-claude plugin eval ./plugins/engineering-framework
+claude plugin eval ./plugins/himoa
 ```
 
 `plugin eval` is in early access; until it is available, `evals/README.md`
@@ -264,7 +262,7 @@ contain. The "must not" half is what keeps the graders meaningful.
 
 1. Decide the bump from [versioning](versioning.md). Ask what a consuming
    repository has to *do*, not how many files changed.
-2. Update `version` in `plugins/engineering-framework/.claude-plugin/plugin.json`.
+2. Update `version` in `plugins/himoa/.claude-plugin/plugin.json`.
 3. Add a `CHANGELOG.md` entry grouped by workflow impact. A MAJOR bump ships an
    upgrade note saying exactly what consuming repositories must do.
 4. Run every validator.
@@ -275,10 +273,10 @@ contain. The "must not" half is what keeps the graders meaningful.
 6. Tag the release:
 
    ```bash
-   claude plugin tag ./plugins/engineering-framework
+   claude plugin tag ./plugins/himoa
    ```
 
-   This creates `engineering-framework--v<version>` and validates that
+   This creates `himoa--v<version>` and validates that
    `plugin.json` and the marketplace entry agree before it does. Tagging is a
    human-owned operation; prepare it, then run it yourself.
 
@@ -298,7 +296,7 @@ asked.
 
 ```text
 .claude-plugin/marketplace.json      the catalogue
-plugins/engineering-framework/       the plugin
+plugins/himoa/       the plugin
 docs/                                these documents
 evals/                               behavioural cases and grader rubrics
 fixtures/                            eleven tiny repositories: six shapes, five situations

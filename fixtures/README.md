@@ -80,7 +80,7 @@ it fails one for complying.
 ## Two things about `laravel-api/` that are deliberate
 
 **The Consumers table is unfilled.** It still holds `_(none declared yet)_`, so
-`ef-doctor` reports a `FAIL` against this fixture, and a map of it must report
+`himoa-doctor` reports a `FAIL` against this fixture, and a map of it must report
 consumers as `UNKNOWN` rather than "none". That is repository reality for the
 upstream project this fixture is modelled on, and both behaviours are the point.
 

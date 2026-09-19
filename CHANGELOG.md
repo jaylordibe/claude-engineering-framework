@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the `engineering-framework` plugin.
+All notable changes to the `himoa` plugin.
 
 Entries are grouped by **workflow impact** rather than by file: an entry a
 reader cannot act on, or decide not to act on, is not an entry.
@@ -11,6 +11,52 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 `0.x` convention, where a minor bump could break you.
 
 ---
+
+## 3.0.0 — 2026-09-20
+
+**The framework is now `himoa`.** A clean, pre-public identity migration: the
+old `engineering-framework` / "Engineering Framework" identity is renamed to
+Himoa throughout, with no aliases, deprecation layers or dual-name support. The
+methodology, gates, agents, standards, risk model, evidence semantics and
+execution-efficiency policy are unchanged in substance — only the identity that
+wraps them. This is a MAJOR bump because, per the versioning contract, it **asks
+a consuming repository to act**.
+
+**What a consuming repository must do** (one-time):
+
+1. Re-point the marketplace: `/plugin marketplace add jaylordibe/himoa`.
+2. Re-install under the new name: `/plugin install himoa@jaylordibe`, then
+   restart or `/reload-plugins`.
+3. Re-run `/himoa:framework-install` so the project's `.claude/settings.json`
+   enables `himoa@jaylordibe` and registers the `himoa` marketplace. Remove the
+   old `engineering-framework@jaylordibe` entry and the old marketplace entry —
+   nothing reads them any more.
+
+Commands change from `/engineering-framework:*` to `/himoa:*`.
+
+- **Identifiers renamed:** plugin `engineering-framework` → `himoa`; command
+  namespace `/engineering-framework:*` → `/himoa:*`; plugin directory
+  `plugins/engineering-framework/` → `plugins/himoa/`; scripts `ef-doctor` →
+  `himoa-doctor` and `ef-install-settings` → `himoa-install-settings`;
+  marketplace `source` → `./plugins/himoa`; repository URLs →
+  `github.com/jaylordibe/himoa`. The marketplace name stays `jaylordibe` (the
+  owner handle, not the old brand).
+- **Platform-required identity is retained deliberately:** `.claude/`,
+  `.claude-plugin/`, `CLAUDE.md`, `${CLAUDE_PLUGIN_ROOT}`, `hooks.json`, the
+  manifest filenames, and every legitimate reference to Claude Code, its hooks,
+  its configuration and the Claude adapter — none of these are Himoa's to
+  rename.
+- **Legacy `.claude/engineering-framework.json` detection removed.** It existed
+  only to warn about a config file removed back in 2.0.0; carrying it forward
+  would be compatibility code for a pre-migration artifact, which this clean
+  break does not keep. Its `himoa-doctor` check, its two test cases and the
+  `validate-plugin.mjs` guard against reintroducing it are gone. The generic
+  detection of a shadowing `.claude/agents|standards|templates|hooks/` layout —
+  which names no old identity — stays.
+- Past changelog entries keep the `engineering-framework` name and the old
+  commands verbatim: they are the historical record of releases that shipped
+  under that identity, and rewriting them would falsify what those versions
+  actually were.
 
 ## 2.13.0 — 2026-09-20
 

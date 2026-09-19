@@ -37,7 +37,7 @@ import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const pluginRoot = join(repositoryRoot, 'plugins', 'engineering-framework');
+const pluginRoot = join(repositoryRoot, 'plugins', 'himoa');
 const charterScript = join(pluginRoot, 'scripts', 'session-charter.sh');
 
 // Claude Code's documented cap for a SessionStart additionalContext payload.

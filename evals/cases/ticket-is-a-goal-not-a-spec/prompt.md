@@ -4,7 +4,7 @@ graders: [ticket-discipline, evidence-discipline, scope-discipline]
 tags: [ticket, write-ticket, ticket-is-not-a-spec, acceptance-criteria, user-story]
 ---
 
-/engineering-framework:write-ticket Release managers publish four or five app versions every time we cut a release and have to create them one at a time. Let them do it in one go. I was thinking a bulk_app_versions table to track each batch and an is_bulk flag on app_versions so we can tell them apart later.
+/himoa:write-ticket Release managers publish four or five app versions every time we cut a release and have to create them one at a time. Let them do it in one go. I was thinking a bulk_app_versions table to track each batch and an is_bulk flag on app_versions so we can tell them apart later.
 
 <!--
 What this case is for.

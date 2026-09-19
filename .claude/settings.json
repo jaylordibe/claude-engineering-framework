@@ -9,13 +9,13 @@
     ]
   },
   "enabledPlugins": {
-    "engineering-framework@jaylordibe": true
+    "himoa@jaylordibe": true
   },
   "extraKnownMarketplaces": {
     "jaylordibe": {
       "source": {
         "source": "github",
-        "repo": "jaylordibe/claude-engineering-framework"
+        "repo": "jaylordibe/himoa"
       },
       "autoUpdate": true
     }

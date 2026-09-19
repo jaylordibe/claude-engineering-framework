@@ -4,7 +4,7 @@ graders: [ticket-discipline, efficiency-discipline, no-stack-assumption]
 tags: [ticket, write-ticket, adaptive-depth, mechanism, ideas-non-binding, what-vs-how]
 ---
 
-/engineering-framework:write-ticket When importing a document from a URL fails because the remote site is temporarily down, retry a few times before telling the user it failed. Maybe use BullMQ for retries.
+/himoa:write-ticket When importing a document from a URL fails because the remote site is temporarily down, retry a few times before telling the user it failed. Maybe use BullMQ for retries.
 
 <!--
 What this case is for — Case F of the adaptive-depth set: a mechanism the
