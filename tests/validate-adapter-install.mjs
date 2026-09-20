@@ -230,6 +230,36 @@ installAndAssert('cursor');
     leftA === 0 && !existsSync(join(geminiHome, 'himoa')) && !existsSync(join(geminiHome, 'commands/himoa')));
 }
 
+// --- Adapter doctors assert their own exit codes ---------------------------
+// Same standard as run-doctor-fixtures for himoa-doctor: a doctor whose exit
+// code nobody asserts is not a check. Each must FAIL when nothing is installed
+// and report OK after a correct install.
+{
+  const doctor = (host, envOverrides, cwd) => spawnSync(join(pluginRoot, 'bin', `himoa-${host}-doctor`), [], { cwd, env: { ...process.env, ...envOverrides }, encoding: 'utf8' });
+  const install = (host, envOverrides, cwd) => spawnSync(join(pluginRoot, 'bin', `himoa-${host}-install`), [], { cwd, env: { ...process.env, ...envOverrides }, encoding: 'utf8' });
+
+  for (const host of ['codex', 'cursor', 'gemini']) {
+    const home = freshHome();
+    const env = { HOME: home, CODEX_HOME: join(home, '.codex'), GEMINI_HOME: join(home, '.gemini') };
+    const notRepo = mkdtempSync(join(tmpdir(), 'himoa-doc-')); tmpRoots.push(notRepo);
+    const before = doctor(host, env, notRepo);
+    check(`doctor: ${host} FAILs (exit 1) when not installed`, before.status === 1, `exit ${before.status}`);
+    install(host, env, repoRoot);
+    const after = doctor(host, env, notRepo);
+    check(`doctor: ${host} reports OK (exit 0) after install`, after.status === 0, `exit ${after.status}`);
+  }
+
+  // Copilot is repo-only: FAILs with no AGENTS.md, OK after --repo bootstrap.
+  const home = freshHome();
+  const env = { HOME: home, CODEX_HOME: join(home, '.codex') };
+  const repo = mkdtempSync(join(tmpdir(), 'himoa-copdoc-')); tmpRoots.push(repo);
+  const before = doctor('copilot', env, repo);
+  check('doctor: copilot FAILs (exit 1) with no AGENTS.md', before.status === 1, `exit ${before.status}`);
+  spawnSync(join(pluginRoot, 'bin', 'himoa-copilot-install'), [], { cwd: repo, env: { ...process.env, ...env }, encoding: 'utf8' });
+  const after = doctor('copilot', env, repo);
+  check('doctor: copilot reports OK (exit 0) after bootstrap', after.status === 0, `exit ${after.status}`);
+}
+
 // --- Structural guarantees the projection carries onto each host -----------
 {
   const humanOnly = ['gate-design', 'gate-approve', 'gate-implement', 'gate-review', 'gate-validate', 'work-item', 'write-ticket'];
