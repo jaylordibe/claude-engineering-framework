@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+#
+# himoa-cursor-doctor — verify a Himoa-for-Cursor installation, read-only.
+# Shared logic: lib/himoa-adapter-doctor.sh.
+set -euo pipefail
+HIMOA_HOST="cursor"
+BIN_DIR=$(cd "$(dirname "$0")" && pwd)
+export HIMOA_HOST BIN_DIR
+# shellcheck source=lib/himoa-adapter-doctor.sh
+. "$BIN_DIR/lib/himoa-adapter-doctor.sh"
+himoa_adapter_doctor

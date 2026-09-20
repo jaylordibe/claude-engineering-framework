@@ -281,7 +281,7 @@ the reference implementation; other adapters are in progress.
 |---|---|
 | **Claude Code** | **Reference — full support.** Production-proven |
 | **OpenAI Codex** | **Supported (initial adapter).** Projection, `$HOME` installer, doctor and repository bootstrap shipped and structurally validated; live end-to-end execution not yet smoke-tested, so not claimed at parity |
-| **Cursor** | Researched |
+| **Cursor** | **Supported (initial adapter).** Reads `SKILL.md`/`AGENTS.md` natively, read-only reviewer subagents; shares the install with Codex; live run not yet smoke-tested |
 | **GitHub Copilot** | Researched |
 | **Gemini CLI** | Preliminary — native file is `GEMINI.md`; `AGENTS.md` support unverified |
 
@@ -292,21 +292,23 @@ per-platform capability contract:
 [Cross-agent architecture](docs/cross-agent-architecture.md) ·
 [Platform capabilities](docs/platform-capabilities.md).
 
-### Using Himoa from Codex
+### Using Himoa from Codex or Cursor
 
 ```bash
-himoa-codex-install          # once per machine: skills, read-only reviewers, standards into ~/.agents & ~/.codex
+himoa-codex-install          # Codex: once per machine (skills + read-only reviewers + standards)
+himoa-cursor-install         # Cursor: same, sharing the skills/standards install with Codex
 himoa-codex-install --repo   # once per repository: create/extend AGENTS.md (never destroys it)
-himoa-codex-doctor           # verify
+himoa-codex-doctor           # verify (himoa-cursor-doctor for Cursor)
 ```
 
-`himoa-codex-install --check` is a dry run; `--uninstall` removes only
-Himoa-owned files. The same canonical methodology runs through Codex-native
-mechanisms — skills invoked as `$himoa-work-item`, reviewer subagents that run
-read-only, and the human-approval gate the model cannot self-start. Human
-approval and evidence semantics mean exactly what they do on Claude Code; where
-Codex enforces something differently, [Platform capabilities](docs/platform-capabilities.md)
-says so rather than implying parity.
+`--check` is a dry run; `--uninstall` removes only Himoa-owned files (and keeps
+the shared skills when the other host still uses them). The same canonical
+methodology runs through each host's native mechanisms — skills invoked by name,
+reviewer subagents that run read-only, and the human-approval gate the model
+cannot self-start. Human approval and evidence semantics mean exactly what they
+do on Claude Code; where a host enforces something differently,
+[Platform capabilities](docs/platform-capabilities.md) says so rather than
+implying parity.
 
 ---
 

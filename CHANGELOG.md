@@ -12,6 +12,46 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 3.2.0 — 2026-09-20
+
+**Cursor is Himoa's third platform, and the second adapter proved the shared
+seam.** With Claude Code, Codex and now Cursor, the parts every adapter
+demonstrably shares are extracted once; only per-host reviewer-agent formats
+differ. Claude Code is unchanged behaviourally. MINOR — nothing asked of
+consumers; a Claude-only user pays nothing.
+
+- **Cursor adapter.** Cursor reads `SKILL.md` and `AGENTS.md` natively, uses
+  `disable-model-invocation` for the human-approval boundary (like Claude), and
+  has read-only local subagents. `himoa-cursor-install` / `himoa-cursor-doctor`
+  install and verify it; reviewer roles project to `.cursor/agents/*.md` with
+  `readonly: true`.
+- **Shared seam extracted (`tests/validate-adapter-projection.mjs`,
+  renamed from the Codex-only projector).** Skills, standards, templates and the
+  charter bootstrap are now host-neutral shared artefacts under `adapters/`
+  (installed to `~/.agents/skills` and `~/.agents/himoa`, which both Codex and
+  Cursor read); only `adapters/codex/agents/*.toml` and
+  `adapters/cursor/agents/*.md` are per-host. Human-only skills now carry
+  `disable-model-invocation` in `SKILL.md` (Cursor/Claude) **and** the
+  `openai.yaml` `allow_implicit_invocation: false` sidecar (Codex), so the
+  human-approval boundary holds on every host.
+- **Installer/doctor logic is shared** (`bin/lib/himoa-adapter-install.sh`,
+  `bin/lib/himoa-adapter-doctor.sh`) behind thin per-host wrappers, so it cannot
+  drift. Uninstall removes a host's reviewer agents and keeps the shared skills
+  when another Himoa host still needs them; the last host removed takes them.
+  The neutral home replaces 3.1.0's `~/.codex/himoa`, and the Codex installer
+  removes that stale location on upgrade.
+- **Codex gaps closed** (from 3.1.0's remaining list): the generated config is
+  now asserted **well-formed per the documented schema** on every generate, and
+  an **end-to-end coherence check** proves the installed methodology has no
+  dangling standards/skill references. The repository bootstrap now names
+  `$CODEX_HOME` alongside the default path.
+
+**Honest status.** Codex and Cursor are both **Supported (initial adapter)**,
+structurally validated (projection drift, schema shape, installer safety against
+a fake HOME, no dangling references, human-approval and read-only guarantees).
+Neither has had a live end-to-end run inside its host here — that evidence is
+`BLOCKED` in this environment and is what stands between "Supported" and parity.
+
 ## 3.1.0 — 2026-09-20
 
 **Himoa runs on OpenAI Codex — its first working second platform — from one

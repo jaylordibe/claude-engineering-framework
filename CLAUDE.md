@@ -24,10 +24,10 @@ which is why almost everything in `tests/` exists.
 | Charter budget and guarantees | `node tests/validate-charter.mjs` |
 | Repository contract audit | `node tests/run-doctor-fixtures.mjs` |
 | Project settings merge | `node tests/validate-install-settings.mjs` |
-| Codex projection drift | `node tests/validate-codex-projection.mjs` |
-| Codex installer and bootstrap | `node tests/validate-codex-install.mjs` |
-| Regenerate the Codex projection | `node tests/validate-codex-projection.mjs --write` |
-| Lint | `shellcheck plugins/himoa/scripts/*.sh plugins/himoa/bin/*` |
+| Adapter projection drift | `node tests/validate-adapter-projection.mjs` |
+| Adapter installers and bootstrap | `node tests/validate-adapter-install.mjs` |
+| Regenerate the adapter projection | `node tests/validate-adapter-projection.mjs --write` |
+| Lint | `shellcheck plugins/himoa/scripts/*.sh plugins/himoa/bin/himoa-* plugins/himoa/bin/lib/*.sh` |
 | Official validator | `claude plugin validate ./plugins/himoa --strict` |
 
 There is no build, no type check and no end-to-end suite.
@@ -60,9 +60,9 @@ are silent from this side.
 |---|---|
 | `plugins/himoa/scripts/session-charter.sh` | The always-on charter, paid on every request in every installed repository |
 | `plugins/himoa/bin/himoa-install-settings` | The only component that writes to a file a consuming repository owns |
-| `plugins/himoa/bin/himoa-codex-install` | Writes into the developer's `$HOME` (Codex skills/agents/config). The one component with a `$HOME` boundary — a path or collision bug corrupts a developer's Codex setup |
+| `plugins/himoa/bin/lib/himoa-adapter-install.sh` | The shared Codex/Cursor installer logic — the only code that writes into a developer's `$HOME`. A path or collision bug corrupts a developer's agent setup |
 | `plugins/himoa/bin/himoa-doctor` | The audit consumers trust to tell them their contract is intact |
-| `tests/validate-codex-projection.mjs` | The canonical→Codex transform. A wrong transform ships a stale or broken methodology to every Codex consumer, silently |
+| `tests/validate-adapter-projection.mjs` | The canonical→(Codex, Cursor) transform. A wrong transform ships a stale or broken methodology to every non-Claude consumer, silently |
 | `plugins/himoa/hooks/hooks.json` | Decides what runs in every session |
 | `plugins/himoa/.claude-plugin/plugin.json` | `version` here is the only brake between a changed standard and every auto-updating consumer |
 | `plugins/himoa/reference/marketplace-declaration.json` | Wrong values here point every installing repository at the wrong marketplace |
@@ -87,15 +87,17 @@ plugins/himoa/
   scripts/session-charter.sh        the SessionStart charter — the only hook
   bin/himoa-doctor                     repository contract audit, read-only
   bin/himoa-install-settings           the project dependency declaration merge (project only, never $HOME)
-  bin/himoa-codex-install              the Codex adapter installer (writes $HOME; --repo bootstraps AGENTS.md)
-  bin/himoa-codex-doctor               Codex installation audit, read-only
-  adapters/codex/                   GENERATED Codex projection (skills, read-only agents, standards) — never hand-edited
+  bin/himoa-{codex,cursor}-install     the adapter installers (write $HOME; --repo bootstraps AGENTS.md)
+  bin/himoa-{codex,cursor}-doctor      adapter installation audits, read-only
+  bin/lib/                             shared installer/doctor logic sourced by the wrappers
+  adapters/                         GENERATED projection — never hand-edited. skills/ standards/ templates/
+                                    AGENTS.himoa.md are shared; codex/ and cursor/ hold per-host reviewer agents
   reference/                        AGENTS.md + CLAUDE.md templates, marketplace declaration
 ```
 
-The Codex adapter is one canonical methodology projected, never forked: the
-Claude plugin above is the source, `tests/validate-codex-projection.mjs`
-generates `adapters/codex/`, and the same test fails CI on drift.
+The Codex and Cursor adapters are one canonical methodology projected, never
+forked: the Claude plugin above is the source, `tests/validate-adapter-projection.mjs`
+generates `adapters/`, and the same test fails CI on drift.
 `docs/cross-agent-architecture.md` owns the boundary.
 
 ```

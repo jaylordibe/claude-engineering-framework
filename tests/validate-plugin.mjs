@@ -896,7 +896,7 @@ function validateHooksAndScripts() {
     const content = readFileSync(scriptPath, 'utf8');
     const isSourcedLibrary = scriptPath.includes(`${sep}lib${sep}`);
 
-    if (!content.startsWith('#!')) {
+    if (!isSourcedLibrary && !content.startsWith('#!')) {
       fail(scriptPath, 'shell script has no shebang.');
     }
     if (!isSourcedLibrary && !/^set -[eu]/m.test(content)) {

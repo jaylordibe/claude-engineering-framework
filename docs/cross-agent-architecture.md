@@ -77,43 +77,68 @@ framework at user level (`~/.agents/skills/`, `~/.codex/agents/`) with a small
 per-repo `AGENTS.md` bootstrap, rather than vendoring copies into every
 repository (which would drift — the anti-pattern above).
 
-### The adapter, as built (3.1.0)
+### The adapter, as built
 
 Both deferred decisions were resolved with evidence, not invented:
 
 1. **Single-source mechanism — generation with a drift test.**
-   `tests/validate-codex-projection.mjs` transforms the canonical skills,
+   `tests/validate-adapter-projection.mjs` transforms the canonical skills,
    reviewer agents, standards, templates and the SessionStart charter into
-   `plugins/himoa/adapters/codex/` (committed, marked GENERATED). It rewrites
-   `${CLAUDE_PLUGIN_ROOT}` references to the install home, agent `.md` to Codex
-   `.toml` (`sandbox_mode = "read-only"`), human-only skills to
-   `allow_implicit_invocation: false`, and "CLAUDE.md" to "AGENTS.md". Run with
-   no argument it fails when the committed projection has drifted from canonical,
-   so there is never a second editable copy. Symlinks were rejected (not portable
-   to Windows).
-2. **The `$HOME` boundary — a separate, explicit installer.**
-   `bin/himoa-codex-install` writes into `~/.agents/skills/`, `~/.codex/agents/`
-   and `~/.codex/himoa/`, all Himoa-owned; it is idempotent, has `--check` and a
-   narrow `--uninstall`, and honours `CODEX_HOME`/`HOME`. It is deliberately NOT
+   `plugins/himoa/adapters/` (committed, marked GENERATED). It rewrites
+   `${CLAUDE_PLUGIN_ROOT}` references to the install home, agent `.md` to a Codex
+   `.toml` and a Cursor `.md` (both read-only), human-only skills to
+   `disable-model-invocation` + `allow_implicit_invocation: false`, and
+   "CLAUDE.md" to "AGENTS.md". Run with no argument it fails when the committed
+   projection has drifted, so there is never a second editable copy. Symlinks
+   were rejected (not portable to Windows).
+2. **The `$HOME` boundary — separate, explicit installers.**
+   `bin/himoa-codex-install` / `himoa-cursor-install` write into `~/.agents/skills/`,
+   `~/.agents/himoa/` and the host's agents dir (`~/.codex/agents/` or
+   `~/.cursor/agents/`), all Himoa-owned; idempotent, with `--check` and a narrow
+   `--uninstall`, honouring `CODEX_HOME`/`HOME`. They are deliberately NOT
    `himoa-install-settings`, whose project-only, nothing-in-`$HOME` invariant is
    untouched. Repository bootstrap (`--repo`) creates or safely prepends
    `AGENTS.md`, never destroying existing content.
 
-`bin/himoa-codex-doctor` verifies an installation in the `PASS/FAIL/BLOCKED/N/A`
-vocabulary. What remains before Codex is at parity with Claude Code is a live
-end-to-end run inside Codex itself; that has not been smoke-tested here, so the
-support level is **Supported (initial adapter)**, not Full
+`bin/himoa-{codex,cursor}-doctor` verify an installation in the
+`PASS/FAIL/BLOCKED/N/A` vocabulary. What remains before a host reaches parity
+with Claude Code is a live end-to-end run inside it; that has not been
+smoke-tested here, so both are **Supported (initial adapter)**, not Full
 (`docs/platform-capabilities.md`).
+
+## Cursor — the shared seam, extracted (3.2.0)
+
+Cursor was the second adapter, and per "two implementations before abstraction"
+it is where the shared parts were extracted — only what Claude + Codex + Cursor
+*demonstrably* share, nothing speculative. Cursor reads `SKILL.md` and
+`AGENTS.md` natively, honours `disable-model-invocation` (like Claude), and has
+read-only local subagents, so:
+
+- **Skills, standards, templates and the charter bootstrap became host-neutral
+  shared artefacts** under `adapters/` (installed to `~/.agents/skills` and
+  `~/.agents/himoa`, which Codex and Cursor both read). Only reviewer-agent
+  *format* is per-host: `adapters/codex/agents/*.toml` vs
+  `adapters/cursor/agents/*.md` (`readonly: true`).
+- **Human-only skills carry both signals** — `disable-model-invocation` in
+  `SKILL.md` (Cursor/Claude) and the `openai.yaml` sidecar (Codex) — so the
+  approval boundary holds on every host.
+- **Installer and doctor logic is shared** (`bin/lib/*.sh`) behind thin per-host
+  wrappers. Uninstalling one host keeps the shared skills when another host
+  still uses them.
+
+`himoa-cursor-install` / `himoa-cursor-doctor` mirror the Codex bins. Cursor is
+**Supported (initial adapter)** on the same terms as Codex — structurally
+validated, live end-to-end run pending.
 
 ## Deliberately not done
 
-- **No `core/` + `adapters/` repository restructure** — the current layout
-  already gives the core a single home; restructuring before a second adapter
-  exists is architecture ahead of need.
+- **No `core/` + `adapters/` repository restructure** — `adapters/` holds the
+  generated projection; the canonical source stays the single home. A deeper
+  restructure is still architecture ahead of need.
 - **No per-platform forks** of skills or standards.
-- **No adapters for Cursor / Copilot / Gemini** yet — researched only, to avoid
-  a Claude/Codex-only dead-end. `AGENTS.md` is a viable common substrate for
-  Cursor and Copilot; Gemini's native file is `GEMINI.md` and its `AGENTS.md`
-  support is unverified, so it is not assumed.
+- **No adapters for GitHub Copilot / Gemini** yet — researched only.
+  Copilot reads `AGENTS.md` and gates via PR review (a different, structural
+  approval model); Gemini's native file is `GEMINI.md` and its `AGENTS.md`
+  support is unverified, so neither is assumed.
 - **No rename beyond the identity migration** and no lowest-common-denominator
   normalisation.

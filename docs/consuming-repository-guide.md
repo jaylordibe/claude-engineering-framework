@@ -50,16 +50,17 @@ Either way, then work:
 
 ---
 
-## Using this repository from Codex
+## Using this repository from Codex or Cursor
 
 This guide describes the Claude Code path (the reference implementation). The
-same methodology runs on OpenAI Codex through Codex-native mechanisms — no second
-copy of Himoa:
+same methodology runs on OpenAI Codex and Cursor through their native
+mechanisms — no second copy of Himoa:
 
 ```bash
-himoa-codex-install          # once per machine: skills, read-only reviewer agents, standards
+himoa-codex-install          # Codex: once per machine (skills, read-only reviewers, standards)
+himoa-cursor-install         # Cursor: same, sharing the skills/standards install with Codex
 himoa-codex-install --repo   # once per repository: create or extend AGENTS.md (never destroys it)
-himoa-codex-doctor           # verify
+himoa-codex-doctor           # verify (himoa-cursor-doctor for Cursor)
 ```
 
 Repository truth lives in **`AGENTS.md`**, which every agent reads; the

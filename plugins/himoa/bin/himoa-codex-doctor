@@ -1,108 +1,11 @@
 #!/usr/bin/env bash
 #
 # himoa-codex-doctor — verify a Himoa-for-Codex installation, read-only.
-#
-# It reports in Himoa's evidence vocabulary and changes nothing. It only claims
-# what it can observe: whether the machine-level adapter is installed and
-# current, and — when run inside a repository — whether that repository carries
-# the Himoa Codex bootstrap and its own declared truth. It does not, and cannot,
-# verify that Codex will execute the methodology correctly at runtime; that is a
-# live-session concern, reported N/A here rather than faked.
-#
-# PASS  — checked and satisfied
-# FAIL  — checked and not satisfied (exit 1)
-# WARN  — advisory; does not fail the check
-# N/A   — no such thing to check in this context
-#
-# bash 3.2 compatible.
-
+# Shared logic: lib/himoa-adapter-doctor.sh.
 set -euo pipefail
-
-self_dir=$(cd "$(dirname "$0")" && pwd)
-source_root="${CLAUDE_PLUGIN_ROOT:-$self_dir/..}/adapters/codex"
-[ -d "$source_root" ] || source_root="$self_dir/../adapters/codex"
-
-codex_home="${CODEX_HOME:-$HOME/.codex}"
-himoa_home="$codex_home/himoa"
-skills_dir="$HOME/.agents/skills"
-agents_dir="$codex_home/agents"
-
-fails=0
-pass() { printf 'PASS  %s\n' "$1"; }
-warn() { printf 'WARN  %s\n' "$1"; }
-na()   { printf 'N/A   %s\n' "$1"; }
-fail() { printf 'FAIL  %s\n' "$1"; fails=$((fails + 1)); }
-
-printf 'Himoa — Codex installation audit\n\n'
-
-# --- Machine-level installation -------------------------------------------
-if [ ! -f "$himoa_home/VERSION" ]; then
-  fail "Himoa is not installed for Codex ($himoa_home/VERSION is absent). Run himoa-codex-install."
-else
-  installed=$(cat "$himoa_home/VERSION" 2>/dev/null || printf 'unknown')
-  pass "Himoa Codex reference home is installed ($installed)."
-  if [ -f "$source_root/VERSION" ]; then
-    canonical=$(cat "$source_root/VERSION" 2>/dev/null || printf 'unknown')
-    if [ "$installed" = "$canonical" ]; then
-      pass "Installed version matches this source ($canonical)."
-    else
-      warn "Installed $installed, this source is $canonical — re-run himoa-codex-install to refresh."
-    fi
-  else
-    na "No source VERSION available here to compare against."
-  fi
-fi
-
-# --- Skills ----------------------------------------------------------------
-if [ -d "$source_root/skills" ]; then
-  expected=0; for d in "$source_root"/skills/himoa-*; do [ -e "$d" ] && expected=$((expected + 1)); done
-  found=0; if [ -d "$skills_dir" ]; then for d in "$skills_dir"/himoa-*; do [ -e "$d" ] && found=$((found + 1)); done; fi
-  if [ "$found" -eq 0 ]; then
-    fail "No Himoa skills found in $skills_dir (expected $expected)."
-  elif [ "$found" -lt "$expected" ]; then
-    warn "$found of $expected Himoa skills present in $skills_dir — re-run himoa-codex-install."
-  else
-    pass "$found Himoa skills present in $skills_dir."
-  fi
-else
-  na "No source skills to compare against."
-fi
-
-# --- Reviewer agents -------------------------------------------------------
-expected_a=0; for f in "$source_root"/agents/himoa-*.toml; do [ -e "$f" ] && expected_a=$((expected_a + 1)); done
-found_a=0; if [ -d "$agents_dir" ]; then for f in "$agents_dir"/himoa-*.toml; do [ -e "$f" ] && found_a=$((found_a + 1)); done; fi
-if [ "$expected_a" -eq 0 ]; then
-  na "No source reviewer agents to compare against."
-elif [ "$found_a" -eq 0 ]; then
-  fail "No Himoa reviewer agents found in $agents_dir (expected $expected_a)."
-elif [ "$found_a" -lt "$expected_a" ]; then
-  warn "$found_a of $expected_a Himoa reviewer agents present — re-run himoa-codex-install."
-else
-  pass "$found_a Himoa reviewer agents present, read-only."
-fi
-
-# --- Repository bootstrap (only when run inside a repository) ---------------
-if [ -d ".git" ] || [ -f "AGENTS.md" ]; then
-  if [ ! -f "AGENTS.md" ]; then
-    warn "This repository has no AGENTS.md — Codex has no Himoa bootstrap here."
-  elif grep -q 'himoa:bootstrap' AGENTS.md 2>/dev/null; then
-    pass "AGENTS.md carries the Himoa Codex bootstrap."
-    # Repository truth: the bootstrap points at repository-declared facts.
-    if grep -qiE 'Canonical commands|## Project' AGENTS.md 2>/dev/null; then
-      pass "Repository declares its own truth in AGENTS.md."
-    else
-      warn "AGENTS.md has the bootstrap but no repository truth (Project, Canonical commands) yet."
-    fi
-  else
-    warn "AGENTS.md exists but carries no Himoa bootstrap marker."
-  fi
-else
-  na "Not inside a repository — skipped the repository bootstrap checks."
-fi
-
-printf '\n'
-if [ "$fails" -gt 0 ]; then
-  printf 'FAIL — %d check(s) failed.\n' "$fails"
-  exit 1
-fi
-printf 'OK — no failures.\n'
+HIMOA_HOST="codex"
+BIN_DIR=$(cd "$(dirname "$0")" && pwd)
+export HIMOA_HOST BIN_DIR
+# shellcheck source=lib/himoa-adapter-doctor.sh
+. "$BIN_DIR/lib/himoa-adapter-doctor.sh"
+himoa_adapter_doctor

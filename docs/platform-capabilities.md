@@ -84,7 +84,7 @@ infer approval."
 |---|---|
 | **Claude Code** | **Reference / Full** — production-proven |
 | **OpenAI Codex** | **Supported (initial adapter)** — projection, `$HOME` installer, doctor and repository bootstrap shipped and structurally validated (`docs/cross-agent-architecture.md`). Live end-to-end execution inside Codex has not been smoke-tested here; that evidence is pending, so it is not claimed at parity |
-| **Cursor** | **Researched** — reads `AGENTS.md`, has rules/hooks/MCP |
+| **Cursor** | **Supported (initial adapter)** — reads `SKILL.md`/`AGENTS.md` natively and honours `disable-model-invocation`; reviewer roles are read-only local subagents; installed via `himoa-cursor-install`. Shares the skills/standards install with Codex. Live end-to-end not yet smoke-tested, so not claimed at parity |
 | **GitHub Copilot** | **Researched** — reads `AGENTS.md`; approval enforced structurally via PR review |
 | **Gemini CLI** | **Preliminary** — native file is `GEMINI.md`; first-class `AGENTS.md` support unverified |
 

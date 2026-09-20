@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#
+# himoa-cursor-install — install Himoa's Cursor adapter into user-level
+# locations. Cursor reads SKILL.md and AGENTS.md natively and has read-only
+# local subagents, so the shared skills/standards are the same ones Codex uses
+# (~/.agents/skills, ~/.agents/himoa); only the reviewer agents differ, going to
+# ~/.cursor/agents as markdown. Shared logic: lib/himoa-adapter-install.sh.
+set -euo pipefail
+HIMOA_HOST="cursor"
+BIN_DIR=$(cd "$(dirname "$0")" && pwd)
+export HIMOA_HOST BIN_DIR
+# shellcheck source=lib/himoa-adapter-install.sh
+. "$BIN_DIR/lib/himoa-adapter-install.sh"
+himoa_adapter_main "$@"

@@ -93,19 +93,20 @@ jobs:
         # unparseable file, a silently repointed marketplace.
         run: node tests/validate-install-settings.mjs
 
-      - name: Codex projection is in sync with canonical
-        # The Codex adapter is generated from the canonical skills, agents,
-        # standards and charter. If a canonical file changes and the projection
-        # is not regenerated, Codex silently runs a stale methodology. This is
-        # what makes "one source, no fork" mechanical rather than a promise.
-        run: node tests/validate-codex-projection.mjs
+      - name: Adapter projection is in sync with canonical
+        # The Codex and Cursor adapters are generated from the canonical skills,
+        # agents, standards and charter. If a canonical file changes and the
+        # projection is not regenerated, a host silently runs a stale
+        # methodology. This is what makes "one source, no fork" mechanical.
+        run: node tests/validate-adapter-projection.mjs
 
-      - name: Codex installer and repository bootstrap
-        # himoa-codex-install writes into $HOME. Its safety properties — writes
-        # only Himoa-owned paths, idempotent, removes only what it owns, never
-        # destroys a user AGENTS.md — are asserted against an isolated fake HOME,
-        # never the runner's real one.
-        run: node tests/validate-codex-install.mjs
+      - name: Adapter installers and repository bootstrap
+        # himoa-codex-install and himoa-cursor-install write into $HOME. Their
+        # safety properties — only Himoa-owned paths, idempotent, no dangling
+        # references, uninstall keeps shared files a co-installed host needs,
+        # never destroys a user AGENTS.md — are asserted against an isolated fake
+        # HOME, never the runner's real one.
+        run: node tests/validate-adapter-install.mjs
 
   official-validator:
     name: claude plugin validate

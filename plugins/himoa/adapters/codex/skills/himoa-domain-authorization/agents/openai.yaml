@@ -1,4 +1,0 @@
-# GENERATED from plugins/himoa/skills/domain-authorization/SKILL.md by tests/validate-codex-projection.mjs (himoa 3.1.0).
-# DO NOT EDIT. Edit the canonical source and run: node tests/validate-codex-projection.mjs --write
-policy:
-  allow_implicit_invocation: true

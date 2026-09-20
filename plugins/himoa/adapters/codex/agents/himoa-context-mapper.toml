@@ -1,5 +1,5 @@
-# GENERATED from plugins/himoa/agents/context-mapper.md by tests/validate-codex-projection.mjs (himoa 3.1.0).
-# DO NOT EDIT. Edit the canonical source and run: node tests/validate-codex-projection.mjs --write
+# GENERATED from plugins/himoa/agents/context-mapper.md by tests/validate-adapter-projection.mjs (himoa 3.2.0).
+# DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write
 
 name = "himoa-context-mapper"
 description = "Maps a repository's actual architecture and the blast radius of a proposed change — entry points, execution and data flow, persistence, authorization, tenancy, trust boundaries, integrations, background work, tests, observability, public contracts and operational risk — entirely from repository evidence, and reconciles the request against what the code actually does. Use before design, or whenever impact is unclear. Read-only; never chooses or implements the solution."
