@@ -1,4 +1,4 @@
-# GENERATED from plugins/himoa/skills/work-item/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.4.0).
+# GENERATED from plugins/himoa/skills/work-item/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.4.1).
 # DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write
 description = "Drives a requirement, ticket or issue end to end in one session — repository mapping, an approval-gated plan, implementation of only what was approved, independent multi-lens review, read-only validation, and a presentation the human acts on. Stops exactly twice; never commits, pushes, deploys or applies migrations."
 prompt = '''

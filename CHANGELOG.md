@@ -12,6 +12,30 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 3.4.1 — 2026-09-20
+
+**Public-release hardening — no behaviour change, no consumer action (PATCH).**
+The audit for the first public release found only small consistency and identity
+items; the methodology, adapters and every production-grade guarantee are
+unchanged.
+
+- **Identity:** the settings installer's atomic-write temp file was still named
+  `.ef-install.$$` (the old abbreviation); renamed to `.himoa-install.$$`, with
+  its test. No behaviour change.
+- **Documentation consistency:** removed transitional/roadmap language that had
+  already happened ("other adapters are in progress", "evolving from a Claude
+  Code plugin… Codex next, others later", "platform roadmap"); the docs now
+  describe the shipped state. `architecture.md` gained a scope note (it is the
+  Claude reference-implementation rationale; repository truth is `AGENTS.md`).
+- **Capability vocabulary:** the compatibility-levels table now defines the
+  labels actually used (**Supported (initial adapter)**, **Supported with
+  limitations**) instead of an unused "Native-mappable".
+- **Regression + live evidence:** the Claude methodology hot paths (standards,
+  agents, charter, hooks, gates) are confirmed untouched by all cross-agent work
+  since the rename, and a live `claude --plugin-dir` run confirmed the charter
+  loads and drives the workflow/verdict vocabulary. Codex/Cursor/Gemini live
+  runs remain host-gated (`docs/adapter-smoke-test.md`); Copilot is cloud-only.
+
 ## 3.4.0 — 2026-09-20
 
 **Gemini CLI is the fourth adapter — a full-capability fit, from the same

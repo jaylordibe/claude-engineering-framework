@@ -31,8 +31,9 @@ methodology-enforced on every host without any native feature at all.
 | Level | Meaning |
 |---|---|
 | **Reference / Full** | Every required guarantee is expressible with the host's native mechanisms, and the implementation is production-proven here |
-| **Native-mappable** | Every required primitive has a *verified* native mechanism, but the adapter is not yet built and proven |
-| **Researched** | Instruction substrate and some primitives confirmed; no adapter designed |
+| **Supported (initial adapter)** | Every required primitive maps to a native mechanism and the adapter is shipped and structurally validated; a live end-to-end run inside the host is the remaining evidence |
+| **Supported with limitations** | The adapter ships and delivers the methodology, but one or more primitives cannot be enforced on the host and are recorded as advisory or unsupported rather than implied |
+| **Researched** | Instruction substrate and some primitives confirmed; no adapter shipped |
 | **Preliminary** | Partial or unverified substrate; relying on it would be a guess |
 
 "Compatible in theory" is **not** "supported." A platform is only advertised as

@@ -282,7 +282,8 @@ Rationale: [Architecture](docs/architecture.md).
 Himoa is one methodology with thin, **native** adapters per coding agent — the
 methodology owns risk, evidence, approval, review and validation; an adapter
 owns discovery, registration and the host's native enforcement. Claude Code is
-the reference implementation; other adapters are in progress.
+the reference implementation; Codex, Cursor, Copilot and Gemini CLI are shipped
+adapters (see the matrix below for each one's support level).
 
 | Platform | Status |
 |---|---|
@@ -357,7 +358,7 @@ implying parity.
 | [Changelog](CHANGELOG.md) | What each release asks of you |
 | [Development guide](docs/development-guide.md) | Changing and releasing the framework |
 | [Claude Code constraints](docs/constraints.md) | Platform limits that shaped the design |
-| [Cross-agent architecture](docs/cross-agent-architecture.md) | The core/adapter boundary and platform roadmap |
+| [Cross-agent architecture](docs/cross-agent-architecture.md) | The core/adapter boundary and how each host maps |
 | [Platform capabilities](docs/platform-capabilities.md) | What each agent can and cannot enforce |
 | [Adapter smoke test](docs/adapter-smoke-test.md) | Producing the live end-to-end evidence per host |
 

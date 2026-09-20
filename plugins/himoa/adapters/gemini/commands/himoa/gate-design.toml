@@ -1,4 +1,4 @@
-# GENERATED from plugins/himoa/skills/gate-design/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.4.0).
+# GENERATED from plugins/himoa/skills/gate-design/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.4.1).
 # DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write
 description = "Designs a material change by mapping repository reality first, reconciling the request against what the code actually does, classifying risk, comparing credible alternatives, threat-modelling where the tier requires it, and producing an approval-gated plan. Use for features, bugs, refactors, migrations, integrations, authorization changes, background work, and any change whose blast radius is unclear."
 prompt = '''

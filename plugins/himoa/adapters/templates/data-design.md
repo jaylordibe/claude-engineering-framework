@@ -1,4 +1,4 @@
-<!-- GENERATED from plugins/himoa/templates/data-design.md by tests/validate-adapter-projection.mjs (himoa 3.4.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/templates/data-design.md by tests/validate-adapter-projection.mjs (himoa 3.4.1). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Data design worksheet: [model or table]
 

@@ -60,7 +60,7 @@ const CONFIGURED_ENV = { [TASK_TOOLS_KEY]: '1' };
 // ---------------------------------------------------------------------------
 
 function buildRepository(files) {
-  const directory = mkdtempSync(join(tmpdir(), 'ef-install-'));
+  const directory = mkdtempSync(join(tmpdir(), 'himoa-install-'));
   for (const [relativePath, content] of Object.entries(files ?? {})) {
     const fullPath = join(directory, relativePath);
     mkdirSync(dirname(fullPath), { recursive: true });
@@ -73,7 +73,7 @@ function buildRepository(files) {
 // own settings or Claude Code's plugin state, and the only way to assert that
 // is to give it a home directory and prove it stayed empty.
 function runInstaller(repositoryPath, extraArguments = []) {
-  const fakeHome = mkdtempSync(join(tmpdir(), 'ef-home-'));
+  const fakeHome = mkdtempSync(join(tmpdir(), 'himoa-home-'));
   const result = spawnSync('bash', [installer, '--path', repositoryPath, ...extraArguments], {
     encoding: 'utf8',
     timeout: 20000,
@@ -656,14 +656,14 @@ runCase('the whole repository gains exactly one file', (name) => {
   // No temporary file may survive the write.
   check(
     name,
-    !after.some((path) => path.includes('.ef-install.')),
+    !after.some((path) => path.includes('.himoa-install.')),
     'a temporary file was left behind',
     after.join('\n'),
   );
 });
 
 runCase('a repository that does not exist fails rather than passing vacuously', (name) => {
-  const run = runInstaller(join(tmpdir(), 'ef-install-definitely-not-here'));
+  const run = runInstaller(join(tmpdir(), 'himoa-install-definitely-not-here'));
   check(name, run.exit === 1, `expected exit 1, got ${run.exit}`, run.output);
   check(name, /no such directory/.test(run.output), 'the report does not name the missing directory', run.output);
 });

@@ -3,7 +3,7 @@ name: himoa-domain-background-work
 description: The decisions and failure modes that govern work running outside a request. Carries the questions a change must answer, and none of the answers.
 ---
 
-<!-- GENERATED from plugins/himoa/skills/domain-background-work/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.4.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/skills/domain-background-work/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.4.1). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Background and scheduled work
 

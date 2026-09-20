@@ -1,9 +1,9 @@
 # Cross-agent architecture
 
-Himoa is evolving from a Claude Code plugin into **one canonical engineering
-methodology with thin, native execution adapters** — Claude Code today, OpenAI
-Codex next, others later. This document records the boundary that makes that
-safe. It is design rationale, not a second methodology: the standards under
+Himoa is **one canonical engineering methodology with thin, native execution
+adapters** — Claude Code (the reference implementation), OpenAI Codex, Cursor,
+GitHub Copilot and Gemini CLI. This document records the boundary that keeps
+that safe. It is design rationale, not a second methodology: the standards under
 `plugins/himoa/standards/` remain the single source of truth.
 
 > **Adapt the framework to the agent. Never weaken the framework to fit the

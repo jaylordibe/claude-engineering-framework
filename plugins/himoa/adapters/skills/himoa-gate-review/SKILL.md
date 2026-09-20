@@ -4,7 +4,7 @@ description: Independently reviews the current diff for conformance to the appro
 disable-model-invocation: true
 ---
 
-<!-- GENERATED from plugins/himoa/skills/gate-review/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.4.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/skills/gate-review/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.4.1). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Review the current change
 

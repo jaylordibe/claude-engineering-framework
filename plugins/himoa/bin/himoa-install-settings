@@ -480,7 +480,7 @@ fi
 
 # Write through a temporary file in the same directory, so an interrupted write
 # cannot leave a partial settings file where a complete one used to be.
-temporary="${settings}.ef-install.$$"
+temporary="${settings}.himoa-install.$$"
 if ! printf '%s\n' "$merged" | jq --indent 2 '.' >"$temporary" 2>/dev/null; then
   rm -f "$temporary"
   fail 'could not render the merged settings; the original file is untouched.'
