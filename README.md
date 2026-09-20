@@ -351,6 +351,7 @@ implying parity.
 | [Claude Code constraints](docs/constraints.md) | Platform limits that shaped the design |
 | [Cross-agent architecture](docs/cross-agent-architecture.md) | The core/adapter boundary and platform roadmap |
 | [Platform capabilities](docs/platform-capabilities.md) | What each agent can and cannot enforce |
+| [Adapter smoke test](docs/adapter-smoke-test.md) | Producing the live end-to-end evidence per host |
 
 ---
 

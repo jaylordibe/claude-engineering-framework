@@ -36,7 +36,10 @@ methodology-enforced on every host without any native feature at all.
 | **Preliminary** | Partial or unverified substrate; relying on it would be a guess |
 
 "Compatible in theory" is **not** "supported." A platform is only advertised as
-supported once its adapter actually runs the methodology.
+supported once its adapter actually runs the methodology. The live run that lifts
+an adapter from "Supported (initial)" toward parity is defined, ready and honest
+about being host-gated: `docs/adapter-smoke-test.md`. It is not run in CI (no host
+runtime there) and its result is never fabricated.
 
 ## The requirement × platform contract
 
