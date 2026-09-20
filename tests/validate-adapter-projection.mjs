@@ -182,6 +182,22 @@ expected.set('VERSION', `${version}\n`);
       if (!/\nreadonly: true\n/.test(content)) shape.push(`${rel}: Cursor reviewer must be readonly: true`);
     }
   }
+  // Host-constraint conformance — real limits a live run would fail on:
+  //  - Codex reads AGENTS.md up to project_doc_max_bytes (default 32 KiB). The
+  //    bootstrap must leave ample room for a repository's own truth below it, so
+  //    hold it to half the cap.
+  //  - A skill's preview (its name+description frontmatter) must fit the
+  //    progressive-disclosure budget (Codex: <=2% of context, or 8000 chars).
+  const bootstrap = expected.get('AGENTS.himoa.md') || '';
+  if (Buffer.byteLength(bootstrap, 'utf8') > 16 * 1024) shape.push(`AGENTS.himoa.md bootstrap is over 16 KiB — too little of the 32 KiB AGENTS.md cap left for repository truth`);
+  for (const [rel, content] of expected) {
+    if (rel.startsWith('skills/') && rel.endsWith('/SKILL.md')) {
+      const fmEnd = content.indexOf('\n---\n');
+      const preview = fmEnd === -1 ? content : content.slice(0, fmEnd);
+      if (preview.length > 8000) shape.push(`${rel}: name+description preview exceeds the 8000-char disclosure budget`);
+    }
+  }
+
   if (shape.length) { console.error('FAIL — generated adapter config is malformed:'); for (const e of shape) console.error(`  ${e}`); process.exit(1); }
 }
 
