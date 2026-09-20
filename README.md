@@ -27,9 +27,11 @@ Evidence over assumption · risk-based rigor · explicit human approval · indep
 
 ---
 
-The plugin supplies the **methodology**. Your `CLAUDE.md` supplies the **facts**
-about your system. Agents cite your code or say `UNKNOWN` — they never guess
-your stack, and they never invent an architecture you don't have.
+Himoa supplies the **methodology**. Your repository's **`AGENTS.md`** supplies
+the **facts** about your system — the one neutral home every agent reads (Claude
+Code reads it through a thin `CLAUDE.md` that imports it). Agents cite your code
+or say `UNKNOWN` — they never guess your stack, and they never invent an
+architecture you don't have.
 
 ```mermaid
 flowchart LR
@@ -252,8 +254,13 @@ Skipped, partial, filtered or flaky is **never** `PASS`.
   tier and by what the diff touches.
 - **1 hook** — a `SessionStart` charter carrying the workflow, risk tiers and
   evidence language. It gates nothing.
+- **Adapters for Codex, Cursor, Copilot and Gemini** — the same skills,
+  reviewer roles and charter, generated from this one source (no fork,
+  drift-checked in CI) into each host's native format, installed by
+  `himoa-<host>-install`. See [Platforms](#-platforms).
 
-No build step, no runtime dependencies, no published artifact.
+The above is the **Claude Code reference implementation**. No build step, no
+runtime dependencies, no published artifact.
 
 ## 🚫 What it does not do
 

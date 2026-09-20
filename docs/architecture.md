@@ -1,5 +1,16 @@
 # Architecture
 
+> **Scope note.** This document is the design rationale for the **Claude Code
+> reference implementation** — the plugin, its hook, and how it splits
+> methodology from truth. Himoa now also ships native adapters for Codex,
+> Cursor, Copilot and Gemini, generated from this same source; that boundary is
+> `docs/cross-agent-architecture.md`. Two details below have since generalised:
+> repository truth now lives in **`AGENTS.md`** (the neutral home every agent
+> reads), with `CLAUDE.md` importing it — so where this doc says a fact "lives
+> in `CLAUDE.md`", read it as "the repository-truth file", whatever a given host
+> calls it; and the removed `.claude/engineering-framework.json` policy file is
+> long gone. The reasoning is otherwise unchanged.
+
 ## The one principle
 
 > **The framework owns methodology. The repository owns truth.**

@@ -180,13 +180,17 @@ way is never rewritten by a later install.
 
 ---
 
-## 1. `CLAUDE.md`
+## 1. Repository truth — `AGENTS.md`
 
-Start from `${CLAUDE_PLUGIN_ROOT}/reference/CLAUDE.md.template`, or let
-`framework-install` scaffold it.
+Repository truth lives in **`AGENTS.md`**, the one neutral home every coding
+agent reads. Claude Code reads it through a thin `CLAUDE.md` that does
+`@AGENTS.md`; Codex, Cursor, Copilot and Gemini read it directly. Start from
+`${CLAUDE_PLUGIN_ROOT}/reference/AGENTS.md.template`, or let `framework-install`
+scaffold both files. (An existing `CLAUDE.md`-only repository keeps working
+unchanged — the truth can move to `AGENTS.md` when you choose.)
 
 **Do not restate the framework's methodology in it.** The gate sequence, risk
-tiers, evidence language and human-owned operations arrive from the plugin. A
+tiers, evidence language and human-owned operations arrive from Himoa. A
 second copy drifts, and nothing can detect that it has.
 
 What belongs there is what the framework cannot know:
