@@ -1,101 +1,168 @@
 <div align="center">
 
+<br/>
+
 # 🛠️ Himoa
 
-### Production-grade engineering for coding agents — on any stack, in any repository.
+### Senior-engineer discipline for coding agents — on any stack, in any repository.
+
+<br/>
 
 ```text
-Understand → Design → Human approval → Implement → Review → Validate → Present
+Understand → Design → 🧑 Approve → Implement → Review → Validate → Present
 ```
 
-**Understand broadly enough to be right. Build only what the requirement needs.**
-Evidence over assumption · risk-based rigor · explicit human approval · independent review.
+**Investigate deeply. Build minimally. Prove every claim. Stop for the human.**
 
 <br/>
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-3b82f6.svg?style=flat-square)](LICENSE)
-[![Agents](https://img.shields.io/badge/agents-Claude·Codex·Cursor·Copilot·Gemini-8b5cf6?style=flat-square)](#-supported-coding-agents)
-[![Stack agnostic](https://img.shields.io/badge/stack-agnostic-22c55e?style=flat-square)](#-what-it-does-not-do)
-[![Permission rules](https://img.shields.io/badge/permission%20rules-none-64748b?style=flat-square)](#-what-it-does-not-do)
-[![Build step](https://img.shields.io/badge/build-none-64748b?style=flat-square)](#-what-ships)
+[![License: MIT](https://img.shields.io/badge/License-MIT-3b82f6.svg?style=for-the-badge)](LICENSE)
+[![Agents](https://img.shields.io/badge/Agents-Claude·Codex·Cursor·Copilot·Gemini-8b5cf6?style=for-the-badge)](#-agents)
+[![Stack](https://img.shields.io/badge/Stack-agnostic-22c55e?style=for-the-badge)](#-what-ships)
+<br/>
+[![Permission rules](https://img.shields.io/badge/Permission_rules-none-64748b?style=flat-square)](#-security-boundaries)
+[![Command-gating hooks](https://img.shields.io/badge/Command_gating-none-64748b?style=flat-square)](#-security-boundaries)
+[![Build step](https://img.shields.io/badge/Build_step-none-64748b?style=flat-square)](#-what-ships)
+[![Runtime deps](https://img.shields.io/badge/Runtime_deps-none-64748b?style=flat-square)](#-what-ships)
 
 <br/>
 
-[**Agents**](#-supported-coding-agents) · [**Install**](#-install) · [**Workflow**](#-the-workflow) · [**Risk tiers**](#-risk-decides-the-rigor) · [**Approval**](#-human-approval) · [**Docs**](#-documentation)
+[**Agents**](#-agents) · [**Install**](#-install) · [**Workflow**](#-the-workflow) · [**Risk**](#-risk-decides-the-rigor) · [**Approval**](#-human-approval) · [**Evidence**](#-evidence-language) · [**Docs**](#-documentation)
 
 </div>
 
 ---
 
-## What Himoa is
+## Why Himoa
 
-**Himoa is one engineering methodology that runs inside your coding agent.** It
-gives an AI agent the discipline of a senior engineer: understand the repository
-before changing it, design before building, **stop for human approval**, implement
-only what the requirement needs, review independently, validate with real
-evidence, and present honestly.
+Coding agents are fast, confident, and happy to invent. Asked to change a system
+they've never read, they guess a stack, ship an untested diff, call it done, and
+commit it for you. The speed is real; so is the silent wrong turn.
 
-It is **not** a prompt pack and **not** tied to one tool. The methodology is
-canonical and lives in one place; each supported agent runs it through that
-host's own native mechanisms. **Claude Code is the reference implementation**;
-Codex, Cursor, GitHub Copilot and Gemini CLI are native adapters generated from
-the same source — one methodology, no fork.
+**Himoa gives the agent the habits of a senior engineer instead.** It reads your
+repository before touching it, designs before it builds, **stops for your
+approval**, implements only what the requirement needs, reviews its own work
+through independent lenses, validates against real commands, and reports with
+evidence — labelling every claim, or saying `UNKNOWN` rather than bluffing.
 
-Two things work together, and they own different halves:
+Two things work together and own different halves:
 
-- **Himoa owns the methodology** — the workflow, risk model, evidence rules,
-  review and validation discipline, and the human-approval boundary.
-- **Your repository owns the truth** — what the system is, how it's built, how
-  it's verified. That lives in your repo's **`AGENTS.md`** (see
-  [below](#where-your-repositorys-truth-lives)). Agents cite your code or say
-  `UNKNOWN`; they never guess your stack or invent an architecture you don't have.
+- **Himoa owns the *methodology*** — the workflow, the risk model, the evidence
+  rules, the review and validation discipline, and the human-approval boundary.
+- **Your repository owns the *truth*** — what the system is, how it's built, how
+  it's verified. That lives in your repo's **[`AGENTS.md`](#where-your-truth-lives)**.
+  Agents cite your code or say `UNKNOWN`; they never invent an architecture you
+  don't have.
 
-```mermaid
-flowchart LR
-    U[Understand] --> D[Design]
-    D -->|🧑 approve the plan| I[Implement]
-    I --> R[Review]
-    R --> V[Validate]
-    V --> P[Present]
-    P -->|🧑 review, then commit| Done((ship))
-    classDef stop fill:#8b5cf6,stroke:#6d28d9,color:#fff;
-    class D,P stop
-```
-
-> The pipeline runs on its own and **stops exactly twice** — to approve the
-> plan, and to review the diff before you commit. Everything else runs without
-> asking, at the rigor the change's risk earns.
+> It is **not** a prompt pack and **not** tied to one tool. The methodology is
+> canonical and lives in one place. **Claude Code is the reference
+> implementation**; Codex, Cursor, GitHub Copilot and Gemini CLI are native
+> adapters *generated from the same source* — one methodology, no fork.
 
 ---
 
-## 🌐 Supported coding agents
+## ⚡ The workflow
+
+Feed Himoa a requirement — plain English, an issue key, or an issue URL — and it
+runs the whole lifecycle on its own, **stopping exactly twice**: once to approve
+the plan, once to review the diff before you commit.
+
+```mermaid
+flowchart LR
+    U[🔍 Understand] --> D[📐 Design]
+    D -->|🧑 approve the plan| I[⚙️ Implement]
+    I --> R[🔬 Review]
+    R --> V[✅ Validate]
+    V --> P[📋 Present]
+    P -->|🧑 review, then commit| Done((🚢 ship))
+    classDef stop fill:#8b5cf6,stroke:#6d28d9,color:#fff,font-weight:bold;
+    classDef flow fill:#1e293b,stroke:#334155,color:#e2e8f0;
+    class D,P stop
+    class U,I,R,V flow
+```
+
+On Claude Code:
+
+```text
+/himoa:work-item <requirement, issue key, or issue URL>
+```
+
+Other hosts invoke the same skill by name — Codex `$himoa-work-item`, Gemini
+`/himoa:work-item`, Cursor `himoa-work-item`.
+
+<details>
+<summary><b>What a run looks like</b> (illustrative — shape, not fabricated output)</summary>
+
+```text
+$ /himoa:work-item "Add rate limiting to the password-reset endpoint"
+
+  🔍 Understand   maps the endpoint, its auth path, the existing limiter
+  🎚️  Risk         HIGH — authentication surface + public contract
+  📐 Design       plan + threat model + negative tests, presented
+      ⏸  APPROVAL REQUIRED — waiting for you  ────────────────────────
+  ⚙️  Implement    (after you approve) minimal diff, reuses the limiter
+  🔬 Review       security · reviewer · contract lenses, run independently
+  ✅ Validate     PASS · lint · types · tests   (the commands from AGENTS.md)
+  📋 Present      diff + evidence handed off
+      ⏸  YOURS TO COMMIT — Himoa never commits, pushes or deploys  ────
+```
+
+</details>
+
+**Need the ticket first?** `write-ticket` drafts one the way a business analyst
+would — a story, current behaviour cited from your code, observable acceptance
+criteria, non-goals and open questions. It contains **no design**; the workflow
+derives that from evidence, with your approval.
+
+<details>
+<summary>Drive the stages yourself, or pick up ad-hoc work</summary>
+
+```text
+/himoa:gate-design <requirement>  →  /himoa:gate-approve  →  /himoa:gate-implement
+/himoa:gate-review                →  /himoa:gate-validate
+```
+
+Implemented something by hand? Pick up the back half: `gate-review`, then
+`gate-validate`. Every gate is **human-typed** — the model can neither invoke nor
+fake one.
+</details>
+
+> **Small changes skip all of this.** A comment fix, a rename in one file, a log
+> line, a one-liner — Himoa makes the edit and stops. No plan, no review panel,
+> no report.
+
+---
+
+## 🌐 Agents
 
 The methodology is identical everywhere. What differs is how strongly each host
-can *enforce* a given guarantee — Himoa states that honestly rather than
-implying parity.
+can *enforce* a guarantee — Himoa states that honestly rather than implying parity.
 
 | Agent | Support | What that means |
-|---|---|---|
-| **Claude Code** | **Reference — full** | Production-proven. Native plugin, gates, read-only review subagents, always-on charter. |
-| **OpenAI Codex** | **Supported (initial adapter)** | Native `SKILL.md` skills, read-only sandbox subagents, `AGENTS.md`. Structurally validated; live end-to-end run pending. |
-| **Cursor** | **Supported (initial adapter)** | Native `SKILL.md`/`AGENTS.md`, `readonly` reviewer subagents. Shares its install with Codex. |
-| **Gemini CLI** | **Supported (initial adapter)** | Reuses `AGENTS.md`, read-only reviewer subagents, `/himoa:*` slash commands. |
-| **GitHub Copilot** | **Supported with limitations** | Repo-committed `AGENTS.md`; human approval is **hard** (PR review). Reviewer lenses are **advisory** (no read-only subagent); no skills mechanism. |
+|---|:---:|---|
+| **Claude Code** | 🟢 **Reference — full** | Production-proven. Native plugin, non-invocable gate skills, read-only review subagents, always-on `SessionStart` charter. |
+| **OpenAI Codex** | 🔵 **Supported** | Native `SKILL.md` skills, read-only sandbox subagents, `AGENTS.md`. Structurally validated; live end-to-end run pending. |
+| **Cursor** | 🔵 **Supported** | Native `SKILL.md`/`AGENTS.md`, `readonly` reviewer subagents. Shares its install with Codex. |
+| **Gemini CLI** | 🔵 **Supported** | Reuses `AGENTS.md`, read-only reviewer subagents, `/himoa:*` slash commands. |
+| **GitHub Copilot** | 🟡 **Supported, with limits** | Repo-committed `AGENTS.md`; approval is **hard** (human merges the PR). Reviewer lenses are **advisory** — no read-only subagent, no skills mechanism. |
 
-"Compatible in theory" is not "supported" — a host is listed only once its
-adapter runs the methodology, and enforcement is never rounded up. Details:
-[platform capabilities](docs/platform-capabilities.md) ·
-[cross-agent architecture](docs/cross-agent-architecture.md).
+> *"Compatible in theory" is not "supported."* A host is listed only once its
+> adapter actually runs the methodology, and enforcement is never rounded up.
+> Deeper: [platform capabilities](docs/platform-capabilities.md) ·
+> [cross-agent architecture](docs/cross-agent-architecture.md).
 
 ---
 
 ## 📦 Install
 
-Pick your agent. Every path installs the **same methodology**; only the
-mechanism is host-native. Nothing here writes outside the paths shown, and
-nothing commits on your behalf.
+Pick your agent. Every path installs the **same methodology**; only the mechanism
+is host-native. Nothing here writes outside the paths shown, and **nothing commits
+on your behalf.**
 
-### Claude Code — the reference implementation
+<details open>
+<summary><b>Claude Code</b> — the reference implementation</summary>
+
+<br/>
 
 Installed as a plugin (once per machine), then declared in the repository (once
 per repo, by one person, committed):
@@ -105,37 +172,44 @@ per repo, by one person, committed):
 /plugin marketplace add jaylordibe/himoa
 /plugin install himoa@jaylordibe          # restart Claude Code after
 
-# once per repository (writes AGENTS.md + a thin CLAUDE.md, and .claude/settings.json)
+# once per repository — writes AGENTS.md, a thin CLAUDE.md, and .claude/settings.json
 /himoa:framework-install
 /himoa:framework-doctor                   # verify
 ```
 
-Teammates who pull the repo only run the two `/plugin` lines on their own
-machine — the plugin never travels with `git pull`. Every `/himoa:` command is
-human-typed; the model cannot invoke or fake one.
+Teammates who pull the repo run only the two `/plugin` lines on their own machine
+— the plugin never travels with `git pull`.
 
-### Codex, Cursor & Gemini CLI
+</details>
 
-These share one installer family. Get the `himoa-*` bins from the Claude plugin
-(they're on your `PATH` once it's installed) **or** from a clone of this repo
-(`git clone https://github.com/jaylordibe/himoa && himoa/plugins/himoa/bin/himoa-<host>-install`):
+<details>
+<summary><b>Codex, Cursor & Gemini CLI</b> — one installer family</summary>
+
+<br/>
+
+Get the `himoa-*` bins from the Claude plugin (they're on your `PATH` once it's
+installed) **or** from a clone:
+`git clone https://github.com/jaylordibe/himoa && himoa/plugins/himoa/bin/himoa-<host>-install`
 
 ```bash
-himoa-codex-install          # Codex   — machine: skills + read-only reviewers + standards
+himoa-codex-install          # Codex   — skills + read-only reviewers + standards (machine)
 himoa-cursor-install         # Cursor  — shares the skills/standards install with Codex
 himoa-gemini-install         # Gemini  — ~/.gemini subagents + /himoa:* commands
 himoa-codex-install --repo   # once per repository: create/extend AGENTS.md (never destroys it)
-himoa-codex-doctor           # verify  (himoa-{cursor,gemini}-doctor per host)
+himoa-codex-doctor           # verify   (himoa-{cursor,gemini}-doctor per host)
 ```
 
 `--check` is a dry run; `--uninstall` removes only Himoa-owned files. Skills are
-invoked by name (`himoa-work-item`, `himoa-gate-design`…); reviewer roles run
-read-only; gates cannot be self-started by the model.
+invoked by name; reviewer roles run read-only; gates cannot be self-started.
 
-### GitHub Copilot
+</details>
 
-Copilot is a cloud agent, so its adapter is **repository-committed only** (it
-never touches `$HOME`):
+<details>
+<summary><b>GitHub Copilot</b> — repository-committed only</summary>
+
+<br/>
+
+Copilot is a cloud agent, so its adapter **never touches `$HOME`**:
 
 ```bash
 himoa-copilot-install        # writes ./AGENTS.md + advisory .github/agents/*.agent.md
@@ -143,62 +217,27 @@ himoa-copilot-doctor         # verify
 git add AGENTS.md .github/agents && git commit   # then let Copilot open a PR
 ```
 
-Human approval on Copilot is enforced structurally by GitHub (a human reviews
-and merges the PR); the projected reviewer lenses are **advisory**, not
+Human approval on Copilot is enforced **structurally by GitHub** — a human reviews
+and merges the PR. The projected reviewer lenses are **advisory**, not
 sandbox-enforced.
 
-### Where your repository's truth lives
+</details>
 
-Repository-specific facts live in one neutral file — **`AGENTS.md`** at the repo
-root — read by every agent. Claude Code reads it through a thin `CLAUDE.md` that
-imports it (`@AGENTS.md`); Codex, Cursor, Copilot and Gemini read it directly.
-State the truth once, there:
+### Where your truth lives
 
-- what the system is (language, runtime, frameworks, data stores)
-- **canonical commands** (build, lint, type-check, test) — the validation gate runs these
+Repository facts live in one neutral file — **`AGENTS.md`** at the repo root — read
+by every agent. Claude Code reads it through a thin `CLAUDE.md` that imports it
+(`@AGENTS.md`); Codex, Cursor, Copilot and Gemini read it directly. State it once:
+
+- **what the system is** — language, runtime, frameworks, data stores
+- **canonical commands** — build, lint, type-check, test *(the validation gate runs these)*
 - **high-risk paths** that deserve extra ceremony
-- **consumers** of your contracts
-- deployment constraints and repository conventions
+- **consumers** of your contracts, and deployment constraints
 
 Himoa never invents a missing fact. An absent section is honest; a wrong one is
 load-bearing misinformation. `framework-install` (Claude) and
-`himoa-<host>-install --repo` scaffold it; fill it from repository evidence.
-Full guide: [consuming repository guide](docs/consuming-repository-guide.md).
-
----
-
-## ⚡ The workflow
-
-Feed Himoa a requirement and it runs the whole lifecycle, stopping only at the
-two human boundaries. On Claude Code:
-
-```text
-/himoa:work-item <requirement, issue key, or issue URL>
-```
-
-Other hosts invoke the same skill by name (Codex `$himoa-work-item`, Gemini
-`/himoa:work-item`, Cursor `himoa-work-item`).
-
-Need the ticket first? `write-ticket` drafts one the way a business analyst
-would — a story, current behaviour cited from your code, observable acceptance
-criteria, non-goals and open questions — and contains no design; the workflow
-derives that from evidence, with approval.
-
-<details>
-<summary>Drive the stages yourself, or pick up ad-hoc work</summary>
-
-```text
-/himoa:gate-design <requirement>   →  /himoa:gate-approve  →  /himoa:gate-implement
-/himoa:gate-review                 →  /himoa:gate-validate
-```
-
-Implemented something by hand? Pick up the back half: `gate-review`, then
-`gate-validate`.
-</details>
-
-> **Small changes skip all of this.** A comment fix, a rename in one file, a log
-> line, a one-liner — Himoa makes the edit and stops. No plan, no review panel,
-> no report.
+`himoa-<host>-install --repo` scaffold the file; you fill it from repository
+evidence. Full guide: [consuming repository guide](docs/consuming-repository-guide.md).
 
 ---
 
@@ -213,40 +252,39 @@ change gets everything it needs. This is agent-independent.
 | **Low** | Copy, isolated rename, test-only cleanup | No plan document |
 | **Medium** | Business logic, endpoint behaviour | A plan |
 | **High** | Auth, tenancy, personal data, money, uploads, webhooks, migrations, public contracts, concurrency | Full plan, threat model, negative tests, multi-lens review |
-| **Critical** | Identity infrastructure, cryptography, privileged access, destructive data work | All of High, plus human security review |
+| **Critical** | Identity infrastructure, cryptography, privileged access, destructive data work | All of High, **plus human security review** |
 
-On a boundary between two tiers you get the higher one; a change touching a
-**High-risk path** you declared in `AGENTS.md` is raised automatically. Asking to
+On a boundary between two tiers you get the **higher** one; a change touching a
+**high-risk path** you declared in `AGENTS.md` is raised automatically. Asking to
 keep a change cheap is decisive below Low; above it, it buys a shorter report and
 fewer speculative searches — **never** fewer tests, reviewers or checks.
 
-**Investigate deeply, build minimally.** Investigation breadth and
-implementation breadth are independent: a High-risk change may earn a deep map,
-a threat model and a full review panel and still ship as a five-line diff. Before
-adding an abstraction, a dependency or a new path, Himoa reuses what the
-repository already owns and prefers the standard library and platform over new
-code. Policy: [`execution-efficiency`](plugins/himoa/standards/execution-efficiency.md)
-· [`architecture`](plugins/himoa/standards/architecture.md) §3.
+> **🔎 Investigate deeply, build minimally.** Investigation breadth and
+> implementation breadth are independent: a High-risk change may earn a deep map,
+> a threat model and a full review panel — and still ship as a five-line diff.
+> Himoa reuses what the repository already owns and prefers the standard library
+> and platform over new code, dependencies or abstractions.
+> Policy: [`execution-efficiency`](plugins/himoa/standards/execution-efficiency.md)
+> · [`architecture`](plugins/himoa/standards/architecture.md) §3.
 
 ---
 
 ## 🧑 Human approval
 
-Himoa stops for a human at two boundaries, and the stop is not a formality:
+Himoa stops for a human at **two** boundaries, and neither stop is a formality:
 
-1. **After design, before implementation.** The plan is presented and Himoa
-   waits. Silence is not approval, task assignment is not approval, a permissive
-   sandbox is not approval, and a prior approval never covers a materially changed
-   design.
+1. **After design, before implementation.** The plan is presented and Himoa waits.
+   *Silence is not approval, task assignment is not approval, a permissive sandbox
+   is not approval, and a prior approval never covers a materially changed design.*
 2. **After validation, before you commit.** Himoa prepares the diff, tests and
-   evidence and hands off. It never commits, pushes, merges, deploys or applies a
-   migration — the act of record stays yours.
+   evidence, then hands off. It **never commits, pushes, merges, deploys or applies
+   a migration** — the act of record stays yours.
 
 How the *first* stop is enforced per host: **native** on Claude Code and Cursor
 (gate skills are not model-invocable) and Codex (`allow_implicit_invocation:
 false`); on Gemini a gate is a human-typed command; on **Copilot it is hard** —
-GitHub requires a human to review and merge the PR. Himoa reports which of these
-applies rather than assuming they are equivalent.
+GitHub requires a human to review and merge the PR. Himoa reports which applies
+rather than assuming they are equivalent.
 
 ---
 
@@ -255,46 +293,51 @@ applies rather than assuming they are equivalent.
 Every claim Himoa makes carries one of these — and never rounds up.
 
 | Verdict | Meaning |
-|---|---|
+|:---:|---|
 | `PASS` | The check ran and passed for the stated scope |
 | `FAIL` | It ran and failed |
 | `BLOCKED` | It could not run |
-| `N/A` | Your repository has no such step — does not block an overall `PASS` |
+| `N/A` | Your repository has no such step — does **not** block an overall `PASS` |
 
-Skipped, partial, filtered or flaky is **never** `PASS`. Making a check green by
-weakening the check — deleting a test, gutting an assertion, lowering a
-threshold, suppressing a finding — is manufacturing a pass, not passing.
+> Skipped, partial, filtered or flaky is **never** `PASS`. Making a check green by
+> weakening it — deleting a test, gutting an assertion, lowering a threshold,
+> suppressing a finding — is *manufacturing* a pass, not passing.
 
 ---
 
-## What ships & what it does not do
+## 📦 What ships
 
-### 📦 What ships
+The **Claude Code reference implementation**:
 
-The **Claude Code reference implementation**: 13 skills (`work-item`,
-`write-ticket`, five gates, `framework-install`/`framework-doctor`, four domain
-playbooks), 8 read-only review agents (`context-mapper`, `architect`,
-`reviewer`, `security`, `tester`, `contract`, `data`, `performance`), and one
-`SessionStart` charter that carries the always-on rules and gates nothing. The
-**Codex, Cursor, Copilot and Gemini adapters** are generated from that same
-source (no fork, drift-checked in CI) into each host's native format and
-installed by `himoa-<host>-install`. No build step, no runtime dependencies, no
-published artifact.
+- **13 skills** — `work-item`, `write-ticket`, five gates (`gate-design`,
+  `gate-approve`, `gate-implement`, `gate-review`, `gate-validate`),
+  `framework-install` / `framework-doctor`, and four domain playbooks
+  (`domain-auth`, `domain-authorization`, `domain-background-work`,
+  `domain-debugging`).
+- **8 read-only review agents** — `context-mapper`, `architect`, `reviewer`,
+  `security`, `tester`, `contract`, `data`, `performance`.
+- **1 `SessionStart` charter** carrying the always-on rules — and gating nothing.
+
+The **Codex, Cursor, Copilot and Gemini adapters** are generated from that same
+source (**no fork**, drift-checked in CI) into each host's native format and
+installed by `himoa-<host>-install`.
+
+> **No build step. No runtime dependencies. No published artifact.** The
+> marketplace serves this repository directly.
 
 ### 🚫 Security boundaries
 
 - **No permission rules, no command-gating hooks.** Prompting and blocking are
-  governed entirely by *your* settings and permission mode — Himoa ships neither.
+  governed entirely by *your* settings and permission mode — Himoa ships neither,
+  and no document describes it as though it can block your work.
 - **Repository installs write a bounded set only.** `framework-install` merges
-  exactly three keys into your project's `.claude/settings.json`
-  (`extraKnownMarketplaces`, `enabledPlugins`, `env.CLAUDE_CODE_ENABLE_TODO_TOOLS`)
-  — never `permissions`, never `hooks`. The `himoa-<host>-install` bins write only
-  Himoa-owned, prefixed paths, are idempotent, and never overwrite unrelated files
-  or destroy an existing `AGENTS.md`.
+  exactly three keys into your project's `.claude/settings.json` —
+  `extraKnownMarketplaces`, `enabledPlugins`, and
+  `env.CLAUDE_CODE_ENABLE_TODO_TOOLS` — **never** `permissions`, **never** `hooks`.
+  The `himoa-<host>-install` bins write only Himoa-owned, prefixed paths, are
+  idempotent, and never overwrite unrelated files or destroy an existing `AGENTS.md`.
 - **The act of record stays yours.** Himoa never commits, pushes, deploys or
-  applies migrations.
-
-Rationale: [architecture](docs/architecture.md).
+  applies migrations. Rationale: [architecture](docs/architecture.md).
 
 ---
 
@@ -303,9 +346,9 @@ Rationale: [architecture](docs/architecture.md).
 On Claude Code, auto-update is on by default — the new version loads on your next
 launch or after `/reload-plugins`. If you opted out
 (`framework-install --no-auto-update`): `/plugin marketplace update jaylordibe`
-then `/plugin update himoa@jaylordibe`, and restart. On a **major** version bump
-read the [CHANGELOG](CHANGELOG.md) first; minor and patch bumps never ask
-anything of you. For the other hosts, re-run `himoa-<host>-install` to refresh;
+then `/plugin update himoa@jaylordibe`, and restart. On a **major** version bump,
+read the [CHANGELOG](CHANGELOG.md) first; minor and patch bumps never ask anything
+of you. For the other hosts, re-run `himoa-<host>-install` to refresh;
 `himoa-<host>-doctor` reports a stale install.
 
 ---
@@ -314,6 +357,8 @@ anything of you. For the other hosts, re-run `himoa-<host>-install` to refresh;
 
 <details>
 <summary>Common symptoms and fixes</summary>
+
+<br/>
 
 | Symptom | Cause and fix |
 |---|---|
@@ -338,6 +383,7 @@ anything of you. For the other hosts, re-run `himoa-<host>-install` to refresh;
 | [Platform capabilities](docs/platform-capabilities.md) | What each agent can and cannot enforce, honestly |
 | [Adapter smoke test](docs/adapter-smoke-test.md) | Producing the live end-to-end evidence per host |
 | [Architecture](docs/architecture.md) | Why methodology and repository own different things |
+| [Migration from `.claude`](docs/migration-from-dot-claude.md) | Moving an existing setup onto Himoa |
 | [Versioning](docs/versioning.md) · [Changelog](CHANGELOG.md) | What each release means and asks of you |
 | [Development guide](docs/development-guide.md) · [Constraints](docs/constraints.md) | Changing/releasing Himoa; the host limits that shaped it |
 
@@ -345,8 +391,12 @@ anything of you. For the other hosts, re-run `himoa-<host>-install` to refresh;
 
 <div align="center">
 
-**MIT licensed.** Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+<br/>
 
-<sub>Himoa owns the methodology. Your repository owns the truth.</sub>
+**MIT licensed.** · Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+**Himoa owns the methodology. Your repository owns the truth.**
+
+<sub>Understand broadly enough to be right. Build only what the requirement needs.</sub>
 
 </div>
