@@ -142,7 +142,10 @@ validated, live end-to-end run pending.
   Reviewer lenses are advisory (no spawnable read-only subagent) and there is no
   `SKILL.md` mechanism, but human approval is *stronger* (structural PR review).
   Recorded truthfully in `docs/platform-capabilities.md` rather than rounded up.
-- **No adapter for Gemini** yet — its native file is `GEMINI.md` and its
-  `AGENTS.md` support is unverified, so it is not assumed.
+- **Gemini CLI is a Supported (initial) adapter.** It reuses `AGENTS.md` via the
+  `context.fileName` setting (no `GEMINI.md` fork), projects reviewer roles as
+  native read-only subagents (`.gemini/agents/*.md`, tools allowlist) and the
+  workflow as native `/himoa:*` slash commands (`.gemini/commands/`). Gates are
+  human-typed, so the model cannot self-start one.
 - **No rename beyond the identity migration** and no lowest-common-denominator
   normalisation.

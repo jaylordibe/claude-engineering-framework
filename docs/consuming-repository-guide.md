@@ -61,7 +61,8 @@ himoa-codex-install          # Codex: once per machine (skills, read-only review
 himoa-cursor-install         # Cursor: same, sharing the skills/standards install with Codex
 himoa-codex-install --repo   # Codex/Cursor: once per repository, create or extend AGENTS.md
 himoa-copilot-install        # Copilot: repo only (AGENTS.md + advisory .github/agents); never $HOME
-himoa-codex-doctor           # verify (himoa-{cursor,copilot}-doctor per host)
+himoa-gemini-install         # Gemini: ~/.gemini subagents + /himoa:* commands; --repo wires AGENTS.md
+himoa-codex-doctor           # verify (himoa-{cursor,copilot,gemini}-doctor per host)
 ```
 
 Copilot is **Supported with limitations** — its reviewer lenses are advisory (no

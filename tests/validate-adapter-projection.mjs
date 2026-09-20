@@ -111,6 +111,18 @@ for (const name of readdirSync(join(pluginRoot, 'skills')).sort()) {
   expected.set(`skills/himoa-${name}/SKILL.md`, skillMd);
   expected.set(`skills/himoa-${name}/agents/openai.yaml`,
     genHash(`skills/${name}/SKILL.md`) + `policy:\n  allow_implicit_invocation: ${humanOnly ? 'false' : 'true'}\n`);
+
+  // Gemini CLI has no skills primitive, so the workflow is delivered as native
+  // TOML slash commands (/himoa:<name>). A gate command is human-typed, so the
+  // model cannot self-start a gate — the human-approval boundary holds through
+  // the invocation model, not despite it. Literal ''' strings avoid backslash
+  // escaping in method bodies.
+  const cmd = transformBody(body).trim();
+  if (cmd.includes("'''")) throw new Error(`skill ${name}: body contains ''' which breaks a TOML literal string`);
+  expected.set(`gemini/commands/himoa/${name}.toml`,
+    genHash(`skills/${name}/SKILL.md`) +
+    `description = ${JSON.stringify(fm.description)}\n` +
+    `prompt = '''\n${cmd}\n'''\n`);
 }
 
 // --- Reviewer agents: per host ---------------------------------------------
@@ -156,6 +168,18 @@ for (const file of readdirSync(join(pluginRoot, 'agents')).sort()) {
       genMd(`agents/${file}`) +
       instructions + '\n');
   }
+
+  // Gemini CLI: markdown + YAML subagent, restricted to read-only tools (no
+  // write_file / run_shell_command) — Gemini's native read-only reviewer, with
+  // an isolated context window.
+  expected.set(`gemini/agents/himoa-${name}.md`,
+    `---\n` +
+    `name: himoa-${name}\n` +
+    `description: ${fm.description}\n` +
+    `tools:\n  - read_file\n  - read_many_files\n  - glob\n  - search_file_content\n` +
+    `---\n\n` +
+    genMd(`agents/${file}`) +
+    instructions + '\n');
 }
 
 // --- Shared standards & templates ------------------------------------------
@@ -213,6 +237,12 @@ expected.set('VERSION', `${version}\n`);
     } else if (rel.startsWith('copilot/agents/') && rel.endsWith('.agent.md')) {
       if (!/^---\nname: himoa-[a-z0-9-]+\ndescription: .+/.test(content)) shape.push(`${rel}: needs name+description frontmatter`);
       if (content.length > 30000) shape.push(`${rel}: exceeds Copilot's 30000-char custom-agent limit`);
+    } else if (rel.startsWith('gemini/agents/') && rel.endsWith('.md')) {
+      if (!/^---\nname: himoa-[a-z0-9-]+\ndescription: .+/.test(content)) shape.push(`${rel}: needs name+description frontmatter`);
+      if (!/\ntools:\n/.test(content)) shape.push(`${rel}: Gemini reviewer must declare a read-only tools allowlist`);
+      if (/write_file|run_shell_command/.test(content.slice(0, content.indexOf('\n---\n', 4)))) shape.push(`${rel}: Gemini reviewer tools must be read-only (no write_file/run_shell_command)`);
+    } else if (rel.startsWith('gemini/commands/') && rel.endsWith('.toml')) {
+      if (!/\ndescription = /.test(content) || !/\nprompt = '''/.test(content)) shape.push(`${rel}: Gemini command needs description + prompt`);
     }
   }
   // Host-constraint conformance — real limits a live run would fail on:

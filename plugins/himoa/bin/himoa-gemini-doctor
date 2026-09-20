@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+#
+# himoa-gemini-doctor — verify a Himoa-for-Gemini installation, read-only.
+# Audits the machine level (~/.gemini) and, inside a repository, the AGENTS.md
+# bootstrap and the context.fileName setting that makes Gemini read it. Reports
+# in Himoa's evidence vocabulary and claims only what it can observe.
+set -euo pipefail
+BIN_DIR=$(cd "$(dirname "$0")" && pwd)
+source_root="${CLAUDE_PLUGIN_ROOT:-$BIN_DIR/..}/adapters"
+[ -d "$source_root" ] || source_root="$BIN_DIR/../adapters"
+gemini_home="${GEMINI_HOME:-$HOME/.gemini}"
+
+fails=0
+pass() { printf 'PASS  %s\n' "$1"; }
+warn() { printf 'WARN  %s\n' "$1"; }
+na()   { printf 'N/A   %s\n' "$1"; }
+fail() { printf 'FAIL  %s\n' "$1"; fails=$((fails + 1)); }
+
+printf 'Himoa — gemini installation audit\n\n'
+
+if [ ! -f "$gemini_home/himoa/VERSION" ]; then
+  fail "Himoa is not installed ($gemini_home/himoa/VERSION absent). Run himoa-gemini-install."
+else
+  installed=$(cat "$gemini_home/himoa/VERSION" 2>/dev/null || printf 'unknown')
+  pass "Himoa reference home is installed ($installed)."
+  if [ -f "$source_root/VERSION" ]; then
+    canonical=$(cat "$source_root/VERSION" 2>/dev/null || printf 'unknown')
+    if [ "$installed" = "$canonical" ]; then pass "Installed version matches this source ($canonical)."
+    else warn "Installed $installed, this source is $canonical — re-run himoa-gemini-install."; fi
+  fi
+fi
+
+expected=0; for f in "$source_root"/gemini/agents/himoa-*.md; do [ -e "$f" ] && expected=$((expected + 1)); done
+found=0; if [ -d "$gemini_home/agents" ]; then for f in "$gemini_home/agents"/himoa-*.md; do [ -e "$f" ] && found=$((found + 1)); done; fi
+if [ "$expected" -eq 0 ]; then na "No source reviewer subagents to compare against."
+elif [ "$found" -eq 0 ]; then fail "No Himoa reviewer subagents in $gemini_home/agents (expected $expected)."
+elif [ "$found" -lt "$expected" ]; then warn "$found of $expected Himoa reviewer subagents present — re-run himoa-gemini-install."
+else pass "$found Himoa reviewer subagents present, read-only."; fi
+
+expected_c=0; for f in "$source_root"/gemini/commands/himoa/*.toml; do [ -e "$f" ] && expected_c=$((expected_c + 1)); done
+found_c=0; if [ -d "$gemini_home/commands/himoa" ]; then for f in "$gemini_home/commands/himoa"/*.toml; do [ -e "$f" ] && found_c=$((found_c + 1)); done; fi
+if [ "$found_c" -eq 0 ]; then warn "No Himoa workflow commands in $gemini_home/commands/himoa (expected $expected_c)."
+elif [ "$found_c" -lt "$expected_c" ]; then warn "$found_c of $expected_c Himoa workflow commands present — re-run himoa-gemini-install."
+else pass "$found_c Himoa workflow commands present (/himoa:<name>)."; fi
+
+if [ -d ".git" ] || [ -f "AGENTS.md" ]; then
+  if [ -f "AGENTS.md" ] && grep -q 'himoa:bootstrap' AGENTS.md 2>/dev/null; then pass "AGENTS.md carries the Himoa bootstrap."
+  elif [ -f "AGENTS.md" ]; then warn "AGENTS.md exists but carries no Himoa bootstrap. Run himoa-gemini-install --repo."
+  else warn "This repository has no AGENTS.md. Run himoa-gemini-install --repo."; fi
+  if [ -f ".gemini/settings.json" ] && grep -q 'AGENTS.md' .gemini/settings.json 2>/dev/null; then pass "Gemini is configured to read AGENTS.md (context.fileName)."
+  else warn "Gemini is not configured to read AGENTS.md — run himoa-gemini-install --repo (needs jq), or add it to .gemini/settings.json context.fileName."; fi
+else
+  na "Not inside a repository — skipped the repository bootstrap checks."
+fi
+
+printf '\n'
+if [ "$fails" -gt 0 ]; then printf 'FAIL — %d check(s) failed.\n' "$fails"; exit 1; fi
+printf 'OK — no failures.\n'

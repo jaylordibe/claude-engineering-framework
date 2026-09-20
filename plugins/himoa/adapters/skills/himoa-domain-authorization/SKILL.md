@@ -3,7 +3,7 @@ name: himoa-domain-authorization
 description: The decisions and failure modes that govern who may do what to which record. Carries the questions a change must answer, and none of the answers.
 ---
 
-<!-- GENERATED from plugins/himoa/skills/domain-authorization/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.3.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/skills/domain-authorization/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.4.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Authorization
 

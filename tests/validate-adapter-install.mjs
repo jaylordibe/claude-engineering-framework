@@ -182,6 +182,54 @@ installAndAssert('cursor');
   check('copilot: --check writes nothing', rc.status === 0 && !existsSync(join(repo2, 'AGENTS.md')) && !existsSync(join(repo2, '.github')));
 }
 
+// --- Gemini: machine install + repo settings.json context.fileName merge --
+{
+  const gbin = join(pluginRoot, 'bin', 'himoa-gemini-install');
+  const home = freshHome();
+  const geminiHome = join(home, '.gemini');
+  const env = { ...process.env, HOME: home, GEMINI_HOME: geminiHome };
+  const r = spawnSync(gbin, [], { cwd: repoRoot, env, encoding: 'utf8' });
+  check('gemini: install exits 0', r.status === 0, r.stderr);
+  const agents = existsSync(join(geminiHome, 'agents')) ? readdirSync(join(geminiHome, 'agents')).filter((n) => n.startsWith('himoa-')) : [];
+  const cmds = existsSync(join(geminiHome, 'commands/himoa')) ? readdirSync(join(geminiHome, 'commands/himoa')).filter((n) => n.endsWith('.toml')) : [];
+  const expA = readdirSync(join(adapters, 'gemini/agents')).length;
+  const expC = readdirSync(join(adapters, 'gemini/commands/himoa')).length;
+  check('gemini: reviewer subagents installed', agents.length === expA, `${agents.length}/${expA}`);
+  check('gemini: workflow commands installed', cmds.length === expC, `${cmds.length}/${expC}`);
+  check('gemini: standards home present', existsSync(join(geminiHome, 'himoa/standards')));
+
+  const inst = snapshot(home);
+  check('gemini: @HIMOA_HOME@ fully resolved', ![...inst.values()].some((c) => c.includes('@HIMOA_HOME@')));
+  const gh = join(geminiHome, 'himoa');
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`${esc(gh)}/(standards|templates)/([A-Za-z0-9._-]+\\.md)`, 'g');
+  const dangling = [];
+  for (const [f, c] of inst) for (const m of c.matchAll(re)) if (!existsSync(join(gh, m[1], m[2]))) dangling.push(`${f} -> ${m[1]}/${m[2]}`);
+  check('gemini: no dangling references in installed methodology', dangling.length === 0, dangling.slice(0, 5).join('; '));
+  const anyWrite = agents.some((n) => /write_file|run_shell_command/.test(readFileSync(join(geminiHome, 'agents', n), 'utf8').split('\n---\n')[0]));
+  check('gemini: reviewer subagents are read-only (no write tools)', !anyWrite);
+
+  const repo = mkdtempSync(join(tmpdir(), 'himoa-gemrepo-')); tmpRoots.push(repo);
+  spawnSync(gbin, ['--repo'], { cwd: repo, env, encoding: 'utf8' });
+  check('gemini: --repo writes AGENTS.md bootstrap', existsSync(join(repo, 'AGENTS.md')) && /himoa:bootstrap/.test(readFileSync(join(repo, 'AGENTS.md'), 'utf8')));
+  const settings = join(repo, '.gemini/settings.json');
+  check('gemini: settings.json context.fileName includes AGENTS.md', existsSync(settings) && /AGENTS\.md/.test(readFileSync(settings, 'utf8')));
+
+  const repo2 = mkdtempSync(join(tmpdir(), 'himoa-gemrepo2-')); tmpRoots.push(repo2);
+  mkdirSync(join(repo2, '.gemini'), { recursive: true });
+  writeFileSync(join(repo2, '.gemini/settings.json'), JSON.stringify({ theme: 'keep-me', context: { fileName: 'GEMINI.md' } }));
+  spawnSync(gbin, ['--repo'], { cwd: repo2, env, encoding: 'utf8' });
+  let merged = {};
+  try { merged = JSON.parse(readFileSync(join(repo2, '.gemini/settings.json'), 'utf8')); } catch { /* leave empty */ }
+  check('gemini: settings merge preserves existing keys and adds AGENTS.md',
+    merged.theme === 'keep-me' && Array.isArray(merged.context?.fileName) && merged.context.fileName.includes('AGENTS.md') && merged.context.fileName.includes('GEMINI.md'));
+
+  spawnSync(gbin, ['--uninstall'], { cwd: repoRoot, env, encoding: 'utf8' });
+  const leftA = existsSync(join(geminiHome, 'agents')) ? readdirSync(join(geminiHome, 'agents')).filter((n) => n.startsWith('himoa-')).length : 0;
+  check('gemini: uninstall removes subagents, commands and himoa home',
+    leftA === 0 && !existsSync(join(geminiHome, 'himoa')) && !existsSync(join(geminiHome, 'commands/himoa')));
+}
+
 // --- Structural guarantees the projection carries onto each host -----------
 {
   const humanOnly = ['gate-design', 'gate-approve', 'gate-implement', 'gate-review', 'gate-validate', 'work-item', 'write-ticket'];
@@ -205,6 +253,14 @@ installAndAssert('cursor');
   check('shape: copilot agents exclude context-mapper (not a review lens; 30k limit)', !copAgents.some((n) => n.includes('context-mapper')));
   for (const f of copAgents) {
     check(`shape: copilot ${f} has name+description`, /^---\nname: himoa-[a-z0-9-]+\ndescription: .+/.test(readFileSync(join(adapters, 'copilot/agents', f), 'utf8')));
+  }
+  for (const f of readdirSync(join(adapters, 'gemini/agents'))) {
+    const fm = readFileSync(join(adapters, 'gemini/agents', f), 'utf8').split('\n---\n')[0];
+    check(`shape: gemini ${f} declares read-only tools`, /\ntools:\n/.test(fm) && !/write_file|run_shell_command/.test(fm));
+  }
+  for (const f of readdirSync(join(adapters, 'gemini/commands/himoa'))) {
+    const c = readFileSync(join(adapters, 'gemini/commands/himoa', f), 'utf8');
+    check(`shape: gemini command ${f} has description + prompt`, /\ndescription = /.test(c) && /\nprompt = '''/.test(c));
   }
 }
 

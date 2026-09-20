@@ -89,7 +89,7 @@ infer approval."
 | **OpenAI Codex** | **Supported (initial adapter)** — projection, `$HOME` installer, doctor and repository bootstrap shipped and structurally validated (`docs/cross-agent-architecture.md`). Live end-to-end execution inside Codex has not been smoke-tested here; that evidence is pending, so it is not claimed at parity |
 | **Cursor** | **Supported (initial adapter)** — reads `SKILL.md`/`AGENTS.md` natively and honours `disable-model-invocation`; reviewer roles are read-only local subagents; installed via `himoa-cursor-install`. Shares the skills/standards install with Codex. Live end-to-end not yet smoke-tested, so not claimed at parity |
 | **GitHub Copilot** | **Supported with limitations** — repo-committed `AGENTS.md` bootstrap delivers the methodology and human approval is **hard** (structural PR review). But reviewer lenses are **advisory** (no spawnable read-only subagent), there is no `SKILL.md` mechanism, and `context-mapper` is not projected (over the 30 000-char custom-agent limit). Installed via `himoa-copilot-install` (repo only, never `$HOME`) |
-| **Gemini CLI** | **Preliminary** — native file is `GEMINI.md`; first-class `AGENTS.md` support unverified |
+| **Gemini CLI** | **Supported (initial adapter)** — reuses `AGENTS.md` via the `context.fileName` setting (no `GEMINI.md` fork); reviewer roles are **native read-only subagents** (tools allowlist, isolated context); the workflow projects to native `/himoa:*` slash commands; gates stay human-typed. Installed via `himoa-gemini-install`. Live run host-gated |
 
 ### Verified corrections (2026-09-20)
 

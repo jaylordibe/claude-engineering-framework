@@ -283,7 +283,7 @@ the reference implementation; other adapters are in progress.
 | **OpenAI Codex** | **Supported (initial adapter).** Projection, `$HOME` installer, doctor and repository bootstrap shipped and structurally validated; live end-to-end execution not yet smoke-tested, so not claimed at parity |
 | **Cursor** | **Supported (initial adapter).** Reads `SKILL.md`/`AGENTS.md` natively, read-only reviewer subagents; shares the install with Codex; live run not yet smoke-tested |
 | **GitHub Copilot** | **Supported with limitations.** Repo-committed `AGENTS.md` bootstrap; human approval is hard (structural PR review); reviewer lenses are advisory (no read-only subagent), no `SKILL.md` mechanism |
-| **Gemini CLI** | Researched — native file is `GEMINI.md`; `AGENTS.md` support unverified |
+| **Gemini CLI** | **Supported (initial adapter).** Reuses `AGENTS.md` (via `context.fileName`); native read-only reviewer subagents; workflow as `/himoa:*` slash commands |
 
 "Compatible in theory" is not "supported": a platform is listed as supported
 only once its adapter runs the methodology, and an adapter never reports a
@@ -299,7 +299,8 @@ himoa-codex-install          # Codex: once per machine (skills + read-only revie
 himoa-cursor-install         # Cursor: same, sharing the skills/standards install with Codex
 himoa-codex-install --repo   # Codex/Cursor: once per repository, create/extend AGENTS.md (never destroys it)
 himoa-copilot-install        # Copilot: repo only (AGENTS.md + advisory .github/agents), never touches $HOME
-himoa-codex-doctor           # verify (himoa-{cursor,copilot}-doctor per host)
+himoa-gemini-install         # Gemini: ~/.gemini subagents + /himoa:* commands; --repo wires AGENTS.md via context.fileName
+himoa-codex-doctor           # verify (himoa-{cursor,copilot,gemini}-doctor per host)
 ```
 
 `--check` is a dry run; `--uninstall` removes only Himoa-owned files (and keeps

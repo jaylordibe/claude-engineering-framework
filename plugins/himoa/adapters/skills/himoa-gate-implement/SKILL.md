@@ -4,7 +4,7 @@ description: Implements an explicitly approved plan and nothing else, preserving
 disable-model-invocation: true
 ---
 
-<!-- GENERATED from plugins/himoa/skills/gate-implement/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.3.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/skills/gate-implement/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.4.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Implement an approved plan
 

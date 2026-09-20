@@ -12,6 +12,33 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 3.4.0 — 2026-09-20
+
+**Gemini CLI is the fourth adapter — a full-capability fit, from the same
+canonical source.** All four surveyed platforms now run one methodology. Claude
+Code unchanged; MINOR.
+
+- **Reuses `AGENTS.md`, no `GEMINI.md` fork.** `himoa-gemini-install --repo`
+  writes the shared `AGENTS.md` bootstrap and merges `.gemini/settings.json`
+  `context.fileName` to include it (via `jq`, preserving existing settings), so
+  Gemini reads the same single source. Falls back to a printed snippet if `jq`
+  is absent — never guesses at the JSON.
+- **Read-only reviewer subagents.** Reviewer roles project to `.gemini/agents/
+  himoa-*.md` with a read-only `tools` allowlist (no `write_file`/
+  `run_shell_command`) and Gemini's isolated context — a *native* read-only
+  reviewer, like Cursor's.
+- **Workflow as native slash commands.** Gemini has no `SKILL.md` primitive, so
+  the workflow projects to `.gemini/commands/himoa/*.toml` (`/himoa:<name>`). A
+  gate command is human-typed, so the model cannot self-start a gate — the
+  human-approval boundary holds through the invocation model.
+- **Machine install** (`himoa-gemini-install`) puts subagents, commands and the
+  standards home under `~/.gemini/` (honours `GEMINI_HOME`); `himoa-gemini-doctor`
+  verifies it, including that `context.fileName` points at `AGENTS.md`.
+- Every guarantee is asserted against an isolated fake HOME (install, no
+  dangling references, read-only tools, settings-merge preserves existing keys,
+  uninstall removes only Himoa-owned files). Gemini is **Supported (initial
+  adapter)**; the live end-to-end run remains host-gated (`docs/adapter-smoke-test.md`).
+
 ## 3.3.0 — 2026-09-20
 
 **GitHub Copilot is the third adapter — a genuinely different, partial shape,

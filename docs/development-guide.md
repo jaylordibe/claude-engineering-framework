@@ -86,8 +86,9 @@ The official validator checks the manifests. This one checks what fails
 `plugins/himoa/adapters/` is a projection of the canonical skills, agents,
 standards, templates and charter, produced by
 `tests/validate-adapter-projection.mjs`. Its `skills/`, `standards/`,
-`templates/` and `AGENTS.himoa.md` are host-neutral shared artefacts (Codex and
-Cursor both read them); only `codex/agents/` and `cursor/agents/` are per-host.
+`templates/` and `AGENTS.himoa.md` are host-neutral shared artefacts; the
+per-host outputs are `codex/agents/` (TOML), `cursor/agents/` (md), `copilot/
+agents/` (`.agent.md`), and `gemini/agents/` + `gemini/commands/` (md + TOML).
 It is committed (so the installers ship it) and marked GENERATED. **Edit the
 canonical source, then run `node tests/validate-adapter-projection.mjs --write`;**
 the same script fails CI when the committed projection has drifted. Because it is a derivative with

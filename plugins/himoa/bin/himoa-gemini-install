@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+#
+# himoa-gemini-install — install Himoa's Gemini CLI adapter.
+#
+# Gemini reads GEMINI.md by default, not AGENTS.md; but its `context.fileName`
+# setting can add AGENTS.md, so the SHARED bootstrap is reused with no GEMINI.md
+# fork. Machine level installs the read-only reviewer subagents and the workflow
+# slash commands and standards; the repository level writes AGENTS.md and points
+# Gemini at it. Reviewer subagents are restricted to read-only tools, so the
+# read-only reviewer discipline is native here.
+#
+# Machine (user-level, honours GEMINI_HOME / HOME — which is what lets it be
+# tested against a fake HOME):
+#   ~/.gemini/agents/himoa-*.md           read-only reviewer subagents
+#   ~/.gemini/commands/himoa/*.toml        workflow slash commands (/himoa:<name>)
+#   ~/.gemini/himoa/{standards,templates}  referenced by the commands/agents
+# Repository:
+#   ./AGENTS.md                            methodology bootstrap + truth scaffold
+#   ./.gemini/settings.json                context.fileName includes AGENTS.md
+#
+# bash 3.2 compatible.
+set -euo pipefail
+BIN_DIR=$(cd "$(dirname "$0")" && pwd)
+# shellcheck source=lib/himoa-adapter-install.sh
+. "$BIN_DIR/lib/himoa-adapter-install.sh"
+
+source_root="${CLAUDE_PLUGIN_ROOT:-$BIN_DIR/..}/adapters"
+[ -d "$source_root" ] || source_root="$BIN_DIR/../adapters"
+source_root=$(cd "$source_root" && pwd)
+reference_root="${CLAUDE_PLUGIN_ROOT:-$BIN_DIR/..}/reference"
+[ -d "$reference_root" ] || reference_root="$BIN_DIR/../reference"
+
+gemini_home="${GEMINI_HOME:-$HOME/.gemini}"
+agents_dst="$gemini_home/agents"
+commands_dst="$gemini_home/commands/himoa"
+himoa_home="$gemini_home/himoa"
+
+mode="install"
+case "${1:-}" in
+  --check) mode="check" ;;
+  --uninstall) mode="uninstall" ;;
+  --repo) mode="repo"; [ "${2:-}" = "--check" ] && mode="repo-check" ;;
+  "") : ;;
+  -h|--help)
+    printf 'usage: himoa-gemini-install [--check | --uninstall | --repo [--check]]\n'
+    printf '  (no flag)      install the machine-level adapter (subagents, commands, standards)\n'
+    printf '  --check        dry run\n'
+    printf '  --uninstall    remove only Himoa-owned files\n'
+    printf '  --repo         bootstrap ./AGENTS.md and .gemini/settings.json so Gemini reads it\n'
+    exit 0 ;;
+  *) printf 'himoa-gemini-install: unknown argument %s\n' "$1" >&2; exit 2 ;;
+esac
+
+say() { printf '%s\n' "$1"; }
+install_file() {
+  if [ "$mode" = "check" ]; then say "  would write  $2"; return; fi
+  mkdir -p "$(dirname "$2")"; sed "s|@HIMOA_HOME@|$himoa_home|g" "$1" > "$2"
+}
+install_tree() {
+  local rel; while IFS= read -r rel; do install_file "$1/$rel" "$2/$rel"; done < <(cd "$1" && find . -type f | sed 's|^\./||')
+}
+
+# --- Repository bootstrap: AGENTS.md + point Gemini at it -------------------
+if [ "$mode" = "repo" ] || [ "$mode" = "repo-check" ]; then
+  dry=0; [ "$mode" = "repo-check" ] && dry=1
+  himoa_repo_bootstrap "$source_root" "$reference_root" "$dry"
+  # Gemini reads GEMINI.md by default; add AGENTS.md via context.fileName,
+  # preserving any existing setting. jq is the framework's JSON tool; without it
+  # the merge is not guessed — the snippet is printed for the user to add.
+  settings=".gemini/settings.json"
+  if [ "$dry" = "1" ]; then
+    say "would ensure $settings has context.fileName including AGENTS.md"
+  elif command -v jq >/dev/null 2>&1; then
+    mkdir -p .gemini
+    [ -f "$settings" ] || printf '{}\n' > "$settings"
+    tmp=$(mktemp "${TMPDIR:-/tmp}/himoa-gemini.XXXXXX")
+    if jq 'def a: if .context.fileName==null then ["GEMINI.md"] elif (.context.fileName|type)=="string" then [.context.fileName] else .context.fileName end;
+           .context.fileName = (a as $x | if ($x|index("AGENTS.md")) then $x else $x + ["AGENTS.md"] end)' "$settings" > "$tmp" 2>/dev/null; then
+      mv "$tmp" "$settings"; say "Ensured $settings context.fileName includes AGENTS.md (existing settings preserved)."
+    else
+      rm -f "$tmp"; say "Could not parse $settings as JSON — left it untouched. Add \"AGENTS.md\" to context.fileName by hand."
+    fi
+  else
+    say "jq not found — add this to $settings by hand: {\"context\":{\"fileName\":[\"GEMINI.md\",\"AGENTS.md\"]}}"
+  fi
+  exit 0
+fi
+
+# --- Uninstall ---
+if [ "$mode" = "uninstall" ]; then
+  say "Himoa Gemini adapter — uninstall (removes only Himoa-owned files)"
+  if [ -d "$agents_dst" ]; then for f in "$agents_dst"/himoa-*.md; do [ -e "$f" ] && rm -f "$f"; done; fi
+  rm -rf "$commands_dst" "$himoa_home"
+  say "Removed Himoa's Gemini subagents, commands and reference home. AGENTS.md and .gemini/settings.json left untouched."
+  exit 0
+fi
+
+# --- Install / check ---
+say "Himoa Gemini adapter — ${mode}"
+say "Destinations (Himoa-owned only): $agents_dst/himoa-*.md · $commands_dst · $himoa_home"
+say ""
+for f in "$source_root"/gemini/agents/himoa-*.md; do [ -e "$f" ] && install_file "$f" "$agents_dst/$(basename "$f")"; done
+for f in "$source_root"/gemini/commands/himoa/*.toml; do [ -e "$f" ] && install_file "$f" "$commands_dst/$(basename "$f")"; done
+install_tree "$source_root/standards" "$himoa_home/standards"
+install_tree "$source_root/templates" "$himoa_home/templates"
+install_file "$source_root/VERSION" "$himoa_home/VERSION"
+say ""
+if [ "$mode" = "check" ]; then say "Dry run — nothing written."; else say "Installed. Bootstrap a repository with: himoa-gemini-install --repo, then verify: himoa-gemini-doctor"; fi
