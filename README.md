@@ -282,8 +282,8 @@ the reference implementation; other adapters are in progress.
 | **Claude Code** | **Reference — full support.** Production-proven |
 | **OpenAI Codex** | **Supported (initial adapter).** Projection, `$HOME` installer, doctor and repository bootstrap shipped and structurally validated; live end-to-end execution not yet smoke-tested, so not claimed at parity |
 | **Cursor** | **Supported (initial adapter).** Reads `SKILL.md`/`AGENTS.md` natively, read-only reviewer subagents; shares the install with Codex; live run not yet smoke-tested |
-| **GitHub Copilot** | Researched |
-| **Gemini CLI** | Preliminary — native file is `GEMINI.md`; `AGENTS.md` support unverified |
+| **GitHub Copilot** | **Supported with limitations.** Repo-committed `AGENTS.md` bootstrap; human approval is hard (structural PR review); reviewer lenses are advisory (no read-only subagent), no `SKILL.md` mechanism |
+| **Gemini CLI** | Researched — native file is `GEMINI.md`; `AGENTS.md` support unverified |
 
 "Compatible in theory" is not "supported": a platform is listed as supported
 only once its adapter runs the methodology, and an adapter never reports a
@@ -292,13 +292,14 @@ per-platform capability contract:
 [Cross-agent architecture](docs/cross-agent-architecture.md) ·
 [Platform capabilities](docs/platform-capabilities.md).
 
-### Using Himoa from Codex or Cursor
+### Using Himoa from Codex, Cursor or Copilot
 
 ```bash
 himoa-codex-install          # Codex: once per machine (skills + read-only reviewers + standards)
 himoa-cursor-install         # Cursor: same, sharing the skills/standards install with Codex
-himoa-codex-install --repo   # once per repository: create/extend AGENTS.md (never destroys it)
-himoa-codex-doctor           # verify (himoa-cursor-doctor for Cursor)
+himoa-codex-install --repo   # Codex/Cursor: once per repository, create/extend AGENTS.md (never destroys it)
+himoa-copilot-install        # Copilot: repo only (AGENTS.md + advisory .github/agents), never touches $HOME
+himoa-codex-doctor           # verify (himoa-{cursor,copilot}-doctor per host)
 ```
 
 `--check` is a dry run; `--uninstall` removes only Himoa-owned files (and keeps

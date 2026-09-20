@@ -136,9 +136,13 @@ validated, live end-to-end run pending.
   generated projection; the canonical source stays the single home. A deeper
   restructure is still architecture ahead of need.
 - **No per-platform forks** of skills or standards.
-- **No adapters for GitHub Copilot / Gemini** yet — researched only.
-  Copilot reads `AGENTS.md` and gates via PR review (a different, structural
-  approval model); Gemini's native file is `GEMINI.md` and its `AGENTS.md`
-  support is unverified, so neither is assumed.
+- **GitHub Copilot is a Supported (with limitations) adapter**, a deliberately
+  different shape: a cloud agent with no local footprint, so `himoa-copilot-install`
+  writes only to the repository (`AGENTS.md` + `.github/agents/*.agent.md`).
+  Reviewer lenses are advisory (no spawnable read-only subagent) and there is no
+  `SKILL.md` mechanism, but human approval is *stronger* (structural PR review).
+  Recorded truthfully in `docs/platform-capabilities.md` rather than rounded up.
+- **No adapter for Gemini** yet — its native file is `GEMINI.md` and its
+  `AGENTS.md` support is unverified, so it is not assumed.
 - **No rename beyond the identity migration** and no lowest-common-denominator
   normalisation.

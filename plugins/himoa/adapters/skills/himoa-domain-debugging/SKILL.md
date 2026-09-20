@@ -3,7 +3,7 @@ name: himoa-domain-debugging
 description: The order a defect is diagnosed in, and the proof a fix owes before it is designed. Carries the questions a defect must answer, and none of the answers.
 ---
 
-<!-- GENERATED from plugins/himoa/skills/domain-debugging/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.2.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/skills/domain-debugging/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.3.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Diagnosis before remediation
 

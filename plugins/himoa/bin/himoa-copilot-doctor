@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+#
+# himoa-copilot-doctor — verify a repository's Himoa-for-Copilot bootstrap,
+# read-only. Copilot is repo-committed only (no machine install), so this audits
+# the repository, not $HOME. Reports in Himoa's evidence vocabulary and claims
+# only what it can observe.
+set -euo pipefail
+BIN_DIR=$(cd "$(dirname "$0")" && pwd)
+source_root="${CLAUDE_PLUGIN_ROOT:-$BIN_DIR/..}/adapters"
+[ -d "$source_root" ] || source_root="$BIN_DIR/../adapters"
+
+fails=0
+pass() { printf 'PASS  %s\n' "$1"; }
+warn() { printf 'WARN  %s\n' "$1"; }
+na()   { printf 'N/A   %s\n' "$1"; }
+fail() { printf 'FAIL  %s\n' "$1"; fails=$((fails + 1)); }
+
+printf 'Himoa — copilot installation audit\n\n'
+
+if [ -f AGENTS.md ] && grep -q 'himoa:bootstrap' AGENTS.md 2>/dev/null; then
+  pass "AGENTS.md carries the Himoa bootstrap."
+  if grep -qiE 'Canonical commands|## Project' AGENTS.md 2>/dev/null; then pass "Repository declares its own truth in AGENTS.md."
+  else warn "AGENTS.md has the bootstrap but no repository truth (Project, Canonical commands) yet."; fi
+elif [ -f AGENTS.md ]; then
+  warn "AGENTS.md exists but carries no Himoa bootstrap. Run himoa-copilot-install."
+else
+  fail "No AGENTS.md — run himoa-copilot-install to bootstrap this repository for Copilot."
+fi
+
+expected=0; for f in "$source_root"/copilot/agents/himoa-*.agent.md; do [ -e "$f" ] && expected=$((expected + 1)); done
+found=0; if [ -d .github/agents ]; then for f in .github/agents/himoa-*.agent.md; do [ -e "$f" ] && found=$((found + 1)); done; fi
+if [ "$expected" -eq 0 ]; then na "No source Copilot reviewer agents to compare against."
+elif [ "$found" -eq 0 ]; then warn "No Himoa reviewer agents in .github/agents (expected $expected). They are advisory on Copilot; run himoa-copilot-install to add them."
+elif [ "$found" -lt "$expected" ]; then warn "$found of $expected Himoa reviewer agents present — re-run himoa-copilot-install."
+else pass "$found Himoa reviewer agents present in .github/agents (advisory)."; fi
+
+na "Read-only reviewer isolation is not enforceable on Copilot (no spawnable read-only subagent); the reviewer lenses are advisory. Human approval is enforced structurally by PR review."
+
+printf '\n'
+if [ "$fails" -gt 0 ]; then printf 'FAIL — %d check(s) failed.\n' "$fails"; exit 1; fi
+printf 'OK — no failures.\n'

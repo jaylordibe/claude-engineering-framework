@@ -50,18 +50,23 @@ Either way, then work:
 
 ---
 
-## Using this repository from Codex or Cursor
+## Using this repository from Codex, Cursor or Copilot
 
 This guide describes the Claude Code path (the reference implementation). The
-same methodology runs on OpenAI Codex and Cursor through their native
-mechanisms — no second copy of Himoa:
+same methodology runs on OpenAI Codex, Cursor and GitHub Copilot through their
+native mechanisms — no second copy of Himoa:
 
 ```bash
 himoa-codex-install          # Codex: once per machine (skills, read-only reviewers, standards)
 himoa-cursor-install         # Cursor: same, sharing the skills/standards install with Codex
-himoa-codex-install --repo   # once per repository: create or extend AGENTS.md (never destroys it)
-himoa-codex-doctor           # verify (himoa-cursor-doctor for Cursor)
+himoa-codex-install --repo   # Codex/Cursor: once per repository, create or extend AGENTS.md
+himoa-copilot-install        # Copilot: repo only (AGENTS.md + advisory .github/agents); never $HOME
+himoa-codex-doctor           # verify (himoa-{cursor,copilot}-doctor per host)
 ```
+
+Copilot is **Supported with limitations** — its reviewer lenses are advisory (no
+read-only subagent) though human approval is hard (structural PR review). See
+[Platform capabilities](platform-capabilities.md).
 
 Repository truth lives in **`AGENTS.md`**, which every agent reads; the
 `CLAUDE.md` below is a thin `@AGENTS.md` importer so Claude Code loads the same

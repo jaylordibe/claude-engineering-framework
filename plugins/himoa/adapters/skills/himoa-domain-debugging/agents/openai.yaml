@@ -1,4 +1,4 @@
-# GENERATED from plugins/himoa/skills/domain-debugging/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.2.0).
+# GENERATED from plugins/himoa/skills/domain-debugging/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.3.0).
 # DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write
 policy:
   allow_implicit_invocation: true

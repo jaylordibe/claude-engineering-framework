@@ -152,6 +152,36 @@ installAndAssert('cursor');
   check('repo: prepend preserves user content and adds bootstrap', merged.includes('SENTINEL-DO-NOT-LOSE') && merged.includes('himoa:bootstrap'));
 }
 
+// --- Copilot: repo-only bootstrap, no $HOME footprint ----------------------
+{
+  const copilotBin = join(pluginRoot, 'bin', 'himoa-copilot-install');
+  const home = freshHome();
+  const repo = mkdtempSync(join(tmpdir(), 'himoa-copilot-repo-')); tmpRoots.push(repo);
+  const env = { ...process.env, HOME: home, CODEX_HOME: join(home, '.codex') };
+  const r = spawnSync(copilotBin, [], { cwd: repo, env, encoding: 'utf8' });
+  check('copilot: install exits 0', r.status === 0, r.stderr);
+  const agentsMd = existsSync(join(repo, 'AGENTS.md')) ? readFileSync(join(repo, 'AGENTS.md'), 'utf8') : '';
+  check('copilot: AGENTS.md created with bootstrap + truth scaffold', /himoa:bootstrap/.test(agentsMd) && /Canonical commands/.test(agentsMd));
+
+  const ghAgents = join(repo, '.github/agents');
+  const copAgents = existsSync(ghAgents) ? readdirSync(ghAgents).filter((n) => n.startsWith('himoa-')) : [];
+  const expectedCop = readdirSync(join(adapters, 'copilot/agents')).filter((n) => n.endsWith('.agent.md')).length;
+  check('copilot: reviewer agents written to .github/agents', copAgents.length === expectedCop && expectedCop > 0, `${copAgents.length}/${expectedCop}`);
+  check('copilot: context-mapper excluded (not a review lens; over 30k limit)', !copAgents.some((n) => n.includes('context-mapper')));
+  const ghContent = copAgents.map((n) => readFileSync(join(ghAgents, n), 'utf8')).join('\n');
+  check('copilot: @HIMOA_HOME@ resolved to the canonical URL', !ghContent.includes('@HIMOA_HOME@') && ghContent.includes('github.com/jaylordibe/himoa'));
+  check('copilot: writes nothing to $HOME (cloud agent)', walk(home).length === 0, `${walk(home).length} files in HOME`);
+
+  spawnSync(copilotBin, ['--uninstall'], { cwd: repo, env, encoding: 'utf8' });
+  const leftCop = existsSync(ghAgents) ? readdirSync(ghAgents).filter((n) => n.startsWith('himoa-')).length : 0;
+  check('copilot: uninstall removes .github/agents/himoa-*', leftCop === 0);
+  check('copilot: uninstall keeps AGENTS.md', existsSync(join(repo, 'AGENTS.md')));
+
+  const repo2 = mkdtempSync(join(tmpdir(), 'himoa-copilot-repo2-')); tmpRoots.push(repo2);
+  const rc = spawnSync(copilotBin, ['--check'], { cwd: repo2, env, encoding: 'utf8' });
+  check('copilot: --check writes nothing', rc.status === 0 && !existsSync(join(repo2, 'AGENTS.md')) && !existsSync(join(repo2, '.github')));
+}
+
 // --- Structural guarantees the projection carries onto each host -----------
 {
   const humanOnly = ['gate-design', 'gate-approve', 'gate-implement', 'gate-review', 'gate-validate', 'work-item', 'write-ticket'];
@@ -170,6 +200,11 @@ installAndAssert('cursor');
   }
   for (const f of readdirSync(join(adapters, 'cursor/agents'))) {
     check(`shape: cursor ${f} is readonly`, /^readonly: true$/m.test(readFileSync(join(adapters, 'cursor/agents', f), 'utf8')));
+  }
+  const copAgents = readdirSync(join(adapters, 'copilot/agents'));
+  check('shape: copilot agents exclude context-mapper (not a review lens; 30k limit)', !copAgents.some((n) => n.includes('context-mapper')));
+  for (const f of copAgents) {
+    check(`shape: copilot ${f} has name+description`, /^---\nname: himoa-[a-z0-9-]+\ndescription: .+/.test(readFileSync(join(adapters, 'copilot/agents', f), 'utf8')));
   }
 }
 

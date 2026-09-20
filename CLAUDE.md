@@ -87,11 +87,12 @@ plugins/himoa/
   scripts/session-charter.sh        the SessionStart charter — the only hook
   bin/himoa-doctor                     repository contract audit, read-only
   bin/himoa-install-settings           the project dependency declaration merge (project only, never $HOME)
-  bin/himoa-{codex,cursor}-install     the adapter installers (write $HOME; --repo bootstraps AGENTS.md)
-  bin/himoa-{codex,cursor}-doctor      adapter installation audits, read-only
+  bin/himoa-{codex,cursor}-install     machine adapter installers (write $HOME; --repo bootstraps AGENTS.md)
+  bin/himoa-copilot-install            repo-only adapter bootstrap (Copilot is a cloud agent; never $HOME)
+  bin/himoa-{codex,cursor,copilot}-doctor  adapter installation audits, read-only
   bin/lib/                             shared installer/doctor logic sourced by the wrappers
   adapters/                         GENERATED projection — never hand-edited. skills/ standards/ templates/
-                                    AGENTS.himoa.md are shared; codex/ and cursor/ hold per-host reviewer agents
+                                    AGENTS.himoa.md are shared; codex/ cursor/ copilot/ hold per-host reviewer agents
   reference/                        AGENTS.md + CLAUDE.md templates, marketplace declaration
 ```
 

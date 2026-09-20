@@ -16,6 +16,29 @@
 # Codex agents dir) — which is what lets it be tested against an isolated fake
 # HOME. bash 3.2 compatible.
 
+# Create or safely extend ./AGENTS.md with the Himoa bootstrap + repository-truth
+# scaffold. Never destroys existing content. Args: source_root, reference_root,
+# dry(0/1). Shared by every adapter's repository bootstrap (Codex, Cursor,
+# Copilot), so the one repo-truth home is written the same way everywhere.
+himoa_repo_bootstrap() {
+  local source_root="$1" reference_root="$2" dry="$3"
+  local boot="$source_root/AGENTS.himoa.md"
+  local scaffold="$reference_root/AGENTS.md.template"
+  [ -f "$boot" ] || { printf 'himoa: missing bootstrap %s\n' "$boot" >&2; return 1; }
+  if [ ! -e "AGENTS.md" ]; then
+    if [ "$dry" = "1" ]; then printf '%s\n' "would create ./AGENTS.md (Himoa bootstrap + repository-truth scaffold)"; return 0; fi
+    { cat "$boot"; printf '\n\n'; [ -f "$scaffold" ] && cat "$scaffold"; } > "AGENTS.md"
+    printf '%s\n' "Created ./AGENTS.md — Himoa bootstrap plus a repository-truth scaffold. Fill it from evidence and commit it."
+    return 0
+  fi
+  if grep -q 'himoa:bootstrap' "AGENTS.md" 2>/dev/null; then printf '%s\n' "./AGENTS.md already carries the Himoa bootstrap — nothing to do."; return 0; fi
+  if [ "$dry" = "1" ]; then printf '%s\n' "would prepend the Himoa bootstrap to ./AGENTS.md (existing content preserved)"; return 0; fi
+  local tmp; tmp=$(mktemp "${TMPDIR:-/tmp}/himoa-agents.XXXXXX")
+  { cat "$boot"; printf '\n\n---\n\n'; cat "AGENTS.md"; } > "$tmp" && mv "$tmp" "AGENTS.md"
+  printf '%s\n' "Prepended the Himoa bootstrap to ./AGENTS.md; existing content preserved below it."
+  return 0
+}
+
 himoa_adapter_main() {
   local host="$HIMOA_HOST"
   local self_dir="$BIN_DIR"
@@ -78,21 +101,8 @@ himoa_adapter_main() {
   # --- Repository bootstrap ---
   if [ "$mode" = "repo" ] || [ "$mode" = "repo-check" ]; then
     local dry=0; [ "$mode" = "repo-check" ] && dry=1
-    local boot="$source_root/AGENTS.himoa.md"
-    local scaffold="$reference_root/AGENTS.md.template"
-    [ -f "$boot" ] || { printf 'missing bootstrap %s\n' "$boot" >&2; return 1; }
-    if [ ! -e "AGENTS.md" ]; then
-      if [ "$dry" = "1" ]; then say "would create ./AGENTS.md (Himoa bootstrap + repository-truth scaffold)"; return 0; fi
-      { cat "$boot"; printf '\n\n'; [ -f "$scaffold" ] && cat "$scaffold"; } > "AGENTS.md"
-      say "Created ./AGENTS.md — Himoa bootstrap plus a repository-truth scaffold. Fill it from evidence and commit it."
-      return 0
-    fi
-    if grep -q 'himoa:bootstrap' "AGENTS.md" 2>/dev/null; then say "./AGENTS.md already carries the Himoa bootstrap — nothing to do."; return 0; fi
-    if [ "$dry" = "1" ]; then say "would prepend the Himoa bootstrap to ./AGENTS.md (existing content preserved)"; return 0; fi
-    local tmp; tmp=$(mktemp "${TMPDIR:-/tmp}/himoa-agents.XXXXXX")
-    { cat "$boot"; printf '\n\n---\n\n'; cat "AGENTS.md"; } > "$tmp" && mv "$tmp" "AGENTS.md"
-    say "Prepended the Himoa bootstrap to ./AGENTS.md; existing content preserved below it."
-    return 0
+    himoa_repo_bootstrap "$source_root" "$reference_root" "$dry"
+    return $?
   fi
 
   # --- Uninstall ---

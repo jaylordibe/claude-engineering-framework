@@ -4,7 +4,7 @@ description: Designs a material change by mapping repository reality first, reco
 disable-model-invocation: true
 ---
 
-<!-- GENERATED from plugins/himoa/skills/gate-design/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.2.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/skills/gate-design/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.3.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Design a change
 

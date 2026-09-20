@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+#
+# himoa-copilot-install — bootstrap a repository for the GitHub Copilot coding
+# agent. Copilot is a CLOUD agent (GitHub Actions env, branch + PR): it has no
+# local/user-level footprint, so unlike the Codex and Cursor installers this
+# one writes ONLY to the repository, never to $HOME. It:
+#   - creates/extends ./AGENTS.md (the methodology bootstrap + repo-truth
+#     scaffold), the file Copilot reads natively; never destroys existing content;
+#   - writes the reviewer lenses to .github/agents/himoa-*.agent.md as Copilot
+#     custom agents. Copilot cannot spawn read-only reviewer subagents, so these
+#     are ADVISORY lenses a human selects — recorded truthfully in
+#     docs/platform-capabilities.md.
+#
+# The reviewer agents reference the standards at the public canonical source,
+# because there is no local ~/.agents/himoa on a Copilot cloud runner.
+set -euo pipefail
+BIN_DIR=$(cd "$(dirname "$0")" && pwd)
+# shellcheck source=lib/himoa-adapter-install.sh
+. "$BIN_DIR/lib/himoa-adapter-install.sh"
+
+source_root="${CLAUDE_PLUGIN_ROOT:-$BIN_DIR/..}/adapters"
+[ -d "$source_root" ] || source_root="$BIN_DIR/../adapters"
+source_root=$(cd "$source_root" && pwd)
+reference_root="${CLAUDE_PLUGIN_ROOT:-$BIN_DIR/..}/reference"
+[ -d "$reference_root" ] || reference_root="$BIN_DIR/../reference"
+
+standards_url="https://github.com/jaylordibe/himoa/blob/main/plugins/himoa"
+agents_src="$source_root/copilot/agents"
+agents_dst=".github/agents"
+
+mode="install"
+case "${1:-}" in
+  --check) mode="check" ;;
+  --uninstall) mode="uninstall" ;;
+  ""|--repo) mode="install" ;;
+  -h|--help)
+    printf 'usage: himoa-copilot-install [--check | --uninstall]\n'
+    printf '  (no flag)    bootstrap ./AGENTS.md and .github/agents for Copilot (repo only; never $HOME)\n'
+    printf '  --check      dry run: print what would be written\n'
+    printf '  --uninstall  remove Himoa reviewer agents from .github/agents; leave AGENTS.md\n'
+    exit 0 ;;
+  *) printf 'himoa-copilot-install: unknown argument %s\n' "$1" >&2; exit 2 ;;
+esac
+
+if [ "$mode" = "uninstall" ]; then
+  if [ -d "$agents_dst" ]; then for f in "$agents_dst"/himoa-*.agent.md; do [ -e "$f" ] && rm -f "$f"; done; fi
+  printf '%s\n' "Removed Himoa's .github/agents/himoa-*.agent.md. AGENTS.md (repository truth) left untouched."
+  exit 0
+fi
+
+dry=0; [ "$mode" = "check" ] && dry=1
+printf '%s\n' "Himoa Copilot adapter — repository bootstrap (cloud agent; nothing written to \$HOME)"
+himoa_repo_bootstrap "$source_root" "$reference_root" "$dry"
+for f in "$agents_src"/himoa-*.agent.md; do
+  [ -e "$f" ] || continue
+  base=$(basename "$f")
+  if [ "$dry" = "1" ]; then printf '  would write  %s/%s\n' "$agents_dst" "$base"; continue; fi
+  mkdir -p "$agents_dst"
+  sed "s|@HIMOA_HOME@|$standards_url|g" "$f" > "$agents_dst/$base"
+done
+if [ "$dry" = "1" ]; then
+  printf '%s\n' "Dry run — nothing written."
+else
+  printf '%s\n' "Bootstrapped this repository for Copilot: AGENTS.md + advisory reviewer agents in .github/agents/. Commit them. Verify with himoa-copilot-doctor."
+fi

@@ -45,6 +45,13 @@ const write = process.argv.includes('--write');
 // install/doctor bin instead of a projected skill.
 const SKIP_SKILLS = new Set(['framework-install', 'framework-doctor']);
 
+// context-mapper is a design-stage mapping agent, not a review lens, and
+// Copilot's single cloud-agent model has no separate mapping-subagent stage, so
+// it is not projected as a Copilot custom agent. It also exceeds Copilot's
+// 30000-char custom-agent limit — the same conclusion by another route. It is
+// still projected for Codex and Cursor, which map with a read-only subagent.
+const COPILOT_SKIP_AGENTS = new Set(['context-mapper']);
+
 // @HIMOA_HOME@ is resolved by each installer to the neutral shared home
 // (~/.agents/himoa). $himoa-<name> and himoa-<name> both name a skill; the
 // bootstrap and skill bodies use the prefix-free form so neither host's
@@ -134,6 +141,21 @@ for (const file of readdirSync(join(pluginRoot, 'agents')).sort()) {
     `---\n\n` +
     genMd(`agents/${file}`) +
     instructions + '\n');
+
+  // Copilot: a custom agent (.github/agents/*.agent.md, md + YAML). Copilot has
+  // no spawnable read-only reviewer subagent, so this is an ADVISORY reviewer
+  // lens a human selects — the read-only discipline lives in the embedded
+  // contract, not in an enforced sandbox. Recorded truthfully in
+  // docs/platform-capabilities.md.
+  if (!COPILOT_SKIP_AGENTS.has(name)) {
+    expected.set(`copilot/agents/himoa-${name}.agent.md`,
+      `---\n` +
+      `name: himoa-${name}\n` +
+      `description: ${fm.description}\n` +
+      `---\n\n` +
+      genMd(`agents/${file}`) +
+      instructions + '\n');
+  }
 }
 
 // --- Shared standards & templates ------------------------------------------
@@ -149,15 +171,23 @@ for (const sub of ['standards', 'templates']) {
   const charterSh = readFileSync(join(pluginRoot, 'scripts', 'session-charter.sh'), 'utf8');
   const m = charterSh.match(/<<'CHARTER'[^\n]*\n([\s\S]*?)\nCHARTER/);
   if (!m) throw new Error('cannot extract the charter body from session-charter.sh');
-  const body = transformBody(m[1]).replace(/@HIMOA_HOME@/g, '~/.agents/himoa').replace(/`:gate-/g, '`himoa-gate-');
+  // The bootstrap is committed to a consuming repository and read by WHICHEVER
+  // host opens it, so it must not bake a host-specific standards path
+  // (~/.agents/himoa is right for Codex/Cursor, wrong for Copilot's cloud
+  // model). Standards references are neutralised to a phrase; the precise paths
+  // live in the installed skills and reviewer agents, resolved per host.
+  const body = transformBody(m[1])
+    .replace(/@HIMOA_HOME@\/standards\/([a-z0-9-]+)\.md/g, 'the Himoa $1 standard')
+    .replace(/@HIMOA_HOME@\/[a-z]+\//g, 'the Himoa ')
+    .replace(/`:gate-/g, '`himoa-gate-');
   expected.set('AGENTS.himoa.md',
     `<!-- himoa:bootstrap ${version} — GENERATED from plugins/himoa/scripts/session-charter.sh by tests/validate-adapter-projection.mjs. DO NOT EDIT this block; edit the charter and run --write. -->\n\n` +
     `> **Himoa.** This repository uses the Himoa engineering methodology.\n` +
     `> Its skills are installed as agent skills — invoke a workflow by name\n` +
     `> (\`himoa-work-item\`, \`himoa-gate-design\`; Codex \`$himoa-…\`, Cursor\n` +
-    `> \`/himoa-…\`); its reviewer roles run read-only; its standards live under\n` +
-    `> \`~/.agents/himoa/standards/\`. The methodology below is always-on. The\n` +
-    `> repository's own truth is the sections after it.\n\n` +
+    `> \`/himoa-…\`); its reviewer roles run read-only. Deeper standards are\n` +
+    `> referenced by the installed skills and reviewer agents. The methodology\n` +
+    `> below is always-on. The repository's own truth is the sections after it.\n\n` +
     body.replace(/^\n+/, '') +
     `\n\n_Himoa ${version} — methodology only. The sections below are authoritative for what this system is._\n`);
 }
@@ -180,6 +210,9 @@ expected.set('VERSION', `${version}\n`);
     } else if (rel.startsWith('cursor/agents/') && rel.endsWith('.md')) {
       if (!/^---\nname: himoa-[a-z0-9-]+\ndescription: .+/.test(content)) shape.push(`${rel}: needs name+description frontmatter`);
       if (!/\nreadonly: true\n/.test(content)) shape.push(`${rel}: Cursor reviewer must be readonly: true`);
+    } else if (rel.startsWith('copilot/agents/') && rel.endsWith('.agent.md')) {
+      if (!/^---\nname: himoa-[a-z0-9-]+\ndescription: .+/.test(content)) shape.push(`${rel}: needs name+description frontmatter`);
+      if (content.length > 30000) shape.push(`${rel}: exceeds Copilot's 30000-char custom-agent limit`);
     }
   }
   // Host-constraint conformance — real limits a live run would fail on:

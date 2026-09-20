@@ -12,6 +12,39 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 3.3.0 — 2026-09-20
+
+**GitHub Copilot is the third adapter — a genuinely different, partial shape,
+recorded honestly.** Copilot is a cloud agent (GitHub Actions, branch + PR) with
+no local footprint, no `SKILL.md` mechanism, and no spawnable read-only reviewer
+subagent — but a **hard, structural human-approval gate** (PR review, no
+self-approve). So its adapter is repo-committed only, and it is listed
+**Supported with limitations**, not at parity. Claude Code unchanged; MINOR.
+
+- **Copilot adapter, repo-only.** `himoa-copilot-install` writes **only to the
+  repository** (never `$HOME`): the `AGENTS.md` methodology bootstrap + truth
+  scaffold (the file Copilot reads natively), and reviewer lenses as
+  `.github/agents/himoa-*.agent.md` custom agents. `himoa-copilot-doctor`
+  verifies it.
+- **Honest limitations.** Reviewer lenses are **advisory** on Copilot — it has
+  no spawnable read-only subagent, so independent-review isolation is not
+  enforceable (recorded, not implied). `context-mapper` is not projected to
+  Copilot (a mapping agent, not a review lens; also over Copilot's 30 000-char
+  custom-agent limit). Standards references in the reviewer agents resolve to the
+  public canonical source, since there is no local `~/.agents/himoa` on a Copilot
+  runner. Human approval, by contrast, is **stronger** than the other adapters:
+  GitHub enforces PR review structurally.
+- **The shared bootstrap is now host-neutral.** It no longer bakes a local
+  standards path (`~/.agents/himoa`), which was accurate for Codex/Cursor but not
+  Copilot; the precise paths live in the per-host installed skills and reviewer
+  agents. `himoa_repo_bootstrap` in `bin/lib/` is shared by all three adapters'
+  repository bootstrap.
+- **Gap-closure carried forward.** Host-constraint conformance is asserted for
+  every adapter (AGENTS.md within Codex's cap, skill preview budget, Copilot's
+  30 000-char agent limit). The only remaining gap across all adapters is a live
+  end-to-end run inside each host, which is `BLOCKED` in this environment (no
+  host runtime) and cannot be fabricated.
+
 ## 3.2.0 — 2026-09-20
 
 **Cursor is Himoa's third platform, and the second adapter proved the shared
