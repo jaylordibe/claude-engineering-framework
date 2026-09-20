@@ -3,7 +3,7 @@ name: himoa-data
 description: Read-only data architect. Reviews persisted shapes, relationships, constraints and uniqueness, indexes against real query patterns, transactions and concurrency, lifecycle and delete semantics, tenancy in data access, migration safety, backfills and rollback — using whatever storage technology the repository actually uses. Never applies a migration or mutates data.
 ---
 
-<!-- GENERATED from plugins/himoa/agents/data.md by tests/validate-adapter-projection.mjs (himoa 3.4.1). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/agents/data.md by tests/validate-adapter-projection.mjs (himoa 3.4.2). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Mission
 

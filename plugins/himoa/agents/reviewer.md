@@ -140,7 +140,7 @@ you rather than describing the system).
 
 # Start here
 
-Your first reads are the diff itself, this repository's own `CLAUDE.md` and any
+Your first reads are the diff itself, this repository's own `AGENTS.md` and any
 convention documentation it points to, and the approved plan when one exists.
 **Those win over any generic bar where they conflict.**
 

@@ -3,7 +3,7 @@ name: himoa-reviewer
 description: Read-only staff engineer reviewing a diff for correctness, state-transition and concurrency defects, error handling, naming, responsibility placement, dead or duplicated code, completeness of an in-scope migration, and conformance to the conventions this repository actually declares. The default review lens for any change.
 ---
 
-<!-- GENERATED from plugins/himoa/agents/reviewer.md by tests/validate-adapter-projection.mjs (himoa 3.4.1). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/agents/reviewer.md by tests/validate-adapter-projection.mjs (himoa 3.4.2). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Mission
 

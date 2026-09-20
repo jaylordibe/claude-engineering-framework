@@ -26,7 +26,7 @@ The vocabulary for everything below is
 
 ## 1. Establish scope
 
-Read: the repository's `CLAUDE.md` · the approved plan · the review report ·
+Read: the repository's `AGENTS.md` · the approved plan · the review report ·
 the current diff · the dependency manifest and its scripts · the test runner
 configuration · the CI workflow · any service or container definitions the
 tests depend on.
@@ -39,7 +39,7 @@ unavailable.
 
 Take them, in this order of authority:
 
-1. the repository's `CLAUDE.md` canonical-commands section — the repository's
+1. the repository's `AGENTS.md` canonical-commands section — the repository's
    own statement of how it is verified. A row that is absent was deliberately
    not declared: treat it as undiscovered here and fall through, never as a
    gate that does not exist;
@@ -54,7 +54,7 @@ When a command cannot be established, distinguish the two cases —
 
 - **`N/A`** — this repository genuinely has no such step. State what you
   searched: the dependency manifest, the scripts, the CI workflow, the
-  `CLAUDE.md` command table. A repository with no linter is a normal
+  `AGENTS.md` command table. A repository with no linter is a normal
   repository, and an absent gate must not make `PASS` unreachable.
 - **`BLOCKED`** — the step exists but could not run here. That is a problem,
   and it prevents an overall `PASS`.

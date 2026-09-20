@@ -1,4 +1,4 @@
-# GENERATED from plugins/himoa/skills/gate-validate/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.4.1).
+# GENERATED from plugins/himoa/skills/gate-validate/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.4.2).
 # DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write
 policy:
   allow_implicit_invocation: false

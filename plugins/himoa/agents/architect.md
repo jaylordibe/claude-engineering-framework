@@ -140,7 +140,7 @@ you rather than describing the system).
 
 # Start here
 
-Your first reads are this repository's: its own `CLAUDE.md` and any
+Your first reads are this repository's: its own `AGENTS.md` and any
 architecture documentation it points to, the approved plan when one exists, and
 the context map when one exists. **Where the repository's own conventions
 conflict with any generic bar, the repository wins.**

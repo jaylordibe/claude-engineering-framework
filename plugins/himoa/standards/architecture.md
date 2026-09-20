@@ -1,6 +1,6 @@
 # Architecture standard
 
-Generic architectural expectations. The consuming repository's own `CLAUDE.md`
+Generic architectural expectations. The consuming repository's own `AGENTS.md`
 and source-owned contract documents are authoritative; where they conflict with
 this file, they win. This standard says how to reason, not what this system is.
 

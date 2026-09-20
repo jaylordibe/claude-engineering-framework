@@ -251,7 +251,7 @@ is the discovery table — answer every row from evidence, or with `ABSENT` or
 
 Concretely, read:
 
-- the root `CLAUDE.md` and any nested ones, plus `README` and architecture
+- the root `AGENTS.md` and any nested ones, plus `README` and architecture
   documentation — treating all of it as rank-4 evidence that the code can
   override;
 - the dependency manifest and lockfile — the most reliable statement of what

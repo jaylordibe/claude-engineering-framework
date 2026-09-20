@@ -3,7 +3,7 @@ name: himoa-domain-auth
 description: The decisions and failure modes that govern authentication and account security. Carries the questions a change must answer, and none of the answers.
 ---
 
-<!-- GENERATED from plugins/himoa/skills/domain-auth/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.4.1). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/skills/domain-auth/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.4.2). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Authentication and account security
 

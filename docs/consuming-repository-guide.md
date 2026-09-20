@@ -4,7 +4,9 @@ What a repository has to provide, and what it gets in return.
 
 ## The short version
 
-**One file is mandatory: `CLAUDE.md`.** Everything else has a working default.
+**One file carries the truth: `AGENTS.md`** — the neutral home every coding
+agent reads. For Claude Code, a thin `CLAUDE.md` imports it (`@AGENTS.md`) so
+the same single source loads. Everything else has a working default.
 
 Two things have to be in place, and they arrive by different routes. The plugin
 lives on your machine and you install it; the repository contract lives in the
@@ -50,11 +52,11 @@ Either way, then work:
 
 ---
 
-## Using this repository from Codex, Cursor or Copilot
+## Using this repository from Codex, Cursor, Copilot or Gemini
 
 This guide describes the Claude Code path (the reference implementation). The
-same methodology runs on OpenAI Codex, Cursor and GitHub Copilot through their
-native mechanisms — no second copy of Himoa:
+same methodology runs on OpenAI Codex, Cursor, GitHub Copilot and Gemini CLI
+through their native mechanisms — no second copy of Himoa:
 
 ```bash
 himoa-codex-install          # Codex: once per machine (skills, read-only reviewers, standards)
@@ -82,12 +84,13 @@ support matrix in the README.
 
 | Artefact | Required | What it buys you |
 |---|---|---|
-| `CLAUDE.md` | **Yes** | Everything. Without it, every agent infers your stack. |
-| A canonical-commands table in `CLAUDE.md` | Recommended | The validation gate runs your commands rather than inferring them |
-| A `High-risk paths` section in `CLAUDE.md` | Optional | Changes touching those paths get the higher review tier and a deeper map |
-| A `Consumers` table in `CLAUDE.md` | Recommended | Contract changes that name who breaks |
+| `AGENTS.md` | **Yes** | Everything — the repository-truth home every agent reads. Without it, every agent infers your stack. |
+| `CLAUDE.md` (a thin `@AGENTS.md` importer) | **Yes, for Claude Code** | Loads that one truth source into Claude Code. Scaffolded next to `AGENTS.md`; holds only Claude-specific notes, never a second copy of the truth. |
+| A canonical-commands table in `AGENTS.md` | Recommended | The validation gate runs your commands rather than inferring them |
+| A `High-risk paths` section in `AGENTS.md` | Optional | Changes touching those paths get the higher review tier and a deeper map |
+| A `Consumers` table in `AGENTS.md` | Recommended | Contract changes that name who breaks |
 | `.claude/settings.json` | Recommended | Declares the marketplace and enables the plugin, so colleagues do not configure it by hand. Written by `framework-install` |
-| `.claude/skills/` playbooks | Optional | Where your stack-specific knowledge lives |
+| `.claude/skills/` playbooks | Optional (Claude Code) | Where your Claude-specific stack knowledge lives — a Claude Code extension point |
 
 Nothing else. No `tasks/` directory, no plan files, no decision-record
 directory, no mandated test framework or language, and **no framework version
@@ -253,9 +256,9 @@ later reader, and `himoa-doctor` fails while the placeholder is still there.
 
 ---
 
-## 2. High-risk paths (optional, and in `CLAUDE.md`)
+## 2. High-risk paths (optional, and in `AGENTS.md`)
 
-A section in your `CLAUDE.md`, not a separate file:
+A section in your `AGENTS.md`, not a separate file:
 
 ```markdown
 ## High-risk paths
@@ -279,9 +282,10 @@ Add a paragraph after the table for anything that makes the system risky in a
 way a reader could not infer from the code — a shared store whose isolation
 lives in query builders, a migration tool that keys by filename.
 
-## 3. Repository-specific playbooks (optional)
+## 3. Repository-specific playbooks (optional, Claude Code)
 
-Your stack knowledge belongs in your repository, in `.claude/skills/`:
+On Claude Code, your stack knowledge can live in your repository, in
+`.claude/skills/`:
 
 ```text
 .claude/skills/
@@ -293,6 +297,12 @@ These load alongside the framework's own and are authoritative where they
 overlap. The framework's `domain-*` playbooks carry the **questions** for auth,
 authorization, background work and defect diagnosis; yours carry **this
 repository's answers**.
+
+`.claude/skills/` is a **Claude Code** extension point. Codex, Cursor and
+Gemini load skills at machine level (installed by `himoa-<host>-install`), not
+from a repository-committed directory — so for knowledge that must travel to
+every agent with `git pull`, put it in `AGENTS.md` (its **Deep references**
+section points at your own repository playbooks).
 
 ---
 
@@ -397,11 +407,11 @@ exactly what to do.
 ## When to run `framework-doctor`
 
 - after `framework-install`;
-- after any change to `CLAUDE.md`, especially its commands or high-risk paths;
+- after any change to `AGENTS.md`, especially its commands or high-risk paths;
 - after a framework major version bump;
 - when a review says something about your architecture that surprises you —
   the doctor verifies documentation claims against source, and a stale
-  `CLAUDE.md` is the most common cause.
+  `AGENTS.md` is the most common cause.
 
 ## Turning things off
 

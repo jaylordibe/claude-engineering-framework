@@ -12,6 +12,28 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 3.4.2 — 2026-09-20
+
+**Repository-truth consistency — no behaviour change, no consumer action (PATCH).**
+A final pre-migration audit found the canonical methodology and public docs
+still named `CLAUDE.md` as the repository-truth home in places, contradicting
+the final architecture — `AGENTS.md` is the neutral truth home every agent
+reads, and Claude Code reads it through a thin `CLAUDE.md` that imports it.
+Aligned the wording; no gate, guarantee or adapter behaviour changed.
+
+- **Consuming guide:** the short version, the repository-contract table, the
+  high-risk-paths section and the doctor triggers now name `AGENTS.md` as the
+  truth home with `CLAUDE.md` as the thin `@AGENTS.md` bridge; `.claude/skills/`
+  is labelled a Claude Code extension point; Gemini is added where the adapter
+  list had omitted it.
+- **Canonical methodology:** repository-truth references (canonical commands,
+  high-risk paths, consumers, architecture claims) in the gates, standards and
+  review agents now point at `AGENTS.md`. Legitimate Claude-specific references
+  — the always-on entry file and the `CLAUDE.md` importer — are preserved.
+- **Adapter smoke test:** documents the shipped adapter set, adding Gemini with
+  its own procedure; Copilot's advisory reviewers and hard PR approval are
+  unchanged.
+
 ## 3.4.1 — 2026-09-20
 
 **Public-release hardening — no behaviour change, no consumer action (PATCH).**

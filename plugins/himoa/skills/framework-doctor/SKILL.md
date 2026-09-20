@@ -35,7 +35,7 @@ becomes possible because of it**, not just that it is missing.
 ## 2. Check the thing a script cannot: is the documentation still true?
 
 This is the highest-value part of the audit, and only a reading agent can do
-it. `himoa-doctor` can tell you `CLAUDE.md` exists. It cannot tell you whether it
+it. `himoa-doctor` can tell you `AGENTS.md` exists. It cannot tell you whether it
 still describes this repository.
 
 Pick the load-bearing claims in the repository's own documentation — the
@@ -54,8 +54,8 @@ For each claim, report one of:
 | **Not found** | The named construct does not exist in this repository |
 
 **A stale architectural claim is a real defect, not a documentation nit.** The
-framework's agents treat repository documentation as evidence, so a
-`CLAUDE.md` that describes a construct this repository does not have will
+framework's agents treat repository documentation as evidence, so an
+`AGENTS.md` that describes a construct this repository does not have will
 produce reviews measuring the code against an architecture it does not possess.
 That is worse than no documentation at all.
 
@@ -65,7 +65,7 @@ that does not exist here.
 
 ## 3. Check the canonical commands actually work
 
-For each command the repository declares in its `CLAUDE.md` canonical-commands
+For each command the repository declares in its `AGENTS.md` canonical-commands
 table, confirm the target exists: the script is defined in the manifest, the
 binary is on `PATH`, the configuration file it names is present.
 
@@ -77,7 +77,7 @@ gate waiting to happen, and finding it now costs nothing.
 
 ```text
 Repository contract audit
-  Mandatory:   <status of CLAUDE.md>
+  Truth file:  <status of AGENTS.md, or a legacy CLAUDE.md that carries the truth>
   Dependency:  <whether .claude/settings.json declares the marketplace and
                 enables the plugin, and that each colleague still installs it>
   Drift:       <stale or incorrect documentation claims, with path:line>

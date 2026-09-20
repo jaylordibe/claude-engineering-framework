@@ -83,7 +83,7 @@ investigation; from Targeted upward it never removes a category from §3.1.
 | **Direct** | The change is contained in what is already on screen, nothing in §4 applies, and no changed path is listed under the repository's high-risk paths — a comment or wording fix, a rename inside one file, a log line, a formatting or test-only tidy, a one-liner whose cause and effect are both visible, or work the human has scoped that tightly | The lines changed and the symbol they sit in. **No map is produced and none is owed.** |
 | **Targeted** | A single named behaviour in a known place, nothing in §4 applies, and the floor below is establishable without a system-wide sweep | The entry point and symbol, the files that must change, direct callers and consumers, the tests protecting the behaviour, the observable contract effect |
 | **Standard** | **The default.** Anything not positively established as Targeted | The complete affected execution path, and the boundaries, contracts, persistence, access control, tests and consumers on it |
-| **Deep** | A High or Critical signal, a cross-cutting or architectural change, an initially ambiguous one, or a changed path the repository's `CLAUDE.md` lists under High-risk paths | Everything the mapping agent's own method describes, at full breadth |
+| **Deep** | A High or Critical signal, a cross-cutting or architectural change, an initially ambiguous one, or a changed path the repository's `AGENTS.md` lists under High-risk paths | Everything the mapping agent's own method describes, at full breadth |
 
 **Standard is the default and Targeted is earned.** A band is a conclusion from
 evidence, never an opening assumption, and a cheap classification is the most

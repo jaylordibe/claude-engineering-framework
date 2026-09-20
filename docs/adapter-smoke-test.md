@@ -1,11 +1,11 @@
 # Adapter live smoke test
 
-Every non-Claude adapter (Codex, Cursor, Copilot) is validated **structurally**
-in CI — projection drift, generated-config schema shape, host-constraint
-conformance, installer safety against an isolated fake `$HOME`, no dangling
-references, and the human-approval and read-only guarantees. What CI **cannot**
-do is run the host itself: there is no Codex/Cursor/Copilot runtime in CI or in
-the environment these adapters were built in. So one piece of evidence is, by
+Every non-Claude adapter (Codex, Cursor, Copilot, Gemini) is validated
+**structurally** in CI — projection drift, generated-config schema shape,
+host-constraint conformance, installer safety against an isolated fake `$HOME`,
+no dangling references, and the human-approval and read-only guarantees. What CI
+**cannot** do is run the host itself: there is no Codex/Cursor/Copilot/Gemini
+runtime in CI or in the environment these adapters were built in. So one piece of evidence is, by
 `standards/evidence.md`, **`BLOCKED` there and only obtainable on a machine that
 has the host** — a live end-to-end run.
 
@@ -49,6 +49,21 @@ himoa-cursor-doctor
 
 **Pass:** the skill loads and the agent works the Himoa methodology; a gate skill
 is only invocable by the human (`disable-model-invocation`), not auto-run.
+
+## Gemini CLI
+
+```bash
+himoa-gemini-install                # ~/.gemini/agents (read-only reviewers), ~/.gemini/commands/himoa/*.toml (/himoa:*), ~/.gemini/himoa (standards)
+cd /tmp/himoa-smoke && himoa-gemini-install --repo   # writes AGENTS.md + .gemini/settings.json so context.fileName includes AGENTS.md
+himoa-gemini-doctor
+gemini                              # then run /himoa:gate-design, or ask the same question as above
+```
+
+**Pass:** the reply works the Himoa methodology loaded from `AGENTS.md` (added to
+`context.fileName`); a `/himoa:*` command is human-typed, so the model cannot
+self-start a gate; and the reviewer subagents in `~/.gemini/agents/` are
+restricted to read-only tools (no `write_file` / `run_shell_command`). **Fail:**
+it answers generically, or a gate runs without a human invoking it.
 
 ## GitHub Copilot
 

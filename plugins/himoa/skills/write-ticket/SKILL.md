@@ -118,7 +118,7 @@ is for:
 | Who the actors are — roles, callers, systems | A story whose "As a" names someone the repository actually distinguishes, or someone the human has explicitly introduced — §4d |
 | Entry points a consumer can observe — endpoints, events, exports, files | Whether the change touches a public contract, which raises the suggested tier |
 | Tests that pin the current behaviour | Which acceptance criteria are already asserted and which are new |
-| The repository's `CLAUDE.md` high-risk paths and canonical commands | The suggested risk tier, and whether the ticket touches something the repository has declared sensitive |
+| The repository's `AGENTS.md` high-risk paths and canonical commands | The suggested risk tier, and whether the ticket touches something the repository has declared sensitive |
 | Anything in the request that the code contradicts | A **Stale** or **Incorrect** grade on the claim, surfaced in the draft rather than silently corrected |
 
 Write what you did not find as `ABSENT` and what you could not determine as
