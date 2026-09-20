@@ -1,0 +1,191 @@
+#!/usr/bin/env bash
+#
+# himoa-codex-install — install Himoa's Codex adapter into user-level Codex
+# locations, from the generated projection under adapters/codex/.
+#
+# WHY THIS IS A SEPARATE INSTALLER FROM himoa-install-settings
+# -----------------------------------------------------------
+# himoa-install-settings is PROJECT-scoped: it writes three keys into a
+# repository's own .claude/settings.json and, by contract, touches nothing in
+# $HOME. That invariant is load-bearing and is NOT relaxed here. Exposing Himoa
+# to Codex is a different act — it writes into the developer's HOME (the Codex
+# skills and agents directories) — so it gets its own installer with its own
+# explicit boundary, rather than hiding a $HOME write behind project-install
+# semantics. The user runs this deliberately, onto their machine.
+#
+# WHAT IT WRITES, AND NOWHERE ELSE
+#   $HOME/.agents/skills/himoa-*/            the projected methodology skills
+#   ${CODEX_HOME:-$HOME/.codex}/agents/himoa-*.toml   read-only reviewer agents
+#   ${CODEX_HOME:-$HOME/.codex}/himoa/       standards, templates, VERSION
+# Every path it creates is himoa-prefixed or under the himoa/ home, so it can
+# only ever overwrite content Himoa itself owns. It never touches AGENTS.md, the
+# Codex config, or any file it did not generate.
+#
+# CODEX_HOME and HOME are honoured, which is also what makes this testable
+# against an isolated fake HOME without going near the real one.
+#
+# bash 3.2 compatible (the version macOS ships): no associative arrays, no ${x,,}.
+
+set -euo pipefail
+
+self_dir=$(cd "$(dirname "$0")" && pwd)
+
+# The generated projection ships inside the plugin, so it is reachable whether
+# this runs from the installed plugin cache (CLAUDE_PLUGIN_ROOT set) or from a
+# clone of the repository (Codex-only users who never installed the Claude
+# plugin). Resolve, then verify.
+source_root="${CLAUDE_PLUGIN_ROOT:-$self_dir/..}/adapters/codex"
+[ -d "$source_root" ] || source_root="$self_dir/../adapters/codex"
+if [ ! -d "$source_root" ]; then
+  printf 'himoa-codex-install: cannot find the Codex projection (adapters/codex).\n' >&2
+  printf 'Run it from an installed Himoa plugin or a clone of the repository.\n' >&2
+  exit 1
+fi
+source_root=$(cd "$source_root" && pwd)
+
+# The repository-truth scaffold ships beside the projection, in the plugin's
+# reference/ directory.
+reference_root="${CLAUDE_PLUGIN_ROOT:-$self_dir/..}/reference"
+[ -d "$reference_root" ] || reference_root="$self_dir/../reference"
+
+codex_home="${CODEX_HOME:-$HOME/.codex}"
+himoa_home="$codex_home/himoa"
+skills_dir="$HOME/.agents/skills"
+agents_dir="$codex_home/agents"
+
+mode="install"
+case "${1:-}" in
+  --check) mode="check" ;;
+  --uninstall) mode="uninstall" ;;
+  --repo) mode="repo"; [ "${2:-}" = "--check" ] && mode="repo-check" ;;
+  "") : ;;
+  -h|--help)
+    printf 'usage: himoa-codex-install [--check | --uninstall | --repo [--check]]\n'
+    printf '  (no flag)      install/refresh the machine-level adapter (idempotent)\n'
+    printf '  --check        dry run: print every destination, write nothing\n'
+    printf '  --uninstall    remove only Himoa-owned files, leave everything else\n'
+    printf '  --repo         bootstrap ./AGENTS.md in this repository (create or prepend, never destroy)\n'
+    exit 0 ;;
+  *) printf 'himoa-codex-install: unknown argument %s\n' "$1" >&2; exit 2 ;;
+esac
+
+version=$(cat "$source_root/VERSION" 2>/dev/null || printf 'unknown')
+
+say() { printf '%s\n' "$1"; }
+
+# Copy one file, substituting the @HIMOA_HOME@ placeholder for the resolved
+# himoa home. Every projected file that references standards/templates carries
+# the placeholder; nothing else is rewritten.
+install_file() {
+  # $1 source file, $2 destination file
+  if [ "$mode" = "check" ]; then
+    say "  would write  $2"
+    return
+  fi
+  mkdir -p "$(dirname "$2")"
+  sed "s|@HIMOA_HOME@|$himoa_home|g" "$1" > "$2"
+}
+
+install_tree() {
+  # $1 source dir, $2 destination dir — files only, himoa-owned destinations
+  local rel
+  while IFS= read -r rel; do
+    install_file "$1/$rel" "$2/$rel"
+  done < <(cd "$1" && find . -type f | sed 's|^\./||')
+}
+
+remove_path() {
+  # Only ever called with a himoa-owned path.
+  if [ "$mode" = "check" ]; then
+    [ -e "$1" ] && say "  would remove $1"
+    return
+  fi
+  rm -rf "$1"
+}
+
+# Repository bootstrap: create or safely extend ./AGENTS.md. This is the only
+# thing that writes into the repository (not $HOME), and it never destroys
+# existing content — it creates the file, or prepends the Himoa bootstrap above
+# whatever is already there, or does nothing if the bootstrap is already present.
+if [ "$mode" = "repo" ] || [ "$mode" = "repo-check" ]; then
+  dry=0; [ "$mode" = "repo-check" ] && dry=1
+  target="AGENTS.md"
+  boot="$source_root/AGENTS.himoa.md"
+  scaffold="$reference_root/AGENTS.md.template"
+  if [ ! -f "$boot" ]; then
+    printf 'himoa-codex-install: missing bootstrap %s\n' "$boot" >&2
+    exit 1
+  fi
+  if [ ! -e "$target" ]; then
+    if [ "$dry" = "1" ]; then say "would create ./AGENTS.md (Himoa bootstrap + repository-truth scaffold)"; exit 0; fi
+    { cat "$boot"; printf '\n\n'; [ -f "$scaffold" ] && cat "$scaffold"; } > "$target"
+    say "Created ./AGENTS.md — the Himoa bootstrap plus a repository-truth scaffold."
+    say "Fill the truth sections from repository evidence, then commit AGENTS.md."
+    exit 0
+  fi
+  if grep -q 'himoa:bootstrap' "$target" 2>/dev/null; then
+    say "./AGENTS.md already carries the Himoa bootstrap — nothing to do."
+    exit 0
+  fi
+  if [ "$dry" = "1" ]; then say "would prepend the Himoa bootstrap to ./AGENTS.md (your existing content is preserved below it)"; exit 0; fi
+  tmp=$(mktemp "${TMPDIR:-/tmp}/himoa-agents.XXXXXX")
+  { cat "$boot"; printf '\n\n---\n\n'; cat "$target"; } > "$tmp" && mv "$tmp" "$target"
+  say "Prepended the Himoa bootstrap to ./AGENTS.md; your existing content is preserved below it."
+  exit 0
+fi
+
+if [ "$mode" = "uninstall" ]; then
+  say "Himoa Codex adapter — uninstall (removes only Himoa-owned files)"
+  # Skills: only himoa-* directories.
+  if [ -d "$skills_dir" ]; then
+    for d in "$skills_dir"/himoa-*; do
+      [ -e "$d" ] || continue
+      remove_path "$d"
+    done
+  fi
+  # Reviewer agents: only himoa-*.toml.
+  if [ -d "$agents_dir" ]; then
+    for f in "$agents_dir"/himoa-*.toml; do
+      [ -e "$f" ] || continue
+      remove_path "$f"
+    done
+  fi
+  # The himoa home is entirely Himoa's.
+  remove_path "$himoa_home"
+  say "Done. AGENTS.md, Codex config and everything not prefixed himoa- were left untouched."
+  exit 0
+fi
+
+say "Himoa Codex adapter ${version} — ${mode}"
+say "Source: $source_root"
+say ""
+say "Destinations (Himoa-owned only; nothing else is touched):"
+say "  skills     $skills_dir/himoa-*"
+say "  reviewers  $agents_dir/himoa-*.toml"
+say "  reference  $himoa_home  (standards, templates, VERSION)"
+say ""
+
+# Reviewer agents: agents/himoa-*.toml -> $agents_dir
+for f in "$source_root"/agents/himoa-*.toml; do
+  [ -e "$f" ] || continue
+  install_file "$f" "$agents_dir/$(basename "$f")"
+done
+
+# Skills: skills/himoa-*/ -> $skills_dir/himoa-*/
+for d in "$source_root"/skills/himoa-*; do
+  [ -e "$d" ] || continue
+  install_tree "$d" "$skills_dir/$(basename "$d")"
+done
+
+# Reference home: standards/, templates/, VERSION -> $himoa_home
+install_tree "$source_root/standards" "$himoa_home/standards"
+install_tree "$source_root/templates" "$himoa_home/templates"
+install_file "$source_root/VERSION" "$himoa_home/VERSION"
+
+say ""
+if [ "$mode" = "check" ]; then
+  say "Dry run only — nothing was written. Re-run without --check to install."
+else
+  say "Installed Himoa ${version} for Codex. Verify with: himoa-codex-doctor"
+  say "Nothing outside the Himoa-owned paths above was created or modified."
+fi

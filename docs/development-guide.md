@@ -35,8 +35,10 @@ that was never loaded.
 node tests/validate-plugin.mjs --strict     # structure, contracts, normative anchors
 node tests/validate-fixtures.mjs           # the fixture corpus stays disjoint and hostile
 node tests/validate-charter.mjs            # the always-on context stays within budget
-node tests/run-doctor-fixtures.mjs         # himoa-doctor diagnoses 16 repository shapes
+node tests/run-doctor-fixtures.mjs         # himoa-doctor diagnoses 17 repository shapes
 node tests/validate-install-settings.mjs   # the settings merge, across 26 repository shapes
+node tests/validate-codex-projection.mjs   # the Codex adapter has not drifted from canonical
+node tests/validate-codex-install.mjs      # the Codex installer/bootstrap, against an isolated fake HOME
 claude plugin validate ./plugins/himoa --strict
 shellcheck plugins/himoa/scripts/*.sh plugins/himoa/bin/*
 ```
@@ -78,6 +80,18 @@ The official validator checks the manifests. This one checks what fails
 - **the installer's source stays inside its boundary** — no write into `$HOME`,
   no reference to Claude Code's internal plugin state, no framework version;
 - **the changelog has an entry for the current version.**
+
+### The Codex adapter is generated — never hand-edit it
+
+`plugins/himoa/adapters/codex/` is a projection of the canonical skills, agents,
+standards, templates and charter, produced by
+`tests/validate-codex-projection.mjs`. It is committed (so the installer ships
+it) and marked GENERATED. **Edit the canonical source, then run
+`node tests/validate-codex-projection.mjs --write`;** the same script fails CI
+when the committed projection has drifted. Because it is a derivative with
+intentionally transformed references, `adapters/` is excluded from
+`validate-plugin.mjs`'s canonical scans — its correctness is the drift check,
+not the single-source or cross-reference rules that govern the source.
 
 ## The rule that governs every contribution
 

@@ -24,6 +24,9 @@ which is why almost everything in `tests/` exists.
 | Charter budget and guarantees | `node tests/validate-charter.mjs` |
 | Repository contract audit | `node tests/run-doctor-fixtures.mjs` |
 | Project settings merge | `node tests/validate-install-settings.mjs` |
+| Codex projection drift | `node tests/validate-codex-projection.mjs` |
+| Codex installer and bootstrap | `node tests/validate-codex-install.mjs` |
+| Regenerate the Codex projection | `node tests/validate-codex-projection.mjs --write` |
 | Lint | `shellcheck plugins/himoa/scripts/*.sh plugins/himoa/bin/*` |
 | Official validator | `claude plugin validate ./plugins/himoa --strict` |
 
@@ -57,7 +60,9 @@ are silent from this side.
 |---|---|
 | `plugins/himoa/scripts/session-charter.sh` | The always-on charter, paid on every request in every installed repository |
 | `plugins/himoa/bin/himoa-install-settings` | The only component that writes to a file a consuming repository owns |
+| `plugins/himoa/bin/himoa-codex-install` | Writes into the developer's `$HOME` (Codex skills/agents/config). The one component with a `$HOME` boundary — a path or collision bug corrupts a developer's Codex setup |
 | `plugins/himoa/bin/himoa-doctor` | The audit consumers trust to tell them their contract is intact |
+| `tests/validate-codex-projection.mjs` | The canonical→Codex transform. A wrong transform ships a stale or broken methodology to every Codex consumer, silently |
 | `plugins/himoa/hooks/hooks.json` | Decides what runs in every session |
 | `plugins/himoa/.claude-plugin/plugin.json` | `version` here is the only brake between a changed standard and every auto-updating consumer |
 | `plugins/himoa/reference/marketplace-declaration.json` | Wrong values here point every installing repository at the wrong marketplace |
@@ -81,8 +86,19 @@ plugins/himoa/
   templates/                        thinking aids, never committed by a run
   scripts/session-charter.sh        the SessionStart charter — the only hook
   bin/himoa-doctor                     repository contract audit, read-only
-  bin/himoa-install-settings           the project dependency declaration merge
-  reference/                        CLAUDE.md template, marketplace declaration
+  bin/himoa-install-settings           the project dependency declaration merge (project only, never $HOME)
+  bin/himoa-codex-install              the Codex adapter installer (writes $HOME; --repo bootstraps AGENTS.md)
+  bin/himoa-codex-doctor               Codex installation audit, read-only
+  adapters/codex/                   GENERATED Codex projection (skills, read-only agents, standards) — never hand-edited
+  reference/                        AGENTS.md + CLAUDE.md templates, marketplace declaration
+```
+
+The Codex adapter is one canonical methodology projected, never forked: the
+Claude plugin above is the source, `tests/validate-codex-projection.mjs`
+generates `adapters/codex/`, and the same test fails CI on drift.
+`docs/cross-agent-architecture.md` owns the boundary.
+
+```
 fixtures/                           eleven tiny repositories of different shapes and situations
 evals/                              behavioural cases and grader rubrics
 tests/                              everything that runs in CI

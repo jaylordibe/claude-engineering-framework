@@ -77,21 +77,32 @@ framework at user level (`~/.agents/skills/`, `~/.codex/agents/`) with a small
 per-repo `AGENTS.md` bootstrap, rather than vendoring copies into every
 repository (which would drift — the anti-pattern above).
 
-### Deferred to the adapter milestone (not yet built)
+### The adapter, as built (3.1.0)
 
-The working Codex adapter is a separate, deliberate build, because two decisions
-must be made rather than invented:
+Both deferred decisions were resolved with evidence, not invented:
 
-1. **Single-source mechanism.** The canonical `SKILL.md`/agent bodies must reach
-   `~/.agents/skills/` and `~/.codex/agents/` without a second copy that can
-   drift. Generation-from-canonical with a drift test is the likely answer;
-   symlinks are not portable to Windows.
-2. **The `$HOME` boundary.** A user-level installer writes into `$HOME`, which
-   the framework has so far never done (`himoa-install-settings` writes only into
-   a project and asserts it touches nothing global). Extending that is a
-   deliberate change to a guarded invariant, made by a human, not assumed.
+1. **Single-source mechanism — generation with a drift test.**
+   `tests/validate-codex-projection.mjs` transforms the canonical skills,
+   reviewer agents, standards, templates and the SessionStart charter into
+   `plugins/himoa/adapters/codex/` (committed, marked GENERATED). It rewrites
+   `${CLAUDE_PLUGIN_ROOT}` references to the install home, agent `.md` to Codex
+   `.toml` (`sandbox_mode = "read-only"`), human-only skills to
+   `allow_implicit_invocation: false`, and "CLAUDE.md" to "AGENTS.md". Run with
+   no argument it fails when the committed projection has drifted from canonical,
+   so there is never a second editable copy. Symlinks were rejected (not portable
+   to Windows).
+2. **The `$HOME` boundary — a separate, explicit installer.**
+   `bin/himoa-codex-install` writes into `~/.agents/skills/`, `~/.codex/agents/`
+   and `~/.codex/himoa/`, all Himoa-owned; it is idempotent, has `--check` and a
+   narrow `--uninstall`, and honours `CODEX_HOME`/`HOME`. It is deliberately NOT
+   `himoa-install-settings`, whose project-only, nothing-in-`$HOME` invariant is
+   untouched. Repository bootstrap (`--repo`) creates or safely prepends
+   `AGENTS.md`, never destroying existing content.
 
-Until that adapter runs, Codex is **native-mappable, not supported**
+`bin/himoa-codex-doctor` verifies an installation in the `PASS/FAIL/BLOCKED/N/A`
+vocabulary. What remains before Codex is at parity with Claude Code is a live
+end-to-end run inside Codex itself; that has not been smoke-tested here, so the
+support level is **Supported (initial adapter)**, not Full
 (`docs/platform-capabilities.md`).
 
 ## Deliberately not done

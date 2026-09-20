@@ -1,7 +1,7 @@
 ---
 name: framework-install
-description: Configures the current repository to use the Himoa framework — declares the marketplace and enables the plugin in the project's own .claude/settings.json, and scaffolds the CLAUDE.md that states what this system is. Preserves every existing setting, writes no permission rules, and touches nothing global.
-argument-hint: "[settings | claude-md | all]"
+description: Configures the current repository to use the Himoa framework in Claude Code — declares the marketplace and enables the plugin in the project's own .claude/settings.json, and scaffolds the AGENTS.md that states what this system is (the neutral home every coding agent reads) with a thin CLAUDE.md that imports it. Preserves every existing setting, writes no permission rules, and touches nothing global.
+argument-hint: "[settings | truth | all]"
 disable-model-invocation: true
 model: inherit
 effort: medium
@@ -15,7 +15,7 @@ Scope requested:
 $ARGUMENTS
 ```
 
-Empty argument means `all`. `settings` runs §1–2 and §4; `claude-md` runs §1,
+Empty argument means `all`. `settings` runs §1–2 and §4; `truth` runs §1,
 §3 and §4.
 
 ## What this skill is for
@@ -29,9 +29,12 @@ Two things go in the repository, and both are committed:
 1. **The dependency declaration.** `.claude/settings.json` gains the framework's
    marketplace and enables the plugin for this project, so a colleague who
    clones the repository does not reconstruct that configuration from a README.
-2. **Repository truth.** `CLAUDE.md` — what this system actually is, how it is
-   verified, and which of its paths deserve more ceremony. The framework cannot
-   write this for you, only scaffold it.
+2. **Repository truth.** `AGENTS.md` — what this system actually is, how it is
+   verified, and which of its paths deserve more ceremony. AGENTS.md is the one
+   neutral home every coding agent reads (Codex, Cursor and Copilot directly;
+   Claude Code through a thin `CLAUDE.md` that does `@AGENTS.md`), so the truth
+   is stated once no matter which agent is driving. The framework cannot write
+   this for you, only scaffold it.
 
 ## What this skill does not do
 
@@ -129,17 +132,39 @@ writes the entry without the key, and releases are adopted with the two update
 commands. An entry that already states `autoUpdate` either way is left alone,
 and you should not offer to change it.
 
-## 3. CLAUDE.md
+## 3. Repository truth — AGENTS.md (and a CLAUDE.md that imports it)
 
-If `CLAUDE.md` exists, do not touch it. Instead, report which sections of the
+Repository truth lives in **AGENTS.md**, the one neutral home every coding agent
+reads. Claude Code reads it through a thin **CLAUDE.md** that does `@AGENTS.md`.
+State the truth once, in AGENTS.md; never keep a second copy.
+
+**If `AGENTS.md` exists**, do not overwrite it. Report which sections of the
 contract it is missing — Project, canonical commands, high-risk paths,
-architecture, cross-cutting conventions, non-obvious invariants, consumers —
-and offer to draft the missing ones **from repository evidence** for the user
-to review.
+architecture, cross-cutting conventions, non-obvious invariants, consumers — and
+offer to draft the missing ones **from repository evidence** for the user to
+review.
 
-If it does not exist, copy `${CLAUDE_PLUGIN_ROOT}/reference/CLAUDE.md.template`
-and then fill in what you can establish from evidence, marking anything you
-could not establish as a question for the user rather than inventing it.
+**If `AGENTS.md` does not exist**, scaffold it — bootstrap block plus the
+repository-truth template — with:
+
+```bash
+himoa-codex-install --repo
+```
+
+That command is idempotent and never destroys an existing `AGENTS.md`; it places
+the always-on Himoa bootstrap above a truth scaffold copied from
+`${CLAUDE_PLUGIN_ROOT}/reference/AGENTS.md.template`. Then fill in what you can
+establish from evidence, marking anything you could not establish as a question
+for the user rather than inventing it.
+
+**Then ensure a `CLAUDE.md` importer exists** so Claude Code loads the same
+single source. If `CLAUDE.md` is absent, copy
+`${CLAUDE_PLUGIN_ROOT}/reference/CLAUDE.md.template` (it is just `@AGENTS.md`
+plus optional Claude-only notes). **If `CLAUDE.md` already exists with real
+content** — a legacy repository whose truth is in CLAUDE.md — do not rewrite it:
+it still works on Claude Code. Say that its truth can move to AGENTS.md (so Codex
+and other agents read it too) by replacing its body with `@AGENTS.md` once the
+truth has been copied across, and leave that migration to the user.
 
 Two sections are the ones the gates read directly, so spend the effort there:
 
@@ -166,7 +191,8 @@ Then state plainly:
 - what changed on disk, naming `.claude/settings.json` explicitly;
 - that nothing outside this repository was touched;
 - what remains for the user to fill in, in priority order;
-- that nothing was committed, and that both files are meant to be;
+- that nothing was committed, and that the files written (`.claude/settings.json`,
+  `AGENTS.md`, and the `CLAUDE.md` importer) are all meant to be;
 - the one command each colleague still runs on their own machine;
 - that `env.CLAUDE_CODE_ENABLE_TODO_TOOLS` was set, so a `work-item` run's
   stages appear in Claude Code's task panel — current models are not given
@@ -175,5 +201,5 @@ Then state plainly:
   file.
 
 Suggested next step: run `/himoa:framework-doctor` after
-filling in `CLAUDE.md`, then start real work with
+filling in `AGENTS.md`, then start real work with
 `/himoa:work-item <requirement>`.

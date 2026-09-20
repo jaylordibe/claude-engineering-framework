@@ -1,0 +1,137 @@
+<!--
+  Himoa — consuming repository truth. Read by every coding agent.
+
+  AGENTS.md is the ONE neutral home for what this repository is. OpenAI Codex,
+  Cursor and GitHub Copilot read it directly; Claude Code reads it through a
+  thin CLAUDE.md that does `@AGENTS.md`. Keep repository truth here and nowhere
+  else, so there is a single source no matter which agent is driving.
+
+  The block ABOVE this file's truth sections — marked `himoa:bootstrap` — is the
+  always-on Himoa methodology, projected from the framework and inserted by the
+  installer. Do NOT edit it by hand; it is regenerated. Do NOT restate any of
+  it (the gate sequence, risk tiers, evidence language, human-owned operations):
+  a second copy drifts and nothing can detect that it has.
+
+  What belongs below is everything the framework cannot know: what this system
+  is, what it is built from, how to verify it, its non-obvious invariants, and
+  who breaks when its contracts change.
+
+  Delete every instruction comment and every unfilled placeholder before
+  committing. An unfilled section reads to a later agent exactly like a
+  completed one, which is worse than an absent one.
+-->
+
+# <this repository> — repository truth
+
+Engineering methodology — the gate sequence, risk tiers, evidence language and
+human-owned operations — comes from Himoa (the `himoa:bootstrap` block above)
+and is not restated here. **Where a generic framework standard conflicts with a
+rule in this file, this file wins**: the framework describes how to work, this
+file describes what is true.
+
+## Project
+
+<!--
+  One dense paragraph. Language and version, runtime, framework, data stores,
+  authentication model, deployment target. If a fact is not true, delete it —
+  the framework's agents treat this section as evidence.
+-->
+
+_(What this system is. Language, runtime, frameworks, data stores, how it is
+deployed.)_
+
+**Package manager:** _(name, and whether the lockfile is committed)_
+
+## Canonical commands
+
+<!--
+  The validation gate runs these, and this table is the only place it looks
+  before falling through to the dependency manifest and the CI workflow. Every
+  one must actually work from a clean checkout. Delete a row this repository has
+  no command for — an absent step is a normal repository, and an invented
+  command that exits zero is worse than no evidence at all.
+-->
+
+| Purpose | Command | Notes |
+|---|---|---|
+| Install | | |
+| Build | | |
+| Lint | | |
+| Type check | | |
+| Unit tests | | |
+| Integration / e2e tests | | |
+| Run locally | | |
+
+## High-risk paths
+
+<!--
+  OPTIONAL, and one of the few things a repository can tell the gates that the
+  code cannot. A change touching any path listed here is classified at least
+  High risk. It is advisory guidance to an agent: it shapes ceremony, blocks no
+  edit and stops no command. Delete this whole section if the diff alone
+  classifies your changes correctly. Keep it short if you keep it.
+-->
+
+| Path pattern | Why a change here is High risk |
+|---|---|
+| | |
+
+## Architecture
+
+<!--
+  A directory map with one line of purpose per entry, or a component diagram.
+  Name the entry points explicitly — the framework's context mapper starts there.
+-->
+
+_(Entry points, module or component layout, and what each part owns.)_
+
+## Cross-cutting conventions
+
+<!--
+  The rules that apply to almost every change in THIS repository, each with the
+  reason it exists. Where a rule is enforced by a linter, type or test, say so.
+-->
+
+- _(Error handling contract)_
+- _(Validation contract)_
+- _(Authorization contract)_
+- _(Persistence and data access contract)_
+- _(Logging, redaction and observability contract)_
+
+## Non-obvious invariants
+
+<!--
+  The things that look wrong, look deletable, or look simplifiable — and must
+  not be. Each with the failure it prevents. Highest-value section here.
+-->
+
+_(Each entry: what looks removable, and what breaks if it is removed.)_
+
+## Consumers
+
+<!--
+  Every client that programs against this system's contracts. Load-bearing: the
+  design, implement and review gates ask "which consumers does this change force
+  a matching change in?" — with an empty table the honest answer is always
+  "none". If there genuinely are none, replace the row with "(none — internal
+  only)" and say why.
+-->
+
+| Consumer | Repository / location | Audience | Owner |
+|---|---|---|---|
+| _(none declared yet)_ | | | |
+
+A contract change is not done when this system compiles. It is done when every
+consumer above has been updated or explicitly recorded as unaffected, with the
+deployment order stated.
+
+## Deep references
+
+<!--
+  On-demand, repository-owned playbooks, so this file stays lean. Point at
+  repository documents, not framework standards — the framework loads its own.
+-->
+
+| Task | Where |
+|---|---|
+| | |

@@ -12,6 +12,49 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 3.1.0 — 2026-09-20
+
+**Himoa runs on OpenAI Codex — its first working second platform — from one
+canonical methodology.** Claude Code remains the reference implementation and is
+unchanged behaviourally; the Codex adapter is additive, and an existing Claude
+repository that never touches Codex pays nothing for it. Nothing here asks a
+consuming repository to act (MINOR).
+
+- **One source, no fork.** `tests/validate-codex-projection.mjs` generates the
+  Codex adapter from the canonical skills, reviewer agents, standards, templates
+  and the SessionStart charter, into `plugins/himoa/adapters/codex/` (marked
+  GENERATED). The same script fails CI when a canonical file changes and the
+  projection was not regenerated, so the two cannot drift. Reviewer roles become
+  read-only Codex subagents (`sandbox_mode = "read-only"`); human-only skills
+  become skills that forbid implicit invocation (`allow_implicit_invocation:
+  false`), which is how the human-approval boundary survives onto Codex.
+- **A `$HOME` installer with an explicit boundary.** `bin/himoa-codex-install`
+  installs the adapter into user-level Codex locations (`~/.agents/skills/`,
+  `~/.codex/agents/`, `~/.codex/himoa/`). It is idempotent, has a `--check` dry
+  run and a narrow `--uninstall`, writes only Himoa-owned paths, and honours
+  `CODEX_HOME`/`HOME` (which is what lets it be tested against an isolated fake
+  HOME). It is deliberately separate from `himoa-install-settings`, whose
+  project-only, nothing-in-`$HOME` invariant is untouched.
+- **Repository truth is now platform-neutral.** `AGENTS.md` is the one home
+  every coding agent reads; Claude Code reads it through a thin `CLAUDE.md` that
+  does `@AGENTS.md`. `framework-install` scaffolds AGENTS.md (via
+  `himoa-codex-install --repo`, which creates or safely prepends, never
+  destroys) plus the CLAUDE.md importer. **Existing CLAUDE.md-only repositories
+  keep working unchanged** — `himoa-doctor` audits AGENTS.md when present and
+  falls back to CLAUDE.md — so the migration is opt-in.
+- **`bin/himoa-codex-doctor`** verifies a Codex installation in Himoa's evidence
+  vocabulary (installed, current, skills and reviewers present, repository
+  bootstrapped), claiming only what it can observe.
+- `docs/platform-capabilities.md` and `docs/cross-agent-architecture.md` are
+  updated from the shipped implementation; the README leads platform-neutral.
+
+**Honest status.** The adapter is implemented and structurally validated
+(projection drift, installer safety against a fake HOME, human-approval and
+read-only guarantees). What it has not had is a live end-to-end run inside Codex
+itself — that evidence is `BLOCKED` here (no live Codex in CI) and is the one
+thing between "adapter shipped" and "production-parity proven." Codex is listed
+**Supported (initial adapter)**, not at parity.
+
 ## 3.0.0 — 2026-09-20
 
 **The framework is now `himoa`.** A clean, pre-public identity migration: the

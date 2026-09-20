@@ -83,7 +83,19 @@ infer approval."
 | Platform | Level |
 |---|---|
 | **Claude Code** | **Reference / Full** — production-proven |
-| **OpenAI Codex** | **Native-mappable** — every primitive verified native; adapter designed (`docs/cross-agent-architecture.md`), **not yet shipped** |
+| **OpenAI Codex** | **Supported (initial adapter)** — projection, `$HOME` installer, doctor and repository bootstrap shipped and structurally validated (`docs/cross-agent-architecture.md`). Live end-to-end execution inside Codex has not been smoke-tested here; that evidence is pending, so it is not claimed at parity |
 | **Cursor** | **Researched** — reads `AGENTS.md`, has rules/hooks/MCP |
 | **GitHub Copilot** | **Researched** — reads `AGENTS.md`; approval enforced structurally via PR review |
 | **Gemini CLI** | **Preliminary** — native file is `GEMINI.md`; first-class `AGENTS.md` support unverified |
+
+### Verified corrections (2026-09-20)
+
+Re-verification against current Codex docs changed these details, now reflected
+in the adapter: the approval slash command is **`/permissions`** (was
+`/approvals`); the `"untrusted"` approval policy is **retired** (use
+`on-request`/`never`); `--full-auto` is **deprecated**; hooks are a **production
+feature**, not beta. Codex also now has a **plugin marketplace** (`/plugins`),
+but its CLI and cache specifics are documented only in secondary sources, so the
+adapter targets the **documented loose-file paths** rather than the marketplace
+(`standards/repository-evidence.md` §2b — an unverified external mechanism is
+not built against).

@@ -928,7 +928,7 @@ function validateHooksAndScripts() {
 // ---------------------------------------------------------------------------
 
 function validateCrossReferences() {
-  const markdownFiles = listFilesRecursively(pluginRoot, (path) => path.endsWith('.md'));
+  const markdownFiles = listFilesRecursively(pluginRoot, (path) => path.endsWith('.md') && !path.includes(`${sep}adapters${sep}`));
 
   for (const filePath of markdownFiles) {
     const content = readFileSync(filePath, 'utf8');
@@ -969,7 +969,7 @@ function validateCrossReferences() {
 
 function validateComponentReferences(agentNames, skillNames) {
   const referenceable = new Set([...agentNames.keys(), ...skillNames.keys()]);
-  const markdownFiles = listFilesRecursively(pluginRoot, (path) => path.endsWith('.md'));
+  const markdownFiles = listFilesRecursively(pluginRoot, (path) => path.endsWith('.md') && !path.includes(`${sep}adapters${sep}`));
 
   for (const filePath of markdownFiles) {
     const content = readFileSync(filePath, 'utf8');
@@ -1764,7 +1764,7 @@ const SINGLE_SOURCE_POLICIES = [
 ];
 
 function validateSingleSourcePolicies() {
-  const markdownFiles = listFilesRecursively(pluginRoot, (path) => path.endsWith('.md'));
+  const markdownFiles = listFilesRecursively(pluginRoot, (path) => path.endsWith('.md') && !path.includes(`${sep}adapters${sep}`));
 
   for (const { owner, vocabulary, what } of SINGLE_SOURCE_POLICIES) {
     const ownerPath = join(pluginRoot, owner);

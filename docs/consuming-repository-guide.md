@@ -50,6 +50,27 @@ Either way, then work:
 
 ---
 
+## Using this repository from Codex
+
+This guide describes the Claude Code path (the reference implementation). The
+same methodology runs on OpenAI Codex through Codex-native mechanisms — no second
+copy of Himoa:
+
+```bash
+himoa-codex-install          # once per machine: skills, read-only reviewer agents, standards
+himoa-codex-install --repo   # once per repository: create or extend AGENTS.md (never destroys it)
+himoa-codex-doctor           # verify
+```
+
+Repository truth lives in **`AGENTS.md`**, which every agent reads; the
+`CLAUDE.md` below is a thin `@AGENTS.md` importer so Claude Code loads the same
+single source. Everything in the rest of this guide about *what to declare*
+(project, canonical commands, high-risk paths, consumers) applies to that
+`AGENTS.md`. Human approval and evidence semantics mean the same on both hosts;
+`docs/platform-capabilities.md` states, truthfully, where Codex enforces
+something differently. Codex is a **Supported (initial) adapter** — see the
+support matrix in the README.
+
 ## The repository contract
 
 | Artefact | Required | What it buys you |

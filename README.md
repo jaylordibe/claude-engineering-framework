@@ -2,7 +2,7 @@
 
 # 🛠️ Himoa
 
-### A senior engineering workflow for Claude Code — on any stack, in any repository.
+### Production-grade engineering for coding agents — on any stack, in any repository.
 
 ```text
 Understand → Design → Human approval → Implement → Review → Validate → Present
@@ -280,17 +280,33 @@ the reference implementation; other adapters are in progress.
 | Platform | Status |
 |---|---|
 | **Claude Code** | **Reference — full support.** Production-proven |
-| **OpenAI Codex** | **Native-mappable** — every primitive verified native; adapter designed, **not yet shipped** |
+| **OpenAI Codex** | **Supported (initial adapter).** Projection, `$HOME` installer, doctor and repository bootstrap shipped and structurally validated; live end-to-end execution not yet smoke-tested, so not claimed at parity |
 | **Cursor** | Researched |
 | **GitHub Copilot** | Researched |
 | **Gemini CLI** | Preliminary — native file is `GEMINI.md`; `AGENTS.md` support unverified |
 
 "Compatible in theory" is not "supported": a platform is listed as supported
-only once its adapter actually runs the methodology, and an adapter never
-reports a guarantee as enforced when the host can only advise it. Design and the
+only once its adapter runs the methodology, and an adapter never reports a
+guarantee as enforced when the host can only advise it. Design and the
 per-platform capability contract:
 [Cross-agent architecture](docs/cross-agent-architecture.md) ·
 [Platform capabilities](docs/platform-capabilities.md).
+
+### Using Himoa from Codex
+
+```bash
+himoa-codex-install          # once per machine: skills, read-only reviewers, standards into ~/.agents & ~/.codex
+himoa-codex-install --repo   # once per repository: create/extend AGENTS.md (never destroys it)
+himoa-codex-doctor           # verify
+```
+
+`himoa-codex-install --check` is a dry run; `--uninstall` removes only
+Himoa-owned files. The same canonical methodology runs through Codex-native
+mechanisms — skills invoked as `$himoa-work-item`, reviewer subagents that run
+read-only, and the human-approval gate the model cannot self-start. Human
+approval and evidence semantics mean exactly what they do on Claude Code; where
+Codex enforces something differently, [Platform capabilities](docs/platform-capabilities.md)
+says so rather than implying parity.
 
 ---
 

@@ -107,7 +107,20 @@ const CASES = [
     name: 'fixture minimal-repository — no contract at all is the headline',
     path: join(repositoryRoot, 'fixtures', 'minimal-repository'),
     exit: 1,
-    mustReport: ['FAIL  CLAUDE.md is missing.'],
+    mustReport: ['FAIL  Repository truth is missing: neither AGENTS.md nor CLAUDE.md.'],
+  },
+  {
+    // The cross-agent repo-truth home: AGENTS.md carries the truth (read by
+    // every agent); a CLAUDE.md that only imports it must not be audited as if
+    // it were the truth, so AGENTS.md wins the resolution.
+    name: 'repository truth in AGENTS.md is audited as the truth document',
+    build: {
+      'AGENTS.md': HEALTHY_CLAUDE_MD,
+      'CLAUDE.md': '@AGENTS.md\n',
+    },
+    exit: 0,
+    mustReport: ['PASS  AGENTS.md exists.', 'PASS  Consumers table is filled in.'],
+    mustNotReport: ['FAIL'],
   },
   {
     name: 'fixture vue-app — a deliberately empty Consumers table passes',
