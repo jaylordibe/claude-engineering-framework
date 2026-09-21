@@ -309,11 +309,12 @@ Every claim Himoa makes carries one of these — and never rounds up.
 
 The **Claude Code reference implementation**:
 
-- **13 skills** — `work-item`, `write-ticket`, five gates (`gate-design`,
+- **16 skills** — `work-item`, `write-ticket`, five gates (`gate-design`,
   `gate-approve`, `gate-implement`, `gate-review`, `gate-validate`),
-  `framework-install` / `framework-doctor`, and four domain playbooks
+  `framework-install` / `framework-doctor`, and seven domain playbooks
   (`domain-auth`, `domain-authorization`, `domain-background-work`,
-  `domain-debugging`).
+  `domain-browser-security`, `domain-cryptography`, `domain-debugging`,
+  `domain-supply-chain`).
 - **8 read-only review agents** — `context-mapper`, `architect`, `reviewer`,
   `security`, `tester`, `contract`, `data`, `performance`.
 - **1 `SessionStart` charter** carrying the always-on rules — and gating nothing.
