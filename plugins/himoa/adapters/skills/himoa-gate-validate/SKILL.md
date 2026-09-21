@@ -4,7 +4,7 @@ description: Performs read-only evidence validation for a reviewed change using 
 disable-model-invocation: true
 ---
 
-<!-- GENERATED from plugins/himoa/skills/gate-validate/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.4.2). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/skills/gate-validate/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.5.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Validate the reviewed change
 

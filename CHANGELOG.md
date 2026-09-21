@@ -12,6 +12,44 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 3.5.0 — 2026-09-21
+
+**Security methodology: browser, supply-chain and cryptography coverage — new
+capability, no consumer action (MINOR).**
+Himoa's security review was written almost entirely from a server and API trust
+model. This release adds risk-triggered coverage of three surfaces it did not
+name, integrated into the existing security standard and specialist rather than
+a parallel methodology — no new gate, no new agent, no new lifecycle phase. Each
+area fires only when a change actually reaches it; a backend-only change pulls
+none of them.
+
+### New
+- `domain-browser-security` playbook — output encoding and cross-site scripting,
+  the cookie and cross-site-request-forgery model, cross-origin sharing, client
+  storage, "UI visibility is not authorization", redirects and callbacks,
+  cross-document messaging, and third-party client scripts.
+- `domain-supply-chain` playbook — dependency necessity, package identity and
+  provenance, lockfile integrity, install-time scripts, pipeline actions, base
+  images, and honest known-vulnerability evidence.
+- `domain-cryptography` playbook — do not invent primitives, secure randomness,
+  fit-for-purpose hashing, authenticated encryption, key handling, and the
+  separation of signature from replay.
+- `security-risk-recognition` eval grader and eight cases covering both the
+  positive controls and the classic false assumptions (UI hiding as
+  authorization, "it installed so it is safe", a predictable token, a bespoke
+  primitive, disabled verification).
+
+### Improved guidance
+- **Security standard** gains three sections — browser and client trust
+  boundary, dependency and build-chain trust, cryptographic primitives — and a
+  note that a repository-declared security-validation command is consumed like
+  any other evidence. Tool-agnostic: nothing is named or required.
+- **Security agent** now owns those three surfaces as risk-triggered review
+  areas alongside its existing server-side lenses.
+
+Cryptography was already Critical-tier and remains so; no risk-tier trigger
+changed.
+
 ## 3.4.2 — 2026-09-20
 
 **Repository-truth consistency — no behaviour change, no consumer action (PATCH).**

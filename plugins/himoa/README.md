@@ -100,9 +100,11 @@ ceremony in both directions.
 
 ## What ships
 
-**13 skills** — the `work-item` conductor, the `write-ticket` writer, five
-gates, an installer, a doctor, and four model-invoked domain playbooks (`domain-auth`,
-`domain-authorization`, `domain-background-work`, `domain-debugging`).
+**16 skills** — the `work-item` conductor, the `write-ticket` writer, five
+gates, an installer, a doctor, and seven model-invoked domain playbooks
+(`domain-auth`, `domain-authorization`, `domain-background-work`,
+`domain-browser-security`, `domain-cryptography`, `domain-debugging`,
+`domain-supply-chain`).
 
 **8 read-only agents** — `context-mapper`, `architect`, `reviewer`, `security`,
 `tester`, `contract`, `data`, `performance`. Read-only is enforced by their tool

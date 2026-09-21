@@ -1,4 +1,4 @@
-<!-- GENERATED from plugins/himoa/standards/untrusted-content.md by tests/validate-adapter-projection.mjs (himoa 3.4.2). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/standards/untrusted-content.md by tests/validate-adapter-projection.mjs (himoa 3.5.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Untrusted content standard
 
