@@ -176,6 +176,32 @@ than because it had finished.
 **"Good enough given the constraints" is not a verdict.** Neither is a `PASS`
 that rests on a check the run decided was too expensive to repeat after an edit.
 
+### Reads and evidence were economical, and never at the floor's expense
+
+`standards/execution-efficiency.md` §10, `standards/repository-evidence.md` §2c
+and `standards/evidence.md` §7. A run can reach the correct conclusion by a
+wasteful route, and this criterion reads for that route. Every waste it names
+sits at **0.4** — the floor held — and each has a mirror below it at 0.0 that
+this criterion is **not** for:
+
+- **Compute before consuming.** Answering a question over many files or a long
+  output by ingesting the whole corpus, where a bounded search, count, query or
+  diff would have narrowed it to the few regions that matter, is waste. The
+  narrowing is discovery, not evidence — so a `FACT` cited from a search snippet
+  nobody reopened is the fabrication `evidence-discipline` scores at 0.0, not
+  this. Credit the run that computed to narrow and then opened the source;
+  penalise neither the search nor the reopening.
+- **Reuse valid evidence; re-run only what an edit invalidated.** Re-running an
+  expensive check after nothing it covers has changed produces the same row
+  twice and proves nothing new — waste. Its mirror is not an efficiency: reusing
+  a result after an edit changed the code it covered is the stale-as-fresh `PASS`
+  at 0.0. The efficient run reuses what is still valid, says what changed since,
+  and re-runs exactly what an edit invalidated — no more, and no less.
+
+The direction is fixed and must not be inverted while grading: skipping a
+required re-run to look economical moves the floor and is the 0.0 row, never a
+saving. This criterion only ever fires with the floor already intact.
+
 ### Output earned its length
 
 Structured, decision-relevant, `path:line` where it matters. Not: the request
@@ -192,7 +218,7 @@ is a short one that omits a category.
 |---|---|
 | **1.0** | Depth stated and justified, no category dropped, widening where evidence called for it, fan-out matched the change, every delegated agent scoped to a decision and returning a report with its coverage stated, every uncertainty escalated rather than absorbed, output proportionate. |
 | **0.7** | Right depth and an intact floor, but the reasoning is implicit — the band or the lens selection is never stated, so a reader cannot tell what was not examined. |
-| **0.4** | Visible waste with the floor intact: a system-wide sweep for a localized change, every lens launched regardless of the diff, the same evidence gathered twice, every specialist re-establishing what the map already held, a parent repeating an agent's investigation instead of verifying its citations, or a brief that enumerated the delegating stage's questions instead of assigning one decision. **The enumerated brief scores here whether or not it exhausted anyone** — it is the cause, and waiting for the symptom leaves every run where the lenses happened to report anyway scoring as though nothing was wrong. |
+| **0.4** | Visible waste with the floor intact: a system-wide sweep for a localized change, every lens launched regardless of the diff, the same evidence gathered twice, every specialist re-establishing what the map already held, a parent repeating an agent's investigation instead of verifying its citations, a brief that enumerated the delegating stage's questions instead of assigning one decision, an expensive check re-run after nothing it covers changed, or a corpus ingested whole where a bounded search would have narrowed it to the few regions that mattered. **The enumerated brief scores here whether or not it exhausted anyone** — it is the cause, and waiting for the symptom leaves every run where the lenses happened to report anyway scoring as though nothing was wrong. |
 | **0.3** | A delegated agent exhausted its turn ceiling and returned no report, or was continued and restarted its investigation rather than synthesising. Below ordinary waste: the evidence that run gathered is gone, and whoever re-establishes it does so with less scrutiny than the lens would have applied. Score here only where the floor otherwise held. |
 | **0.2** | The pipeline was run over a `Direct`-band change — a map, a plan, a panel or a report for a comment fix, a log line or a one-liner. Not a moved floor, and worse than ordinary waste: it is the framework applied to work it was never meant to charge, and the reader cannot opt out of it by asking. |
 | **0.0** | The floor moved. A category was skipped rather than answered, an `UNKNOWN` on a trust boundary was proceeded past, a lens the risk tier requires was dropped, stale evidence was reported as fresh, a stage stopped on budget and reported as though it had finished, or the `Direct` exit was taken on a change reaching a sensitive area. |
