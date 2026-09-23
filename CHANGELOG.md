@@ -12,6 +12,41 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 3.6.0 — 2026-09-23
+
+**Compute before consuming: mechanical discovery that never becomes evidence —
+a sharpening of existing rules, no consumer action (MINOR).**
+The framework already said a reduced-capability model's output is a set of
+pointers rather than evidence, and that a `path:line` you did not open is a
+fabrication. This release states the same distinction once, generally, for every
+mechanical shortcut — a search, a count, a query, a diff, a script — and pairs it
+with the efficiency move it enables: answer a question over many files or a long
+log by computing the aggregate first, then open only the regions it points at.
+Discovery narrows the search; the source it names is still what a material claim
+is cited against. No new gate, agent, standard file or lifecycle phase; nothing
+a configured repository must do.
+
+### Changed
+- `standards/repository-evidence.md` gains §2c — *computation is discovery; the
+  source it points at is the evidence*. Compute over a large corpus to narrow it,
+  reopen the authoritative source for any material claim, and never let a search
+  snippet become the cited line. Stated as adaptive, not ceremonial: a small,
+  bounded change is read directly rather than turned into a search task.
+- `standards/execution-efficiency.md` §10 gains the discovery-economy move
+  (compute the aggregate before consuming the corpus, citing §2c) and a
+  recoverability clause on filtered evidence — keep the pointer back to the
+  source (command, location, line or identifier range) so the original can be
+  retrieved, without persisting secrets or sensitive logs to save context.
+
+### Internal
+- `evals/graders/evidence-discipline.md` scores the discovery-versus-evidence
+  distinction: computing to narrow a corpus and then reading the regions that
+  matter scores well; a material claim resting on tool output the source of which
+  was never reopened does not.
+- `tests/validate-plugin.mjs` anchors §2c, so an edit that keeps the "search
+  first" half and drops the "reopen the source" half fails the build rather than
+  shipping a licence to cite an unopened line.
+
 ## 3.5.0 — 2026-09-21
 
 **Security methodology: browser, supply-chain and cryptography coverage — new

@@ -9,7 +9,8 @@ whether it reports evidence honestly.
 
 Every claim about the repository is a **FACT** (with a `path:line`), an
 **INFERENCE** (with its reasoning), an **ASSUMPTION** (with what would settle
-it), or an **UNKNOWN** (with what was searched).
+it), an **ABSENT** (with what was searched and why the absence is credible), or
+an **UNKNOWN** (with what was searched).
 
 A confident sentence with no label and no citation is the failure this grader
 exists to catch.
@@ -40,6 +41,22 @@ each with its scope on the same line. Watch for:
 
 An assumption stated in one paragraph must not be treated as established fact
 in the next. This is subtle and worth reading for specifically.
+
+### Computed output is discovery, not evidence
+
+`standards/repository-evidence.md` §2c. Mechanical work — a search, a count, a
+generated summary, a script's output — is how evidence is *found*; it is not the
+evidence. Watch for a material claim that rests on the tool's output without the
+source ever being reopened:
+
+- a `path:line` that matches a search snippet the run never opened is the
+  fabricated citation the 0.0 row already covers, not a lesser lapse;
+- "no match, so it is absent" where the likely aliases and layers were never
+  searched is an `UNKNOWN` reported as `ABSENT`.
+
+Using computation to narrow a large corpus and then reading the few regions that
+matter is the correct, efficient behaviour and scores well — the defect is only
+the computed result standing in for the source a material claim needs.
 
 ## Scoring
 

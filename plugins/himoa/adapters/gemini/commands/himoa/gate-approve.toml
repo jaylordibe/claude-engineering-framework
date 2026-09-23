@@ -1,4 +1,4 @@
-# GENERATED from plugins/himoa/skills/gate-approve/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.5.0).
+# GENERATED from plugins/himoa/skills/gate-approve/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.6.0).
 # DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write
 description = "Reads a presented design back to the human — recommendation, rejected alternatives, contract and data impact, residual risk, deliberate non-goals and every unresolved blocker — then takes an explicit approve or reject decision and stops without implementing. Only a human can start this gate."
 prompt = '''

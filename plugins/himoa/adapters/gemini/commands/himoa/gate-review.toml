@@ -1,4 +1,4 @@
-# GENERATED from plugins/himoa/skills/gate-review/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.5.0).
+# GENERATED from plugins/himoa/skills/gate-review/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.6.0).
 # DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write
 description = "Independently reviews the current diff for conformance to the approved plan, correctness, application security, contract compatibility, data and migration safety, reliability and test coverage — selecting review lenses by risk tier, verifying every finding against source, adversarially refuting Critical and High findings, then remediating and re-reviewing."
 prompt = '''

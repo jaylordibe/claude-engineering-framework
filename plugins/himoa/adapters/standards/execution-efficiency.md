@@ -1,4 +1,4 @@
-<!-- GENERATED from plugins/himoa/standards/execution-efficiency.md by tests/validate-adapter-projection.mjs (himoa 3.5.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/standards/execution-efficiency.md by tests/validate-adapter-projection.mjs (himoa 3.6.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Execution efficiency standard
 
@@ -459,6 +459,15 @@ second section · prose that changes no decision.
   because they are there.
 - Do not read large generated artefacts unless the change touches them.
 - Prefer targeted search to a broad dump; narrow before widening.
+- **Compute the aggregate before consuming the corpus.** Where a question over
+  many files or a long output is answerable by a bounded search, a structured
+  query, a count or a diff, do that first and open only the regions it points
+  at — do not load the whole corpus to answer mechanically. The computed result
+  narrows the search; it is not itself the evidence, and a material claim
+  reopens the source it points at:
+  `standards/repository-evidence.md` §2c. This is discovery economy, not a
+  budget-watch: it changes what a read costs, not whether an established
+  uncertainty is investigated.
 - During implementation run the focused form of a check. **The validation gate
   still runs the repository's full canonical checks** — that is the gate, and
   the focused runs preceding it never replace it.
@@ -467,7 +476,14 @@ second section · prose that changes no decision.
   evidence the same allowance would otherwise carry. Batch what does not depend
   on a previous result; sequence only what does. This is not the budget-watching
   §8 rules out — it changes what a turn buys, not when investigation stops.
-- Capture the failing evidence, not the entire log.
+- Capture the failing evidence, not the entire log — **and keep the pointer back
+  to the rest**: the command, the location and the line or identifier range, so
+  the surrounding original can be retrieved if a later question needs it. A
+  filtered result whose source cannot be reopened is not evidence that can be
+  widened, only a summary — and §11 holds that a summary is never stronger than
+  the source it replaced. Retain what makes the material evidence recoverable,
+  not every line for its own sake, and never persist a secret or a sensitive log
+  to save context.
 - Do not re-run a command whose evidence is still valid, and do re-run it
   whenever relevant code changed. Evidence has a scope and an age:
   `standards/evidence.md` §7.

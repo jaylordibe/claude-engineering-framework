@@ -127,6 +127,40 @@ unstated external assumption that turns out wrong is the failure this section
 exists to prevent, and it is invisible in exactly the way a wrong `path:line` is
 not.
 
+## 2c. Computation is discovery; the source it points at is the evidence
+
+A question about the repository is often answerable mechanically over more
+material than belongs in context at once — how many call sites a symbol has,
+which of a hundred files touch one table, what a long log's single failure was,
+whether two generated shapes differ. **Compute the answer before consuming the
+corpus.** A bounded search, a structured query, a count, a diff or a short
+read-only script narrows that hundred to the few files that matter for a
+fraction of the reading, and reading the region those few point at is what a
+§2 FACT is made of.
+
+That is a method for *finding* evidence, and it never becomes the evidence
+itself. A search hit, a count, a generated summary, an index, a cached artefact
+or a script's output is a **pointer**: it says where to look, not what is true
+there. `standards/execution-efficiency.md` §6.1 states this for a
+reduced-capability launch, and it holds for every mechanical shortcut for the
+same reason. The moment a material claim rests on one:
+
+1. reopen the authoritative source the pointer names;
+2. read enough of it, and the context around it, to see the claim actually holds;
+3. cite the `path:line` you opened — never the one the tool printed.
+
+**A `path:line` lifted from a search snippet is the fabrication §2 already
+names**, whichever tool produced it, and its confident tone is what makes it
+hard to catch. Absence found only by search is `UNKNOWN` until the likely
+aliases, layers and entry points were searched too (§2): a quiet search proves
+the pattern you typed is missing, not that the thing is.
+
+The rule is adaptive, not ceremonial. **Do not force computation where direct
+inspection is already cheaper, clearer and sufficiently bounded** — a
+three-file change is read, not queried, and turning it into a search task is its
+own kind of waste. Whether a narrowing step is worth taking at all is the
+sufficiency test, `standards/execution-efficiency.md` §8.1.
+
 ## 3. Discover before you assume
 
 Before making any architectural claim, establish the answer from the repository:

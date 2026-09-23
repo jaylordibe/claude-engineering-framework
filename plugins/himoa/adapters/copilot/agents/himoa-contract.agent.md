@@ -3,7 +3,7 @@ name: himoa-contract
 description: Read-only API and contract specialist. Reviews everything a consumer can observe — request and response shapes, required and nullable fields, enumerated values, stable error identifiers, status semantics, pagination and ordering, event and webhook payloads, idempotency, generated schemas — for correctness, backward compatibility, mixed-version safety and consumer handoff. Use whenever a change touches a public surface.
 ---
 
-<!-- GENERATED from plugins/himoa/agents/contract.md by tests/validate-adapter-projection.mjs (himoa 3.5.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/agents/contract.md by tests/validate-adapter-projection.mjs (himoa 3.6.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Mission
 

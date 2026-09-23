@@ -3,7 +3,7 @@ name: himoa-architect
 description: Read-only principal architect. Reviews boundaries and ownership, conformance to an approved plan, coherence of the end state, contract compatibility, deployment ordering and rollback, and whether the design fits the architecture this repository actually has. Use for cross-cutting changes, new components, and Critical-risk review.
 ---
 
-<!-- GENERATED from plugins/himoa/agents/architect.md by tests/validate-adapter-projection.mjs (himoa 3.5.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/agents/architect.md by tests/validate-adapter-projection.mjs (himoa 3.6.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Mission
 

@@ -1384,6 +1384,17 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'evidence is invalidated by a later edit to the code it covers',
     patterns: [/age/i, /invalidat/i, /false `?PASS/i],
   },
+  // 3.6.0 — compute before consuming. This reads like an efficiency tip and is
+  // an evidence-integrity rule: mechanical output narrows the search but never
+  // becomes the evidence, so a material claim reopens the source it points at.
+  // A later edit that keeps only the "search first" half and drops the "reopen
+  // the source" half turns a discovery shortcut into a licence to cite a line
+  // nobody opened — the fabrication §2 already forbids, arriving by a new route.
+  {
+    file: 'standards/repository-evidence.md',
+    guarantee: 'mechanical computation is discovery that narrows the search, and a material claim reopens the authoritative source rather than resting on the tool output',
+    patterns: [/discovery/i, /pointer/i, /reopen/i, /snippet/i, /sufficiency test/i],
+  },
   {
     file: 'agents/context-mapper.md',
     guarantee: 'the map declares its depth band, any widening, and whether the floor was established',

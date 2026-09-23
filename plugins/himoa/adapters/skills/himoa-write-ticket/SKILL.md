@@ -4,7 +4,7 @@ description: Writes a work ticket the way a business analyst or product owner wo
 disable-model-invocation: true
 ---
 
-<!-- GENERATED from plugins/himoa/skills/write-ticket/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.5.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/skills/write-ticket/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.6.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Write a ticket
 
