@@ -3,7 +3,7 @@ name: himoa-security
 description: Read-only senior application security engineer. Threat-models a change and reviews authentication, function-level and record-level authorization, tenancy isolation, enumeration and disclosure behaviour, untrusted input reaching sensitive sinks, replay and race conditions, rate limiting, audit, secret handling and data exposure — and, when the change reaches them, the browser and client trust boundary, software supply-chain and dependency trust, and cryptographic primitives — against the controls this repository actually has. Use for any change touching a trust boundary.
 ---
 
-<!-- GENERATED from plugins/himoa/agents/security.md by tests/validate-adapter-projection.mjs (himoa 3.6.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/agents/security.md by tests/validate-adapter-projection.mjs (himoa 3.7.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Mission
 

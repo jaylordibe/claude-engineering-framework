@@ -1,4 +1,4 @@
-# GENERATED from plugins/himoa/skills/gate-implement/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.6.0).
+# GENERATED from plugins/himoa/skills/gate-implement/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.7.0).
 # DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write
 description = "Implements an explicitly approved plan and nothing else, preserving unrelated worktree changes, enforcing the contracts the repository itself declares, writing the tests as part of the change, and returning to the approval gate on any material divergence. Requires an approval evidenced by the human's own words, and re-checks a resumed run against the repository before editing."
 prompt = '''

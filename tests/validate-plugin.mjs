@@ -1495,6 +1495,55 @@ const NORMATIVE_ANCHORS = [
     guarantee: 'an incomplete map stops the pipeline rather than starting the design',
     patterns: [/incomplete/i, /stop/i, /re-?launch|resolve it/i],
   },
+  // 3.7.0 — the tracker stage's boundaries, each with a plausible-looking
+  // opposite. The write set widens to linked dependants only, and only those
+  // no more visible than the worked item and presented at Stage 6: link data
+  // picks the targets, so without the eligibility bound anyone who can add a
+  // link routes the change to an audience nobody chose. A comment never states
+  // where the code sits, but still states a failure or BLOCKED verdict —
+  // otherwise "no status line" becomes "no bad news" — and describes no
+  // security finding, fixed or not, since a fix is live only where it shipped.
+  // Every linked item carries the ship-first rule; a consumer also gets the
+  // contract from the code, never the plan, and a recommendation. The record
+  // ties comments to the run rather than to an account (a tracker connection
+  // often posts as the human), is honoured only once the tracker confirms it,
+  // and an edit touches only a comment returned in this session.
+  {
+    file: 'skills/work-item/SKILL.md',
+    guarantee: 'the tracker stage writes only to the worked item and eligible linked dependants, as internal notes where the tracker has them, and never transitions an issue or edits a field',
+    patterns: [/depending on it or\s+blocked by\s+it/i, /Never transition any issue or edit any field/i, /Never comment on an item\s+linked any other way/i, /internal note wherever the tracker distinguishes/i],
+  },
+  {
+    file: 'skills/work-item/SKILL.md',
+    guarantee: 'a linked item is commented on only when it is in the same tracker, not remote, no more visible including item-level restriction, and presented at Stage 6 — otherwise it is reported as unreported',
+    patterns: [/same tracker/i, /remote or\s+external link/i, /no wider than the worked item/i, /item-level restriction/i, /Stage 6 presented it/i, /cannot be established is not commented on/i],
+  },
+  {
+    file: 'skills/work-item/SKILL.md',
+    guarantee: 'a tracker comment opens with the behaviour that changed, never states where the code sits, and still states a failure or BLOCKED verdict',
+    patterns: [/opens with \*\*the behaviour that changed\*\*/i, /never states where the code\s+sits/i, /BLOCKED` verdict/i, /the comment says so/i],
+  },
+  {
+    file: 'skills/work-item/SKILL.md',
+    guarantee: 'no security finding, resolved or unresolved, is described in a tracker comment, and residual risk never goes in one',
+    patterns: [/No security finding, resolved or unresolved/i, /never its mechanism/i, /Residual risk and threat-model\s+content never go in a tracker/i],
+  },
+  {
+    file: 'skills/work-item/SKILL.md',
+    guarantee: 'every linked comment states the standing ship-first rule, and a consumer — matched structurally or by title, never by description — gets the contract from the code, never the plan, with a recommendation',
+    patterns: [/must not ship against it until the\s+change providing it ships first/i, /declared consumer list/i, /Never by its description or comments/i, /from the implemented code/i, /never from the plan/i, /a recommendation/i],
+  },
+  {
+    file: 'skills/work-item/SKILL.md',
+    guarantee: 'one comment per item per run: an intent is recorded before posting, a record is honoured only once the tracker confirms it, and only a comment returned in this session is edited',
+    patterns: [/One comment per item per run/i, /Authorship proves nothing/i, /write an intent/i, /only once the tracker confirms it/i, /returned in this session is\s+ever edited/i],
+  },
+  {
+    file: 'standards/resumption.md',
+    guarantee: 'the run state is stated once, here, records each tracker comment with its intent, and outlives the tracker stage',
+    patterns: [/one\s+full statement of the record/i, /tracker comments posted/i, /hash and time of its intent/i, /after its tracker stage/i],
+  },
+
   // The ledger and the run state file are one defect's two halves, and both
   // are the kind of line a later edit removes as ceremony. C21 is why they
   // exist: the host stopped providing the task tools this pipeline used to

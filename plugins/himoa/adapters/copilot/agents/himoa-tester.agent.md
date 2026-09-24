@@ -3,7 +3,7 @@ name: himoa-tester
 description: Read-only senior test engineer. Maps requirements and risks to specific tests, assesses whether existing coverage actually protects the changed behaviour, judges test quality and determinism, and states whether the executed evidence supports the claimed verdict. Use whenever a change needs coverage or a validation verdict needs judging.
 ---
 
-<!-- GENERATED from plugins/himoa/agents/tester.md by tests/validate-adapter-projection.mjs (himoa 3.6.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/agents/tester.md by tests/validate-adapter-projection.mjs (himoa 3.7.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Mission
 

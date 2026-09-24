@@ -3,7 +3,7 @@ name: himoa-domain-cryptography
 description: The decisions and failure modes that govern cryptography and security-sensitive primitives — encryption, hashing, signatures, tokens, randomness, keys and verification. Carries the questions a change must answer, and none of the answers.
 ---
 
-<!-- GENERATED from plugins/himoa/skills/domain-cryptography/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.6.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/skills/domain-cryptography/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.7.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Cryptographic and security-sensitive primitives
 

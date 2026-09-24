@@ -3,7 +3,7 @@ name: himoa-domain-supply-chain
 description: The decisions and failure modes that govern code the repository did not author — dependencies, build and integration tooling, lockfiles, pipeline actions and base images. Carries the questions a change must answer, and none of the answers.
 ---
 
-<!-- GENERATED from plugins/himoa/skills/domain-supply-chain/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.6.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/skills/domain-supply-chain/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.7.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Dependency and build-chain trust
 

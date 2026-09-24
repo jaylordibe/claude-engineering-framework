@@ -12,6 +12,62 @@ act, and MINOR and PATCH never do. Entries below `1.0.0` were released under the
 
 ---
 
+## 3.7.0 — 2026-09-24
+
+**The tracker stage hands a changed contract to the people who consume it —
+improved guidance, no consumer action (MINOR).**
+`work-item` Stage 7 posted exactly one non-technical comment on the worked
+item. That left the consumer handoff the contract standard requires stranded
+in the conversation: the developer whose ticket was blocked on the change learnt
+that something moved, never what to call. It also opened every comment with a
+status line — a claim about where the code sits that the run has no evidence
+for, and that goes stale the moment the human commits, merges or deploys.
+
+### Changed
+- **Stage 7 may also comment on eligible linked items**: one comment each on
+  items the tracker links to the worked item as depending on it or blocked by
+  it. An item is eligible only if it is in the same tracker, not a remote link,
+  no more visible than the worked item (same project and same item-level
+  restriction), and was listed at Stage 6. Link data picks these targets, so an
+  item whose eligibility cannot be established is reported, not written to.
+  Every comment is an internal note where the tracker has them. There are still
+  no transitions and no field edits, on any item.
+- **Every linked comment states the standing ship-first rule** of
+  `architecture.md` §4: the waiting work must not ship against the change until
+  the change ships first.
+- **A linked item that consumes the change** — matched against the declared
+  consumer list by component, label or title, never by its description — also
+  gets a comment written for its developer: the contract-change rows the change
+  touched and the §4 obligations, **taken from the implemented code rather than
+  the plan**, ending with a recommendation. The worked item's comment stays
+  short and non-technical for the reporter and QA.
+- **Every comment opens with the behaviour that changed and never states where
+  the code sits** (committed, merged, in review, deployed, done). A failure,
+  `BLOCKED` verdict or unresolved blocker is still stated plainly. **No
+  security finding, fixed or not, is described**: only that one blocks or was
+  addressed, its owner, and what must not ship until it is resolved. Residual
+  risk and threat-model content never go in a comment.
+- **One comment per item per run, tied to the run and not to an account.** An
+  intent (item, text hash, time) is recorded before each post and the returned
+  identifier after it. A resumed run honours a record only once the tracker
+  confirms it. A contradicted record is a finding, and only a comment returned
+  in the same session is ever edited.
+- `standards/resumption.md` §2 is now the one full statement of the run-state
+  record; the skill cites it instead of keeping a second, drifted copy. The
+  record includes the tracker entries and outlives the tracker stage.
+- **Stage 6 lists the linked items Stage 7 will comment on**, and the ones it
+  will not, before any are written.
+
+### Validation
+- `validate-plugin.mjs` anchors each boundary: the bounded write set and
+  internal notes, the eligibility bound, no lifecycle claim with failures still
+  stated, the security-finding exclusion, the ship-first rule and the consumer
+  contract, the run-scoped record and edit rule, and the single-source
+  run-state record. Each anchored sentence was deleted in turn and the validator
+  failed every time.
+
+---
+
 ## 3.6.0 — 2026-09-23
 
 **Compute before consuming: mechanical discovery that never becomes evidence —

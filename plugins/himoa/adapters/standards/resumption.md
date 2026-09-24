@@ -1,4 +1,4 @@
-<!-- GENERATED from plugins/himoa/standards/resumption.md by tests/validate-adapter-projection.mjs (himoa 3.6.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/standards/resumption.md by tests/validate-adapter-projection.mjs (himoa 3.7.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Resumption standard
 
@@ -47,15 +47,20 @@ One file, opened at Stage 1 of a conductor run, kept current through it.
 schema_version: 1
 ```
 
-then exactly the list `@HIMOA_HOME@/standards/execution-efficiency.md`
-§11 names, and nothing beyond it:
+then the carry-forward list `@HIMOA_HOME@/standards/execution-efficiency.md`
+§11 names, extended with what resuming a run also needs — the repository
+baseline, progress, evidence references and the tracker record. This is the one
+full statement of the record; a skill that keeps it cites this section rather
+than restating it, and nothing beyond it is kept:
 
 the original and resolved requirement · the current stage · the risk tier and
 the investigation depth that standard assigns · the approved scope · every
 human condition, **verbatim** · the relevant non-goals · material design
 decisions · unresolved blockers · the repository baseline from §5 · progress as
 completed, remaining and blocked · evidence references as `path:line` · review
-state, once reached · validation state, once reached.
+state, once reached · validation state, once reached · tracker comments posted,
+each as its item, the hash and time of its intent, and the comment identifier
+the tracker returned.
 
 Each entry is there because it cannot be recovered from disk afterwards.
 Everything that *can* be is deliberately absent.
@@ -207,9 +212,10 @@ created at Stage 1
   -> complete
 ```
 
-**Delete the file on successful completion**, once the presentation has been
-made. The run it recorded is over and everything durable about it is in the
-diff, the pull-request body and the tracker comment.
+**Delete the file on successful completion**, once the run's last stage has
+resolved — for `work-item`, after its tracker stage, whose record of posted
+comments is what stops a resumed run posting twice. The run it recorded is over and everything durable about it is in the
+diff, the pull-request body and the tracker comments.
 
 Leave it in place when the run ended at a stop, a `FAIL` or a `BLOCKED`
 verdict — that is the run most likely to be resumed, and its state is the only

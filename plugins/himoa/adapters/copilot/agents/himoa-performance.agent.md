@@ -3,7 +3,7 @@ name: himoa-performance
 description: Read-only performance and reliability engineer. Reviews query and call patterns, unbounded work, timeouts and bounded retries, idempotency, duplicate and poison handling, backpressure and resource limits, cache invalidation, correlation and observability, and graceful shutdown — always against a stated workload assumption rather than a guess. Use for asynchronous, integration or load-sensitive changes.
 ---
 
-<!-- GENERATED from plugins/himoa/agents/performance.md by tests/validate-adapter-projection.mjs (himoa 3.6.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/agents/performance.md by tests/validate-adapter-projection.mjs (himoa 3.7.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Mission
 

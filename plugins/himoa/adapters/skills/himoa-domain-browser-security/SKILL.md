@@ -3,7 +3,7 @@ name: himoa-domain-browser-security
 description: The decisions and failure modes that govern code running in a browser or other client runtime. Carries the questions a change must answer, and none of the answers.
 ---
 
-<!-- GENERATED from plugins/himoa/skills/domain-browser-security/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.6.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
+<!-- GENERATED from plugins/himoa/skills/domain-browser-security/SKILL.md by tests/validate-adapter-projection.mjs (himoa 3.7.0). DO NOT EDIT. Edit the canonical source and run: node tests/validate-adapter-projection.mjs --write -->
 
 # Browser and client trust boundary
 
